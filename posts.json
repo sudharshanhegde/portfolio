@@ -1,0 +1,24 @@
+[
+    {
+      "title": "day 1",
+      "date": "2025-03-24",
+      "excerpt": "Numeral Systems\n",
+      "filename": "post1.html",
+      "tags": [
+        "maths",
+        "beginner",
+        "dsa"
+      ]
+    },
+    {
+      "title": "Understanding Data Structures",
+      "date": "2024-02-28",
+      "excerpt": "Breaking down my approach to mastering linked lists and binary trees through daily DSA practice. Includes code examples and problem-solving strategies that helped me grasp these concepts.",
+      "filename": "post2.html",
+      "tags": [
+        "DSA",
+        "Algorithms",
+        "Programming"
+      ]
+    }
+  ]
