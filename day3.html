@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><script type="text/javascript" src="/___vscode_livepreview_injected_script"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Day 3 - Sudharshan Hegde's Blog</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css">
+    <style>
+        :root {
+            --primary: #2A5C82;
+            --secondary: #3B8AC4;
+            --dark: #1A2B3C;
+            --light: #F5F9FC;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 6rem 0 3rem;
+            text-align: center;
+            clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .header-excerpt {
+            max-width: 700px;
+            margin: 1rem auto 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        /* Navigation */
+        .nav-links {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-link {
+            background: rgba(255,255,255,0.1);
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            color: white;
+            text-decoration: none;
+            backdrop-filter: blur(10px);
+            transition: var(--transition);
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* Post content */
+        .post-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            padding: 3rem;
+            margin-top: -50px;
+            margin-bottom: 3rem;
+        }
+
+        .post-date {
+            color: var(--secondary);
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+
+        .post-title {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.3;
+        }
+
+        .post-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .tag {
+            background: rgba(59, 138, 196, 0.1);
+            color: var(--primary);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .post-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+
+        .post-content p {
+            margin-bottom: 1.5rem;
+        }
+
+        .post-content h2,
+        .post-content h3,
+        .post-content h4 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin-bottom: 1.5rem;
+            padding-left: 2rem;
+        }
+
+        .post-content pre {
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+            overflow: auto;
+        }
+
+        .post-content code {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+        }
+
+        .post-content blockquote {
+            border-left: 4px solid var(--primary);
+            padding-left: 1.5rem;
+            margin-left: 0;
+            margin-right: 0;
+            margin-bottom: 1.5rem;
+            font-style: italic;
+            color: #555;
+        }
+
+        .post-content img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 2rem 0;
+            color: #777;
+            font-size: 0.9rem;
+        }
+
+        .back-to-blog {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            transition: var(--transition);
+        }
+
+        .back-to-blog:hover {
+            background: var(--secondary);
+            transform: translateY(-3px);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link"><i class="fas fa-home"></i> Home</a>
+            <a href="blog.html" class="nav-link"><i class="fas fa-blog"></i> Blog</a>
+        </div>
+        <div class="container">
+            <h1>Day 3</h1>
+            <p class="header-excerpt">Network Layer :- Design Challenges.</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <article class="post-container">
+            <span class="post-date">March 25, 2025</span>
+            <h1 class="post-title">Day 3</h1>
+            
+            <div class="post-tags">
+                <span class="tag">computer networks</span><span class="tag">network layer</span>
+            </div>
+
+            <div class="post-content">
+                <p><strong>What are The Design Challenges in Network Layer</strong></p>
+<p>Internet is something like global postal service.There will be Billions of "packets" are sent every second through the cables satellites routers to reach their endpoint.For all these to be done someone has to avoid traffic jam and someone has to decide on which one will be the best pathway to be selected upon. Well all these is done by network layer.</p>
+<p><strong>Major challenges involved in design challenges are:</strong></p>
+<p><strong>1</strong>.Logical Adressing:(Internets own google Map)
+Problem is every device will have its own MAC adress but it is like having the phone number we will know  who we will be contacting but not the location of the person who will be contacting.So for the data to be sent across globe we designed something more flexible.</p>
+<p><strong>IP adresses:</strong>
+Internet protocol adresses are something like digital adresses which comes in 2 version IPV4 and IPV6 and are unique for every device.What we do here is we called subnetting which is a fancy word for splitting the network into smaller chunks such that for example of a university we might have seperate subnets for dorms,labs and admin offices etc.
+These is very important because without these we wont be able to find the suitable address to send the data.</p>
+<p><strong>2</strong>.Routing : the art of packet GPS</p>
+<p>After finding out the address it is important for us to select the route so that packets can travel safely from one place to another and also in a high speed path.So how is that done.</p>
+<p>Solution is through the Routing algorithms:
+Distance Vector Algorithm:- Its like routers gossip with its neighbours about the number of hops to be done to reach destinations.It is simple but very slow.</p>
+<p>Link State Algorithm :- Here Routers map the entire networks topology and then use the fastest route. Its faster and smarter but it is resource heavy.Its like using google maps.</p>
+<p>BGP :-Its the postmaster general of INTERNET by routing the traffic between massive networks.</p>
+<p>Routing tables are like cheat sheet routers which are used to decide the paths.</p>
+<p><strong>3</strong>Fragmentation and Reassembly:-</p>
+<p>Networks have the different Maximum transmission unit sizes so sending a large packet is like fitting whole pizza in small oven.</p>
+<p>The solution to these problem is:-
+Fragmentation :-These chops the packets into smaller slices
+Reassembly :- At the destination we will reassemble all those smaller slices.</p>
+<p>We can use IPV4 or IPV6 for that in IPV4 routers fragment packets mid-journey this is very risky as there is a chance of slice getting lost.While in case of IPV6 sender pre slice the packets so the routers focus on shipping not on chopping.</p>
+<p><strong>4.</strong> Congestion Control :-</p>
+<p>having too many packets causes digital traffic jams.
+To avoid these:-
+We have solutions such as ---
+Quality of Service :- where it prioritises the critical traffic such that lets say you are using zoom call and using email in the background so then what happens is zoom call will take a fast lane and other one will take the slow route.Its something like ambulance services where high priority are given the fast lane.</p>
+<p>Traffic shaping:-It limits the bandwidth for non urgent data so sometime when we are using the whatsapp and we are sending bunch of images and texts we can see that whatsapp images take a little more time to be sent then  the texts as the texts are high priority and will be sent in fast lane and we will be limiting the non urgent data.</p>
+<p>QOS is the reason why our calls stay clear even when someone on our same network is downloading game from torrent.</p>
+<p>**5.**Error handling and ICMP:-
+These is like internets check engine light.</p>
+<p>so how will we know if a router is down or packets get lost? </p>
+<p>For these only we have ICMP :- which stands for Internet control message protocol its the networks troubleshooting kit.</p>
+<p>for example it does something called as </p>
+<p>ping :- these checks if a device is alive</p>
+<p>Traceroute:-These maps the path packets takes.</p>
+<p>The network layer detects the error but it does not fix it. Its more like a cctv you need a police (transport layer) to catch the thief.</p>
+<p>As everything is of so much dependent on the internet it is important for us to understand these things regarding the network later because its not just wifi its like threads in the clothes which are knitted together in such a way that it can become fashion.</p>
+<p>Thank you  for reading...</p>
+
+            </div>
+
+            <a href="blog.html" class="back-to-blog">
+                <i class="fas fa-arrow-left"></i> Back to Blog
+            </a>
+        </article>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 Sudharshan Hegde. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-cpp.min.js"></script>
+</body>
+</html>

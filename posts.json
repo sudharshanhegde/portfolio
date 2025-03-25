@@ -1,5 +1,15 @@
 [
   {
+    "title": "Day 3",
+    "date": "2025-03-25",
+    "excerpt": "Network Layer :- Design Challenges.",
+    "filename": "day3.html",
+    "tags": [
+      "computer networks",
+      "network layer"
+    ]
+  },
+  {
     "title": "Day 2",
     "date": "2025-03-25",
     "excerpt": "API:-Application programming Interface.",
