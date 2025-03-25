@@ -332,6 +332,8 @@
 
     <div id="message" class="message"></div>
 
+    <!-- Load environment variables configuration -->
+    <script src="env-config.js"></script>
     <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script>
@@ -344,8 +346,8 @@
         // Store reference to form submit handler so we can remove it later
         let formSubmitHandler;
         
-        // You can change this to your desired password
-        const correctPassword = "sudhi@46";
+        // Use environment variable for password if available, otherwise use fallback (development only)
+        const correctPassword = (window.ENV && window.ENV.ADMIN_PASSWORD) ? window.ENV.ADMIN_PASSWORD : "sudhi@46";
          
         // Check if user is already authenticated
         checkAuthentication();

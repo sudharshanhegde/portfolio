@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><script type="text/javascript" src="/___vscode_livepreview_injected_script"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Day 2 - Sudharshan Hegde's Blog</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css">
+    <style>
+        :root {
+            --primary: #2A5C82;
+            --secondary: #3B8AC4;
+            --dark: #1A2B3C;
+            --light: #F5F9FC;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 6rem 0 3rem;
+            text-align: center;
+            clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .header-excerpt {
+            max-width: 700px;
+            margin: 1rem auto 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        /* Navigation */
+        .nav-links {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-link {
+            background: rgba(255,255,255,0.1);
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            color: white;
+            text-decoration: none;
+            backdrop-filter: blur(10px);
+            transition: var(--transition);
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* Post content */
+        .post-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            padding: 3rem;
+            margin-top: -50px;
+            margin-bottom: 3rem;
+        }
+
+        .post-date {
+            color: var(--secondary);
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+
+        .post-title {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.3;
+        }
+
+        .post-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .tag {
+            background: rgba(59, 138, 196, 0.1);
+            color: var(--primary);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .post-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+
+        .post-content p {
+            margin-bottom: 1.5rem;
+        }
+
+        .post-content h2,
+        .post-content h3,
+        .post-content h4 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin-bottom: 1.5rem;
+            padding-left: 2rem;
+        }
+
+        .post-content pre {
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+            overflow: auto;
+        }
+
+        .post-content code {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+        }
+
+        .post-content blockquote {
+            border-left: 4px solid var(--primary);
+            padding-left: 1.5rem;
+            margin-left: 0;
+            margin-right: 0;
+            margin-bottom: 1.5rem;
+            font-style: italic;
+            color: #555;
+        }
+
+        .post-content img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 2rem 0;
+            color: #777;
+            font-size: 0.9rem;
+        }
+
+        .back-to-blog {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            transition: var(--transition);
+        }
+
+        .back-to-blog:hover {
+            background: var(--secondary);
+            transform: translateY(-3px);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link"><i class="fas fa-home"></i> Home</a>
+            <a href="blog.html" class="nav-link"><i class="fas fa-blog"></i> Blog</a>
+        </div>
+        <div class="container">
+            <h1>Day 2</h1>
+            <p class="header-excerpt">API:-Application programming Interface.</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <article class="post-container">
+            <span class="post-date">March 25, 2025</span>
+            <h1 class="post-title">Day 2</h1>
+            
+            <div class="post-tags">
+                <span class="tag">coding</span><span class="tag">web development</span>
+            </div>
+
+            <div class="post-content">
+                <p>API:- short for Application programming Interface is something that lets app talk to each other without exposing their code.</p>
+<p><strong>HOW DOES THE API WORK?</strong></p>
+<p>API runs on  simple cycle which is ask, process and answer.Well these is simple lets say if we are trying to post something on lets say instagram and then phone sends a request to instagram API telling can i post these picture of mine. Then the instagram API checks if i am a verified user and if i have the permission to post then it will be like yeah sure go ahead. And then the post goes live as simple as these it is gonna work.</p>
+<p><strong>Building blocks of APIS</strong></p>
+<p> API  has few key parts namely</p>
+<ol>
+<li>Endpoints</li>
+<li>HTTP methods </li>
+<li>Requests and Responses.</li>
+</ol>
+<p><strong>What are Endpoints?</strong></p>
+<p>Well lets think of it as a postbox at every village where all the postcards are gonna be sent. Its like a unique pincode something you use to send API does also have a unique url which helps us to request the data from the field that we want.</p>
+<p><strong>What are HTTP methods?</strong></p>
+<p>There are four brothers who come along together and have some particular things to be done.</p>
+<p>GET:-These fetches the data.Like loading those instagram posts which you obviously scroll for hours.</p>
+<p>Post:- These is how we post our data. Like uploading your lousy profile pictures on instagram (no offence)</p>
+<p>put/patch:- These is how we update our existing data. Like all those happy to share that... posts on linkedin which makes you scared that you are not going anywhere.</p>
+<p>Delete :- These will make things vanish.Thanos snapped to kill half of the universe.Well these does the full.Data ok not universe. </p>
+<p><strong>Requests and Responses</strong></p>
+<p>API takes our question or what we call a request and returns a response usually in gods second language JSON the format which both humans and machines can read.</p>
+<p><strong>Sizes of the APIs</strong></p>
+<p>Well like most things APIs come in different models:</p>
+<ol>
+<li>Public API :- These are some of those free or paid tools anyone can use like google maps api which lets you find location from find us page.</li>
+<li>Private API :- these are those behind the scene tools which are used internally in the companies like Amazons warehouse robots working together in coordinated way.</li>
+<li>Partner API :- These is something that is shared between partner companies something like netflix or amazon prime sharing API with smart TV brands.</li>
+<li>Composite APIs :- These are the multitaskers.These are something that bundles the multiple requests in to one like your favourite delivery apps having those meal deals where you can get all that you want.</li>
+</ol>
+<p><strong>REST vs SOAP</strong></p>
+<p>These is like fight between BIG SHOW and MARK HENRY..</p>
+<p>REST API :-It is a flexible options.It uses simple HTTP requests and return easy to read JSON. Most of the APPs use these.</p>
+<p>SOAP API:-These send XML data with strict protocols.These are used in banking and healthcare where security is very important.</p>
+<p><strong>HOW does the API Rule the world</strong>
+    <br>
+They are in Automation, they collobarate and integration brings the more powerful yet to be born and they are doors to the innovation where engineers are working seamlessly to reduce the fetch time..</p>
+<p>Until tommorow...</p>
+<p>Thank you for reading.</p>
+
+            </div>
+
+            <a href="blog.html" class="back-to-blog">
+                <i class="fas fa-arrow-left"></i> Back to Blog
+            </a>
+        </article>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 Sudharshan Hegde. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-cpp.min.js"></script>
+</body>
+</html>

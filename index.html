@@ -472,12 +472,15 @@
 
     <!-- Add EmailJS library -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <!-- Load environment variables configuration -->
+    <script src="env-config.js"></script>
     
     <script>
         // Initialize EmailJS
         (function() {
-            // Your EmailJS public key - you'll need to replace this with your actual public key
-            emailjs.init("lgrpUkm1V6VIAJ7Ys");
+            // Get EmailJS user ID from environment variables, fall back to default for development
+            const userId = (window.ENV && window.ENV.EMAILJS_USER_ID) ? window.ENV.EMAILJS_USER_ID : "lgrpUkm1V6VIAJ7Ys";
+            emailjs.init(userId);
         })();
         
         // Scroll Animations
@@ -518,13 +521,21 @@
             
             // Prepare template parameters
             const templateParams = {
-                name: this.name.value,
-                email: this.email.value,
-                message: this.message.value
+                from_name: this.name.value,
+                reply_to: this.email.value,
+                message: this.message.value,
+                to_name: "Sudharshan" // Add recipient name
             };
             
+            // Get service and template IDs from environment variables, fall back to defaults for development
+            const serviceId = (window.ENV && window.ENV.EMAILJS_SERVICE_ID) ? window.ENV.EMAILJS_SERVICE_ID : "service_2teabe3";
+            const templateId = (window.ENV && window.ENV.EMAILJS_TEMPLATE_ID) ? window.ENV.EMAILJS_TEMPLATE_ID : "template_futuaec";
+            
             // Send email using EmailJS
-            emailjs.send('service_2teabe3', 'template_futuaec', templateParams)
+            emailjs.send(serviceId, templateId, templateParams, {
+                // Add SSL/TLS configuration to avoid certificate issues
+                secure: true
+            })
                 .then(function() {
                     // Success
                     submitBtn.innerHTML = '<i class="fas fa-check"></i> Sent!';
@@ -545,6 +556,9 @@
                     formStatus.textContent = 'Sorry, there was a problem sending your message. Please try again.';
                     formStatus.style.color = '#f44336';
                 });
+                emailjs.on("error", (err) => {
+              console.log("EmailJS detailed error:", err);
+            });
         });
        
             document.querySelector('a[download]').addEventListener('click', function(e) {
