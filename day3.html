@@ -215,19 +215,19 @@
                 <p><strong>What are The Design Challenges in Network Layer</strong></p>
 <p>Internet is something like global postal service.There will be Billions of "packets" are sent every second through the cables satellites routers to reach their endpoint.For all these to be done someone has to avoid traffic jam and someone has to decide on which one will be the best pathway to be selected upon. Well all these is done by network layer.</p>
 <p><strong>Major challenges involved in design challenges are:</strong></p>
-<p><strong>1</strong>.Logical Adressing:(Internets own google Map)
+<p><strong>1.</strong>Logical Adressing:(Internets own google Map)
 Problem is every device will have its own MAC adress but it is like having the phone number we will know  who we will be contacting but not the location of the person who will be contacting.So for the data to be sent across globe we designed something more flexible.</p>
 <p><strong>IP adresses:</strong>
 Internet protocol adresses are something like digital adresses which comes in 2 version IPV4 and IPV6 and are unique for every device.What we do here is we called subnetting which is a fancy word for splitting the network into smaller chunks such that for example of a university we might have seperate subnets for dorms,labs and admin offices etc.
 These is very important because without these we wont be able to find the suitable address to send the data.</p>
-<p><strong>2</strong>.Routing : the art of packet GPS</p>
+<p><strong>2.</strong>.Routing : the art of packet GPS</p>
 <p>After finding out the address it is important for us to select the route so that packets can travel safely from one place to another and also in a high speed path.So how is that done.</p>
 <p>Solution is through the Routing algorithms:
 Distance Vector Algorithm:- Its like routers gossip with its neighbours about the number of hops to be done to reach destinations.It is simple but very slow.</p>
 <p>Link State Algorithm :- Here Routers map the entire networks topology and then use the fastest route. Its faster and smarter but it is resource heavy.Its like using google maps.</p>
 <p>BGP :-Its the postmaster general of INTERNET by routing the traffic between massive networks.</p>
 <p>Routing tables are like cheat sheet routers which are used to decide the paths.</p>
-<p><strong>3</strong>Fragmentation and Reassembly:-</p>
+<p><strong>3.</strong>Fragmentation and Reassembly:-</p>
 <p>Networks have the different Maximum transmission unit sizes so sending a large packet is like fitting whole pizza in small oven.</p>
 <p>The solution to these problem is:-
 Fragmentation :-These chops the packets into smaller slices
@@ -240,7 +240,7 @@ We have solutions such as ---
 Quality of Service :- where it prioritises the critical traffic such that lets say you are using zoom call and using email in the background so then what happens is zoom call will take a fast lane and other one will take the slow route.Its something like ambulance services where high priority are given the fast lane.</p>
 <p>Traffic shaping:-It limits the bandwidth for non urgent data so sometime when we are using the whatsapp and we are sending bunch of images and texts we can see that whatsapp images take a little more time to be sent then  the texts as the texts are high priority and will be sent in fast lane and we will be limiting the non urgent data.</p>
 <p>QOS is the reason why our calls stay clear even when someone on our same network is downloading game from torrent.</p>
-<p>**5.**Error handling and ICMP:-
+<p><strong>5.</strong>Error handling and ICMP:-
 These is like internets check engine light.</p>
 <p>so how will we know if a router is down or packets get lost? </p>
 <p>For these only we have ICMP :- which stands for Internet control message protocol its the networks troubleshooting kit.</p>
