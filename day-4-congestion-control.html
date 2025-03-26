@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><script type="text/javascript" src="/___vscode_livepreview_injected_script"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Day 4 congestion control - Sudharshan Hegde's Blog</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css">
+    <style>
+        :root {
+            --primary: #2A5C82;
+            --secondary: #3B8AC4;
+            --dark: #1A2B3C;
+            --light: #F5F9FC;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 6rem 0 3rem;
+            text-align: center;
+            clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .header-excerpt {
+            max-width: 700px;
+            margin: 1rem auto 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        /* Navigation */
+        .nav-links {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-link {
+            background: rgba(255,255,255,0.1);
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            color: white;
+            text-decoration: none;
+            backdrop-filter: blur(10px);
+            transition: var(--transition);
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* Post content */
+        .post-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            padding: 3rem;
+            margin-top: -50px;
+            margin-bottom: 3rem;
+        }
+
+        .post-date {
+            color: var(--secondary);
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+
+        .post-title {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.3;
+        }
+
+        .post-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .tag {
+            background: rgba(59, 138, 196, 0.1);
+            color: var(--primary);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .post-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+
+        .post-content p {
+            margin-bottom: 1.5rem;
+        }
+
+        .post-content h2,
+        .post-content h3,
+        .post-content h4 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin-bottom: 1.5rem;
+            padding-left: 2rem;
+        }
+
+        .post-content pre {
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+            overflow: auto;
+        }
+
+        .post-content code {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+        }
+
+        .post-content blockquote {
+            border-left: 4px solid var(--primary);
+            padding-left: 1.5rem;
+            margin-left: 0;
+            margin-right: 0;
+            margin-bottom: 1.5rem;
+            font-style: italic;
+            color: #555;
+        }
+
+        .post-content img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 2rem 0;
+            color: #777;
+            font-size: 0.9rem;
+        }
+
+        .back-to-blog {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            transition: var(--transition);
+        }
+
+        .back-to-blog:hover {
+            background: var(--secondary);
+            transform: translateY(-3px);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link"><i class="fas fa-home"></i> Home</a>
+            <a href="blog.html" class="nav-link"><i class="fas fa-blog"></i> Blog</a>
+        </div>
+        <div class="container">
+            <h1>Day 4 congestion control</h1>
+            <p class="header-excerpt">Congestion control at the transport layer.</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <article class="post-container">
+            <span class="post-date">March 27, 2025</span>
+            <h1 class="post-title">Day 4 congestion control</h1>
+            
+            <div class="post-tags">
+                <span class="tag">computer networks</span><span class="tag">congestion control</span><span class="tag">Transport layer</span>
+            </div>
+
+            <div class="post-content">
+                <p>Congestion occurs when there is too much data floods in the network,leading to packet loss, delays and degraded performance.</p>
+<p><strong>Congestion control matters because:-</strong>
+1.it prevents network overload.
+2.it minimizes the packet loss.
+3.ensure fair bandwidth allocation.
+4.maintain stable data transfer rates.</p>
+<p>Key congestion control mechanisms are:-</p>
+<p><strong>1.Slow start :-</strong></p>
+<p>These will graudally probe the network to find the optimal data rate without overwhelming it.</p>
+<p><strong>How these works is basically:-</strong></p>
+<p>1.start with small congestion window.
+2.it will double the window size every round trip time RTT until a threshold is reached or packet loss occurs.</p>
+<p>These is used in initial phase of data transfer in TCP.</p>
+<p><strong>Congestion avoidance :-</strong>
+these is used to stabilize data flow after the slow start phase.</p>
+<p><strong>How these works:-</strong></p>
+<p>1.It will increase the congestion window additively (increasing 1 segment per RTT)
+2.Then it will decrease the window multiplicatively on detecting packet loss.</p>
+<p>for example TCP Reno used AIMD(additive increase multiplicative decrease)</p>
+<p>3.Fast retransmit and fast recovery.</p>
+<p>These will quickly recover the packet loss without waiting for the timeout to occur.</p>
+<p><strong>how these works :-</strong></p>
+<p>fast retransmit:-If 3 duplicate ACKs are recieved then sender retransmits the lost packet immediately.</p>
+<p>fast recovery:- instead of resetting to slow start the window size is reduced and incremented gradually.</p>
+<p>it is used in TCP Reno and new RENO to improve the efficiency.</p>
+<p><strong>4.Explicit congestion notification:-</strong></p>
+<p>in these all router will explicitly signal congestion before packets are dropped.</p>
+<p><strong>How these works:-</strong>
+1.Router will mark the packets with ECN flag when congestion is detected.
+2. recievers notify senders to reduce their transmission rate.these will avoid congestion by reactive packet loss.</p>
+<p><strong>5. TCP CUBIC</strong>
+<strong>Purpose:</strong> Optimize congestion control for high-speed, long-distance networks (e.g., modern broadband).</p>
+<p><strong>How it works:</strong></p>
+<p>Uses a cubic function to adjust the congestion window size.</p>
+<p>Focuses on maximizing throughput while maintaining fairness.
+Used by: Default in Linux kernels.</p>
+<p><strong>6. BBR (Bottleneck Bandwidth and Round-trip propagation time)</strong>
+Purpose: Focus on actual network capacity rather than packet loss.</p>
+<p><strong>How it works:</strong></p>
+<p>Measures bandwidth and RTT to determine optimal data rates.</p>
+<p>Avoids filling network buffers, reducing latency.</p>
+<p>These control mechanisms ensure that internet remains robust and scalable.</p>
+
+            </div>
+
+            <a href="blog.html" class="back-to-blog">
+                <i class="fas fa-arrow-left"></i> Back to Blog
+            </a>
+        </article>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 Sudharshan Hegde. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-cpp.min.js"></script>
+</body>
+</html>

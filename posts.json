@@ -1,5 +1,16 @@
 [
   {
+    "title": "Day 4 congestion control",
+    "date": "2025-03-27",
+    "excerpt": "Congestion control at the transport layer.",
+    "filename": "day-4-congestion-control.html",
+    "tags": [
+      "computer networks",
+      "congestion control",
+      "Transport layer"
+    ]
+  },
+  {
     "title": "day 3 fourth normal form",
     "date": "2025-03-26",
     "excerpt": "Fourth Normal Form :- tackling multivalued dependencies\n",
