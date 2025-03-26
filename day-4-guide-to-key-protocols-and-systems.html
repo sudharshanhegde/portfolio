@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><script type="text/javascript" src="/___vscode_livepreview_injected_script"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Day 4 guide to key protocols and systems - Sudharshan Hegde's Blog</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css">
+    <style>
+        :root {
+            --primary: #2A5C82;
+            --secondary: #3B8AC4;
+            --dark: #1A2B3C;
+            --light: #F5F9FC;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 6rem 0 3rem;
+            text-align: center;
+            clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .header-excerpt {
+            max-width: 700px;
+            margin: 1rem auto 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        /* Navigation */
+        .nav-links {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-link {
+            background: rgba(255,255,255,0.1);
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            color: white;
+            text-decoration: none;
+            backdrop-filter: blur(10px);
+            transition: var(--transition);
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* Post content */
+        .post-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            padding: 3rem;
+            margin-top: -50px;
+            margin-bottom: 3rem;
+        }
+
+        .post-date {
+            color: var(--secondary);
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+
+        .post-title {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.3;
+        }
+
+        .post-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .tag {
+            background: rgba(59, 138, 196, 0.1);
+            color: var(--primary);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .post-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+
+        .post-content p {
+            margin-bottom: 1.5rem;
+        }
+
+        .post-content h2,
+        .post-content h3,
+        .post-content h4 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin-bottom: 1.5rem;
+            padding-left: 2rem;
+        }
+
+        .post-content pre {
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+            overflow: auto;
+        }
+
+        .post-content code {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+        }
+
+        .post-content blockquote {
+            border-left: 4px solid var(--primary);
+            padding-left: 1.5rem;
+            margin-left: 0;
+            margin-right: 0;
+            margin-bottom: 1.5rem;
+            font-style: italic;
+            color: #555;
+        }
+
+        .post-content img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 2rem 0;
+            color: #777;
+            font-size: 0.9rem;
+        }
+
+        .back-to-blog {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            transition: var(--transition);
+        }
+
+        .back-to-blog:hover {
+            background: var(--secondary);
+            transform: translateY(-3px);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link"><i class="fas fa-home"></i> Home</a>
+            <a href="blog.html" class="nav-link"><i class="fas fa-blog"></i> Blog</a>
+        </div>
+        <div class="container">
+            <h1>Day 4 guide to key protocols and systems</h1>
+            <p class="header-excerpt">Guide to Key protocols and Systems.</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <article class="post-container">
+            <span class="post-date">March 27, 2025</span>
+            <h1 class="post-title">Day 4 guide to key protocols and systems</h1>
+            
+            <div class="post-tags">
+                <span class="tag">computer networks</span><span class="tag">protocols</span><span class="tag">FTP</span><span class="tag">DNS</span><span class="tag">HTTP</span><span class="tag">WWW</span><span class="tag">SMTP</span>
+            </div>
+
+            <div class="post-content">
+                <p>Fundamental components of Internet.</p>
+<p><strong>1.Domain Name System(DNS)(port 53 UDP/TCP)</strong></p>
+<p>These translates the human readable domain names into machine readable IP addresses.</p>
+<p><strong>Key features:-</strong></p>
+<p>It supports hierarchial structure with root Toplevel domain and authoritative servers.</p>
+<p>It supports the record types like A(IPV4),AAAA(IPV6),MX(mail servers) and CNAME(aliases)</p>
+<p>without DNS we have to memorize IP addresses to access websites.</p>
+<p><strong>2.Hypertext Transfer Protocol(HTTP :- port no 80 ,HTTPS :-port no 443):-</strong></p>
+<p>it governs the communication between web browsers and servers to fetch resources(HTML,images etc)</p>
+<p><strong>Key features of the HTTP:-</strong></p>
+<p>Stateless :- No memory of previous interactions (sessions are managed using the cookies)</p>
+<p>it uses the methods like get(retrieve data),post(send data) and put(update data)</p>
+<p>HTTPS adds encryption via SSL/TLS for security.</p>
+<p>Status codes:-
+200 ok :- success.
+404 not found:- resource missing.
+500 internal server error :- it will be a server side issue.</p>
+<p><strong>3.Telnet(port number 23)</strong></p>
+<p>It is  a legacy protocol for remote terminal access to devices over the network.</p>
+<p>Key features:-</p>
+<p>unencrypted:- these will transmits data in plaintext (insecure).
+it is largely replaced by SSH(secure shell) which encrypts traffic.</p>
+<p>These is rarely used today except for debugging or legacy systems.</p>
+<p><strong>4.File transfer protocol(FTP port number 21)</strong></p>
+<p>These is used to transfer files between the client and server.</p>
+<p>features of the FTP are:-</p>
+<p>it uses two channels : control (commands) and data(file transfers).</p>
+<p>active vs passive mode: it determines how the data connections are established.</p>
+<p>security flaw:- the transmitted credentials and files are in plain text so modern alternatives have arrived such as SFTP and FTPS to encrypt the data.</p>
+<p><strong>5.World wide web:-</strong></p>
+<p>System of interlinked hypertext documents accessed via the internet.</p>
+<p>components are:-
+HTTP :- it is protocol for fetching the resources.
+HTML :- language for structuring the contents for the web.
+URLs(uniform resource locator):- these are the addresses to locate the resources.
+WWW is the service on the top of the internet.</p>
+<p>6.Simple mail transfer protocol(SMTP)</p>
+<p>it sends and routes the emails between the servers.</p>
+<p>1.it operates on the port 25.</p>
+<p>2.works with POP3(download emails) and IMAP(sync emails across devices)
+3.modern extensions like STARTTLS are used to encrypt email traffic.</p>
+<p>These protocols are the reason why our web works so smoothly.</p>
+
+            </div>
+
+            <a href="blog.html" class="back-to-blog">
+                <i class="fas fa-arrow-left"></i> Back to Blog
+            </a>
+        </article>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 Sudharshan Hegde. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-cpp.min.js"></script>
+</body>
+</html>

@@ -1,5 +1,20 @@
 [
   {
+    "title": "Day 4 guide to key protocols and systems",
+    "date": "2025-03-27",
+    "excerpt": "Guide to Key protocols and Systems.",
+    "filename": "day-4-guide-to-key-protocols-and-systems.html",
+    "tags": [
+      "computer networks",
+      "protocols",
+      "FTP",
+      "DNS",
+      "HTTP",
+      "WWW",
+      "SMTP"
+    ]
+  },
+  {
     "title": "Day 4 congestion control",
     "date": "2025-03-27",
     "excerpt": "Congestion control at the transport layer.",
