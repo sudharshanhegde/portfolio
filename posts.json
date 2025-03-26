@@ -1,5 +1,15 @@
 [
   {
+    "title": "Day 3 continuation of computer networks",
+    "date": "2025-03-26",
+    "excerpt": "Routing Algorithms:-Path finder for packets.",
+    "filename": "day-3-continuation-of-computer-networks.html",
+    "tags": [
+      "computer networks",
+      "routing algorithms"
+    ]
+  },
+  {
     "title": "Day 3",
     "date": "2025-03-26",
     "excerpt": "Network Layer :- Design Challenges.",
