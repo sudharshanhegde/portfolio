@@ -1,5 +1,17 @@
 [
   {
+    "title": "Day-3 IPV4 and IPV6",
+    "date": "2025-03-26",
+    "excerpt": "IPV4 and IPV6.",
+    "filename": "day3-ipv4-and-ipv6.html",
+    "tags": [
+      "computer networks",
+      "IPV4",
+      "IPV6",
+      "network layer"
+    ]
+  },
+  {
     "title": "Day 3 Continuation",
     "date": "2025-03-26",
     "excerpt": "Understanding Subnet Host Capacity.",
