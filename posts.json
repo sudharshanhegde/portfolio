@@ -1,5 +1,15 @@
 [
   {
+    "title": "day 4 pl/sql",
+    "date": "2025-03-27",
+    "excerpt": "Guide on PL/SQL in DBMS.",
+    "filename": "day-4-plsql.html",
+    "tags": [
+      "dbms",
+      "pl/sql"
+    ]
+  },
+  {
     "title": "Day 4 guide to key protocols and systems",
     "date": "2025-03-27",
     "excerpt": "Guide to Key protocols and Systems.",

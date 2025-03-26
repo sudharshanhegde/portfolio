@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><script type="text/javascript" src="/___vscode_livepreview_injected_script"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>hey - Sudharshan Hegde's Blog</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css">
+    <style>
+        :root {
+            --primary: #2A5C82;
+            --secondary: #3B8AC4;
+            --dark: #1A2B3C;
+            --light: #F5F9FC;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 6rem 0 3rem;
+            text-align: center;
+            clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .header-excerpt {
+            max-width: 700px;
+            margin: 1rem auto 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        /* Navigation */
+        .nav-links {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-link {
+            background: rgba(255,255,255,0.1);
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            color: white;
+            text-decoration: none;
+            backdrop-filter: blur(10px);
+            transition: var(--transition);
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* Post content */
+        .post-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            padding: 3rem;
+            margin-top: -50px;
+            margin-bottom: 3rem;
+        }
+
+        .post-date {
+            color: var(--secondary);
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+
+        .post-title {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.3;
+        }
+
+        .post-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .tag {
+            background: rgba(59, 138, 196, 0.1);
+            color: var(--primary);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .post-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+
+        .post-content p {
+            margin-bottom: 1.5rem;
+        }
+
+        .post-content h2,
+        .post-content h3,
+        .post-content h4 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin-bottom: 1.5rem;
+            padding-left: 2rem;
+        }
+
+        .post-content pre {
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+            overflow: auto;
+        }
+
+        .post-content code {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+        }
+
+        .post-content blockquote {
+            border-left: 4px solid var(--primary);
+            padding-left: 1.5rem;
+            margin-left: 0;
+            margin-right: 0;
+            margin-bottom: 1.5rem;
+            font-style: italic;
+            color: #555;
+        }
+
+        .post-content img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 2rem 0;
+            color: #777;
+            font-size: 0.9rem;
+        }
+
+        .back-to-blog {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            transition: var(--transition);
+        }
+
+        .back-to-blog:hover {
+            background: var(--secondary);
+            transform: translateY(-3px);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link"><i class="fas fa-home"></i> Home</a>
+            <a href="blog.html" class="nav-link"><i class="fas fa-blog"></i> Blog</a>
+        </div>
+        <div class="container">
+            <h1>hey</h1>
+            <p class="header-excerpt">eheh</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <article class="post-container">
+            <span class="post-date">March 26, 2025</span>
+            <h1 class="post-title">hey</h1>
+            
+            <div class="post-tags">
+                
+            </div>
+
+            <div class="post-content">
+                <p><strong>Procedural language extensions to sql</strong> in short <strong>pl/sql</strong> is portable and high performance language designed to enhance the sql's procedural capabilities.</p>
+<p>Lets say we are building a transactional system or a web application which will have complex database operation then PL/SQL will provide the advanced and robust tools.</p>
+<p>**What is PL/SQL?
+**
+Its a procedural oriented programming language developed by oracle to bridge the gap between the SQL's declarative nature and procedural programming needs.</p>
+<p><strong>It helps developers by enabling:-</strong>
+1.execute complex logic within the database.
+2.It reduces the network traffic by bundling the SQL statement into the blocks.
+3.it leverages the features like error handling,encapsulation and object oriented programming.</p>
+<p><strong>Features and Advantages of the PL/SQL</strong></p>
+<ol>
+<li><p>it helps in tight sql integration in such a way that it executes the queries and DML operations directly.</p>
+</li>
+<li><p>it has built in exception handling for robust applications</p>
+</li>
+<li><p>It organizes the code into procedures functions and packages so there is modularity.</p>
+</li>
+<li><p>We can create types,inheritance and polymorphism so we can say that there is object oriented programming support.</p>
+</li>
+<li><p>Its used in building the server pages and web applications.</p>
+</li>
+</ol>
+<p>PL/SQL combines querying and data transformation in one language which increase the productivity and also it has granular access which is controlled via roles and privileges.</p>
+<p><strong>Syntax and Structure of the PL/SQL:-</strong></p>
+<p>It is an block structure language . Each block consists of three sections which are declare begin and end.</p>
+<p>Declare : these is used to declare variables,cursors and types.</p>
+<p>begin: these is mandatory and it marks the beginning of the executable statements.</p>
+<p>exception : these is used for error handling.</p>
+<p>end: these marks the end of the code block.</p>
+<p>lets take an example </p>
+<p>DECLARE</p>
+<pre><code> MESSAGE VARCHAR2(20) := 'WELCOME TO MY BLOG';
+</code></pre>
+<p>BEGIN </p>
+<pre><code> DBMS_OUTPUT.PUT_LINE(MESSAGE);
+	 
+</code></pre>
+<p>END;</p>
+<p>THESE WILL RETURN THE OUTPUT AS WELCOME TO MY BLOG.</p>
+<p>**Data types and variables in PL/SQL **</p>
+<p>Data types in PL/SQL are :-</p>
+<p>numeric data types examples are NUMBER, PLS_INTEGER,BINARY_FLOAT.</p>
+<p>character data types examples are CHAR,VARCHAR2,CLOB ETC.</p>
+<p>Boolean data type example is BOOLEAN (TRUE,FALSE,NULL)</p>
+<p>date/time data type example is DATE,TIMESTAMP.</p>
+<p>how do we declare a variable in PL/SQL :-</p>
+<p>DECLARE</p>
+<pre><code>    salary NUMBER(10,2) := 50000.00; --these is constrained
+			
+			name VARCHAR(25); -- this is unconstrained.
+			
+</code></pre>
+<p>BEGIN </p>
+<pre><code>   --logic will be entered here
+		 
+</code></pre>
+<p>END;</p>
+<pre><code>    these marks end of the code block.
+			
+			
+			
+			
+			
+</code></pre>
+<p>We define a constant number by adding a name constant before the variable declaration.
+			
+			
+DECLARE</p>
+<pre><code>PI CONSTANT NUMBER := 3.14159;
+	
+	greeting varchar2(20) default 'welcome';
+	
+</code></pre>
+<p>BEGIN</p>
+<pre><code>DBMS_OUTPUT.PUT_LINE(greeting || 'value of PI' ||PI);
+	
+</code></pre>
+<p>END;</p>
+<p><strong>control structures:-</strong>
+		
+		
+DECLARE </p>
+<pre><code>score NUMBER = 85;
+	
+</code></pre>
+<p>BEGIN</p>
+<pre><code>IF score >= 90 then 
+	
+	     DBMS_OUTPUT.put_line('grade A');
+			 
+	ELSEIF score >= 75 then 
+	
+	      DBMS_OUTPUT.put_line('grade B');
+				
+	ELSE
+	
+	      DBMS_OUTPUT.put_line('grade C');
+				
+	END IF;
+	
+</code></pre>
+<p>END;</p>
+<p>these is the structure of the control conditions.</p>
+<p><strong>NEXT IS LOOPS:-</strong></p>
+<p><strong>structure of for loop will be as follows:-</strong></p>
+<p>BEGIN</p>
+<p>   for i IN 1 . . 5 LOOP
+	 
+	        DBMS_OUTPUT.put_line('count' || i);
+					
+		END LOOP;
+		
+END;</p>
+<p><strong>structure of while loop will be as follows:</strong></p>
+<p>declare</p>
+<pre><code> counter NUMBER := 1;
+	 
+</code></pre>
+<p>begin </p>
+<pre><code>  while counter <= 3 LOOP
+		
+		   DBMS_OUTPUT.put_line('counter' || counter);
+			 
+			 counter := counter + 1;
+			 
+			END LOOP;
+			
+</code></pre>
+<p>END;</p>
+<pre><code>**	Exception handling in PL/SQL**
+	
+the code will be as follows.
+
+
+DECLARE
+     dividend NUMBER := 10;
+		 
+		 divisor NUMBER := 0;
+		 
+		 result NUMBER;
+		 
+		 BEGIN
+		     result := dividend / divisor;
+			
+			EXCEPTION
+			    WHEN ZERO_DIVIDE THEN
+					       DBMS_OUTPUT.put_line("error division bys zero");
+				
+END;
+</code></pre>
+<p>**	Working with strings and arrays in the PL/SQL**
+	
+	
+we have some sample functions like TRIM which removes the empty spaces from the string provided and SUBSTR which gives us our desired substring when we specify the starting and end point of the string. we can use the UPPER function to make all the characters in upper case and similarly all in lower case by using LOWER function.</p>
+<p><strong>How we use arrays in PL/SQL is as follows:-</strong></p>
+<p><strong>VARRAY is the name of the array function.</strong></p>
+<p>DECLARE </p>
+<pre><code>	  TYPE NAMESARRAY IS VARRAY OF VARCHAR2(10);
+		
+		NAMES NAMESARRAY := NAMESARRAY('ALICE','BOB','MARLEY');
+		
+</code></pre>
+<p>BEGIN</p>
+<pre><code>FOR i IN 1 . . names.COUNT LOOP
+	
+	    DBMS_OUTPUT.put_line('name' || i || ':' || names(i));
+			
+		END LOOP;
+</code></pre>
+<p>END;</p>
+<p><strong>Cursor in PL/SQL:-</strong></p>
+<p>It is used to fetch data from queries into variables.</p>
+<p><strong>Syntax of the cursors is as follows:</strong></p>
+<p>DECLARE</p>
+<pre><code>CURSOR c_customers IS SELECT name FROM customers;
+	
+	c_name customers.name %TYPE;
+</code></pre>
+<p>BEGIN</p>
+<pre><code>	  OPEN c_customers;
+		
+		LOOP
+		
+		    FETCH c_customers INTO c_name;
+				
+				EXIT WHEN c_customers % NOTFOUND;
+				
+				DBMS_OUTPUT.put_line('customer' || c_name);
+				
+		END LOOP;
+	  
+		CLOSE c_customers;
+		
+</code></pre>
+<p>END;</p>
+<p><strong>Stored Procedures:-</strong></p>
+<p>It is used to create reusable code blocks:</p>
+<p>syntax of the stored procedures will be as follows:</p>
+<p>CREATE OR REPLACE PROCEDURE raise_salary(emp_id NUMBER,amount NUMBER) IS</p>
+<p>BEGIN</p>
+<pre><code> UPDATE employees SET salary = salary + amount WHERE id = emp_id;
+	 
+	 COMMIT;
+
+END;
+</code></pre>
+<p>PL/SQL empowers to build efficient,secure and scalable database applications.These helps us automating tasks with stored procedures or managing complex data with arrays.</p>
+
+            </div>
+
+            <a href="blog.html" class="back-to-blog">
+                <i class="fas fa-arrow-left"></i> Back to Blog
+            </a>
+        </article>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 Sudharshan Hegde. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-cpp.min.js"></script>
+</body>
+</html>
