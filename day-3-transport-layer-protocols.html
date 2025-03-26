@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><script type="text/javascript" src="/___vscode_livepreview_injected_script"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>day 3 transport layer protocols. - Sudharshan Hegde's Blog</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css">
+    <style>
+        :root {
+            --primary: #2A5C82;
+            --secondary: #3B8AC4;
+            --dark: #1A2B3C;
+            --light: #F5F9FC;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 6rem 0 3rem;
+            text-align: center;
+            clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .header-excerpt {
+            max-width: 700px;
+            margin: 1rem auto 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        /* Navigation */
+        .nav-links {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-link {
+            background: rgba(255,255,255,0.1);
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            color: white;
+            text-decoration: none;
+            backdrop-filter: blur(10px);
+            transition: var(--transition);
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* Post content */
+        .post-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            padding: 3rem;
+            margin-top: -50px;
+            margin-bottom: 3rem;
+        }
+
+        .post-date {
+            color: var(--secondary);
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+
+        .post-title {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.3;
+        }
+
+        .post-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .tag {
+            background: rgba(59, 138, 196, 0.1);
+            color: var(--primary);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .post-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+
+        .post-content p {
+            margin-bottom: 1.5rem;
+        }
+
+        .post-content h2,
+        .post-content h3,
+        .post-content h4 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin-bottom: 1.5rem;
+            padding-left: 2rem;
+        }
+
+        .post-content pre {
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+            overflow: auto;
+        }
+
+        .post-content code {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+        }
+
+        .post-content blockquote {
+            border-left: 4px solid var(--primary);
+            padding-left: 1.5rem;
+            margin-left: 0;
+            margin-right: 0;
+            margin-bottom: 1.5rem;
+            font-style: italic;
+            color: #555;
+        }
+
+        .post-content img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 2rem 0;
+            color: #777;
+            font-size: 0.9rem;
+        }
+
+        .back-to-blog {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            transition: var(--transition);
+        }
+
+        .back-to-blog:hover {
+            background: var(--secondary);
+            transform: translateY(-3px);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link"><i class="fas fa-home"></i> Home</a>
+            <a href="blog.html" class="nav-link"><i class="fas fa-blog"></i> Blog</a>
+        </div>
+        <div class="container">
+            <h1>day 3 transport layer protocols.</h1>
+            <p class="header-excerpt">Various elements of transport layer protocols.</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <article class="post-container">
+            <span class="post-date">March 26, 2025</span>
+            <h1 class="post-title">day 3 transport layer protocols.</h1>
+            
+            <div class="post-tags">
+                <span class="tag">transport layer</span><span class="tag">protocols</span><span class="tag">TCP</span><span class="tag">UDP</span>
+            </div>
+
+            <div class="post-content">
+                <p><strong>Building blocks of Transport layer protocols.</strong></p>
+<p>Transport layer is a crucial component of network communication it acts as a bridge between the applications we daily use and underlying network infrastructure. It ensures data is delivered efficiently reliably and securely between the devices.</p>
+<ol>
+<li>Connection Management:-</li>
+</ol>
+<p>TCP :- it uses the three way handshake (syn,syn-ack,ack) these will set up the reliable connection it will ensure both reciever and sender are ready before the data transfer begins.</p>
+<p>UDP:- it  is connectionless means there is no handshake it just sends the data its like your freind who sends reels on and on even if you watch or not watch.These is very fast and very unreliable.</p>
+<p>2.Reliability:-</p>
+<p>TCP :- It implements using acknowledgements and retransmissions so if the data is lost or not send we will resend it.</p>
+<p>UDP :- These has no reliability guarantees and packets can be lost duplicated and arrive out of order basically anything can happen and its not responsible for anything.</p>
+<p>3.Congestion control:</p>
+<p>TCP :- It will use algorithms like slow start and congestion avoidance so that we can adjust transmission rates based on the networks conditions.</p>
+<p>UDP:- It has no congestion control. It can contribute in network congestion if it is used carelessly.</p>
+<p>4.Flow control:-</p>
+<p>TCP:- it uses sliding window mechanism and reciever says how much data can be sent befor waiting for another acknowledgement.</p>
+<p>UDP:- well there is no such thing as flow control here.</p>
+<p>5.Multiplexing and Demultiplexing:</p>
+<p>These directs data to the correct application using the port numbers.</p>
+<p>ports are 16 bit identifiers(0-65535) in these (HTTP = 80 and HTTPS = 443)
+Both TCP an UDP will use the ports to ensure the data reaches the right process.</p>
+<p>6.Error checking:</p>
+<p>TCP/UDP :- both uses the checksums to verify the data integrity. 
+TCP goes further by repairing errors via retransmissions but the UDP just discards packets without any recovery.</p>
+<p>7.Segmentation and Reassembly:</p>
+<p>Breaking of large data chunks into smaller segments and reconstructions of them in the destination.</p>
+<p>TCP: segments are numbered for ordered delivery.</p>
+<p>UDP:- it treats each segment as independent datagrams.</p>
+<p>Use cases</p>
+<p>TCP is used in web browsing ,file transfers etc.</p>
+<p>UDP is used in streaming ,gaming ,VoIP etc.</p>
+<p>TCP is like a first bench topper who keeps everything organized and does everything in a proper way while UDP is like that last bench student who pulls the all nighter for the exam and somehow takes as good marks as the toppers. Use cases for both of them is different they are like humans only one prefers order while the other prefer chaos.</p>
+
+            </div>
+
+            <a href="blog.html" class="back-to-blog">
+                <i class="fas fa-arrow-left"></i> Back to Blog
+            </a>
+        </article>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 Sudharshan Hegde. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-cpp.min.js"></script>
+</body>
+</html>
