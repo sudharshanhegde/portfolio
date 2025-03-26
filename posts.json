@@ -1,5 +1,18 @@
 [
   {
+    "title": "day 3 dbms ",
+    "date": "2025-03-26",
+    "excerpt": "Dbms normalization 1NF,2NF and 3NF",
+    "filename": "day-3-dbms.html",
+    "tags": [
+      "dbms",
+      "normalization",
+      "1nf",
+      "2nf",
+      "3nf"
+    ]
+  },
+  {
     "title": "day 3 transport layer protocols.",
     "date": "2025-03-26",
     "excerpt": "Various elements of transport layer protocols.",
