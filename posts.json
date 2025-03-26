@@ -1,5 +1,16 @@
 [
   {
+    "title": "day 3 fourth normal form",
+    "date": "2025-03-26",
+    "excerpt": "Fourth Normal Form :- tackling multivalued dependencies\n",
+    "filename": "day-3-fourth-normal-form.html",
+    "tags": [
+      "dbms",
+      "4NF",
+      "normalization"
+    ]
+  },
+  {
     "title": "day 3 dbms ",
     "date": "2025-03-26",
     "excerpt": "Dbms normalization 1NF,2NF and 3NF",
