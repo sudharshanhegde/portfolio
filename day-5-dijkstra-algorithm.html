@@ -3,11 +3,11 @@
 <head><script type="text/javascript" src="/___vscode_livepreview_injected_script"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Day 5 guide to key protocols and systems - Sudharshan Hegde's Blog</title>
+    <title>day 5 - Sudharshan Hegde's Blog</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css">
     <style>
-        :root { 
+        :root {
             --primary: #2A5C82;
             --secondary: #3B8AC4;
             --dark: #1A2B3C;
@@ -197,63 +197,119 @@
             <a href="blog.html" class="nav-link"><i class="fas fa-blog"></i> Blog</a>
         </div>
         <div class="container">
-            <h1>Day 4 guide to key protocols and systems</h1>
-            <p class="header-excerpt">Guide to Key protocols and Systems.</p>
+            <h1>day 5</h1>
+            <p class="header-excerpt">dijkstra's algorithm</p>
         </div>
     </header>
 
     <main class="container">
         <article class="post-container">
-            <span class="post-date">March 27, 2025</span>
-            <h1 class="post-title">Day 4 guide to key protocols and systems</h1>
+            <span class="post-date">March 31, 2025</span>
+            <h1 class="post-title">day 5</h1>
             
             <div class="post-tags">
-                <span class="tag">computer networks</span><span class="tag">protocols</span><span class="tag">FTP</span><span class="tag">DNS</span><span class="tag">HTTP</span><span class="tag">WWW</span><span class="tag">SMTP</span>
+                <span class="tag">dijkstra</span>
             </div>
 
             <div class="post-content">
-                <p>Fundamental components of Internet.</p>
-<p><strong>1.Domain Name System(DNS)(port 53 UDP/TCP)</strong></p>
-<p>These translates the human readable domain names into machine readable IP addresses.</p>
-<p><strong>Key features:-</strong></p>
-<p>It supports hierarchial structure with root Toplevel domain and authoritative servers.</p>
-<p>It supports the record types like A(IPV4),AAAA(IPV6),MX(mail servers) and CNAME(aliases)</p>
-<p>without DNS we have to memorize IP addresses to access websites.</p>
-<p><strong>2.Hypertext Transfer Protocol(HTTP :- port no 80 ,HTTPS :-port no 443):-</strong></p>
-<p>it governs the communication between web browsers and servers to fetch resources(HTML,images etc)</p>
-<p><strong>Key features of the HTTP:-</strong></p>
-<p>Stateless :- No memory of previous interactions (sessions are managed using the cookies)</p>
-<p>it uses the methods like get(retrieve data),post(send data) and put(update data)</p>
-<p>HTTPS adds encryption via SSL/TLS for security.</p>
-<p>Status codes:-
-200 ok :- success.
-404 not found:- resource missing.
-500 internal server error :- it will be a server side issue.</p>
-<p><strong>3.Telnet(port number 23)</strong></p>
-<p>It is  a legacy protocol for remote terminal access to devices over the network.</p>
-<p>Key features:-</p>
-<p>unencrypted:- these will transmits data in plaintext (insecure).
-it is largely replaced by SSH(secure shell) which encrypts traffic.</p>
-<p>These is rarely used today except for debugging or legacy systems.</p>
-<p><strong>4.File transfer protocol(FTP port number 21)</strong></p>
-<p>These is used to transfer files between the client and server.</p>
-<p>features of the FTP are:-</p>
-<p>it uses two channels : control (commands) and data(file transfers).</p>
-<p>active vs passive mode: it determines how the data connections are established.</p>
-<p>security flaw:- the transmitted credentials and files are in plain text so modern alternatives have arrived such as SFTP and FTPS to encrypt the data.</p>
-<p><strong>5.World wide web:-</strong></p>
-<p>System of interlinked hypertext documents accessed via the internet.</p>
-<p>components are:-
-HTTP :- it is protocol for fetching the resources.
-HTML :- language for structuring the contents for the web.
-URLs(uniform resource locator):- these are the addresses to locate the resources.
-WWW is the service on the top of the internet.</p>
-<p>6.Simple mail transfer protocol(SMTP)</p>
-<p>it sends and routes the emails between the servers.</p>
-<p>1.it operates on the port 25.</p>
-<p>2.works with POP3(download emails) and IMAP(sync emails across devices)
-3.modern extensions like STARTTLS are used to encrypt email traffic.</p>
-<p>These protocols are the reason why our web works so smoothly.</p>
+                <p>In computer networks it is very important for us to route data packets efficiently between the nodes.So the fundamental problem is finding shortest path between the nodes which will minimize the latency and maximizes the bandwidth.</p>
+<p><strong>What is Dijkstra's Algorithm?</strong></p>
+<p>Dijkstra Algorithm helps us find the shortest path from source node to all other nodes in a weighted graph.It is very widely used in OSPF. These algorithm maintains priority queue so that we can greedily select the closest node and update the distance to its neighbors.</p>
+<p>the code for the following will be:-</p>
+<pre><code>     #include<iostream>
+     #include<vector>
+		 #include<queue>
+		 #include<climits>
+		 #include<utility>
+		 #include<unistd.h>
+		 
+		 using namespace std;
+		 
+		 class Graph{
+		      int numNodes;
+					vector<vector<pair<int,int>>>adjList;
+					
+					public:
+					   Graph(int n) : numNodes(n),adjList(n) {}
+						 
+						 void addEdge(int src,int dest,int weight)
+						 {
+						    adjList[src].push_back({dest,weight});
+								adjList[dest].push_back({src,weight});
+							}
+							
+							vector<int> dijkstra(int start)
+							{
+							   vector<int> dist(numNodes,INT_MAX);
+								 priority_queue<pair<int,int>,vector<pair<int,int>>,greater<pair<int,int>>> pq;
+							
+						  dist[start] = 0;
+							pq.push({0,start});
+							while(!pq.empty())
+              {
+							  int currentDist = pq.top().first;
+								int currentNode = pq.top().second;
+								pq.pop();
+								if(currentDist > dist[currentNode])
+								{
+								  continue;
+								}
+								for(auto &neighbor : adjList[currentNode])
+							  {
+								  int nextNode = neighbor.first;
+									int edgeWeight = neighbor.second;
+									if(dist[nextNode] > dist[currentNode] + edgeWeight)
+									{
+									   dist[nextNode] = dist[currentNode] + edgeWeight;
+										 pq.push({dist[nextNode] ,nextNode});
+									}
+							}
+					}
+	};
+	 
+	 int main()
+	 {
+         int numNodes,numEdges;
+				 cout << "enter the number of nodes (6-10):";
+				 cin >> numNodes;
+				 Graph g(numNodes);
+				 cout << " enter the number of edges:";
+				 cin >> numEdges;
+				 
+				 for(int i = 0;i < numEdges;++i)
+				 {
+				  int src,dest,weight;
+					char bidirectional;
+					cout << "Edge" <<i+1 ;
+					cout << " enter the source node:";
+					cin >> src;
+					cout << "enter the destination node:";
+					cin >> dest;
+					cout << " enter the edge weight ";
+					cin >> weight ;
+					cout << " bidirectional? (y/n) ";
+					cin >> bidirectional;
+					
+					g.addEdge(src,dest,weight,(bidirectional == 'y'));
+					}
+					
+					int source;
+					cout << " enter source node " ;
+					cin >> source;
+					
+					vector<int> distances = g.dijkstra(source);
+					cout << " shortest distances from the node " << source;
+					
+					for(int i = 0;i < numNodes; ++i)
+					{
+					    cout << "node " << i << ":" << (distances[i] == INT_MAX ? "unreachable" : to_string(distances[i])) ;
+							}
+							return 0;
+							
+							}
+			```
+					
+</code></pre>
 
             </div>
 

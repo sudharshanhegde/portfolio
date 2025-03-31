@@ -1,5 +1,15 @@
 [
   {
+    "title": "DAY 5 dijkstra Algorithm",
+    "date": "2025-03-31",
+    "excerpt": "SHORTEST PATH IN NETWORK OF 6 TO 10 NODES.",
+    "filename": "day-5-dijkstra-algorithm.html",
+    "tags": [
+      "computer networks",
+      "dijkstra algorithm"
+    ]
+  },
+  {
     "title": "day 4 pl/sql",
     "date": "2025-03-27",
     "excerpt": "Guide on PL/SQL in DBMS.",
