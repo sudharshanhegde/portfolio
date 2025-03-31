@@ -216,18 +216,19 @@
 <p><strong>What is Dijkstra's Algorithm?</strong></p>
 <p>Dijkstra Algorithm helps us find the shortest path from source node to all other nodes in a weighted graph.It is very widely used in OSPF. These algorithm maintains priority queue so that we can greedily select the closest node and update the distance to its neighbors.</p>
 <p>the code for the following will be:-</p>
-<pre><code>     #include<iostream>
-     #include<vector>
-		 #include<queue>
-		 #include<climits>
-		 #include<utility>
-		 #include<unistd.h>
+<pre><code>    
+        #include<'iostream'>
+        #include<'vector'>
+		 #include<'queue'>
+		 #include<'climits'>
+		 #include<'utility'>
+		 #include<'unistd.h'>
 		 
 		 using namespace std;
 		 
 		 class Graph{
 		      int numNodes;
-					vector<vector<pair<int,int>>>adjList;
+					vector<'vector<'pair<'int,int'>>'>adjList;
 					
 					public:
 					   Graph(int n) : numNodes(n),adjList(n) {}
@@ -238,10 +239,10 @@
 								adjList[dest].push_back({src,weight});
 							}
 							
-							vector<int> dijkstra(int start)
+							vector<'int'> dijkstra(int start)
 							{
-							   vector<int> dist(numNodes,INT_MAX);
-								 priority_queue<pair<int,int>,vector<pair<int,int>>,greater<pair<int,int>>> pq;
+							   vector<'int'> dist(numNodes,INT_MAX);
+								 priority_queue<'pair<'int,int''>,vector<'pair<'int,int''>>,greater<'pair<'int,int''>>> pq;
 							
 						  dist[start] = 0;
 							pq.push({0,start});
@@ -280,8 +281,8 @@
 				 {
 				  int src,dest,weight;
 					char bidirectional;
-					cout << "Edge" <<i+1 ;
-					cout << " enter the source node:";
+					cout << "Edge" <<'i+1' ;
+					cout <<  enter the source node: ;
 					cin >> src;
 					cout << "enter the destination node:";
 					cin >> dest;
@@ -297,7 +298,7 @@
 					cout << " enter source node " ;
 					cin >> source;
 					
-					vector<int> distances = g.dijkstra(source);
+					vector<'int'> distances = g.dijkstra(source);
 					cout << " shortest distances from the node " << source;
 					
 					for(int i = 0;i < numNodes; ++i)
