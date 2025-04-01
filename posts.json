@@ -1,5 +1,16 @@
 [
   {
+    "title": "day 6 mysql guide",
+    "date": "2025-04-01",
+    "excerpt": "Brief summary about mysql.",
+    "filename": "day-6-mysql-guide.html",
+    "tags": [
+      "mysql",
+      "dbms",
+      "essential"
+    ]
+  },
+  {
     "title": "DAY 5 dijkstra Algorithm",
     "date": "2025-03-31",
     "excerpt": "SHORTEST PATH IN NETWORK OF 6 TO 10 NODES.",

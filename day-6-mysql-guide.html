@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><script type="text/javascript" src="/___vscode_livepreview_injected_script"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>day 6 mysql guide - Sudharshan Hegde's Blog</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css">
+    <style>
+        :root {
+            --primary: #2A5C82;
+            --secondary: #3B8AC4;
+            --dark: #1A2B3C;
+            --light: #F5F9FC;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 6rem 0 3rem;
+            text-align: center;
+            clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .header-excerpt {
+            max-width: 700px;
+            margin: 1rem auto 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        /* Navigation */
+        .nav-links {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-link {
+            background: rgba(255,255,255,0.1);
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            color: white;
+            text-decoration: none;
+            backdrop-filter: blur(10px);
+            transition: var(--transition);
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* Post content */
+        .post-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            padding: 3rem;
+            margin-top: -50px;
+            margin-bottom: 3rem;
+        }
+
+        .post-date {
+            color: var(--secondary);
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+
+        .post-title {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.3;
+        }
+
+        .post-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .tag {
+            background: rgba(59, 138, 196, 0.1);
+            color: var(--primary);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .post-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+
+        .post-content p {
+            margin-bottom: 1.5rem;
+        }
+
+        .post-content h2,
+        .post-content h3,
+        .post-content h4 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin-bottom: 1.5rem;
+            padding-left: 2rem;
+        }
+
+        .post-content pre {
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+            overflow: auto;
+        }
+
+        .post-content code {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+        }
+
+        .post-content blockquote {
+            border-left: 4px solid var(--primary);
+            padding-left: 1.5rem;
+            margin-left: 0;
+            margin-right: 0;
+            margin-bottom: 1.5rem;
+            font-style: italic;
+            color: #555;
+        }
+
+        .post-content img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 2rem 0;
+            color: #777;
+            font-size: 0.9rem;
+        }
+
+        .back-to-blog {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            transition: var(--transition);
+        }
+
+        .back-to-blog:hover {
+            background: var(--secondary);
+            transform: translateY(-3px);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link"><i class="fas fa-home"></i> Home</a>
+            <a href="blog.html" class="nav-link"><i class="fas fa-blog"></i> Blog</a>
+        </div>
+        <div class="container">
+            <h1>day 6 mysql guide</h1>
+            <p class="header-excerpt">Brief summary about mysql.</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <article class="post-container">
+            <span class="post-date">April 1, 2025</span>
+            <h1 class="post-title">day 6 mysql guide</h1>
+            
+            <div class="post-tags">
+                <span class="tag">mysql</span><span class="tag">dbms</span><span class="tag">essential</span>
+            </div>
+
+            <div class="post-content">
+                <h1>MySQL More Like Your SQL 😂</h1>
+<p>MySQL is a database language used for syntax definition, data definition, data manipulation, etc.  </p>
+<h2>Why is MySQL Important?</h2>
+<p>It is like a superpower for managing data. We store everything in a structured format, as its name suggests—<strong>Structured Query Language (SQL).</strong>  </p>
+<hr>
+<h2>Creating, Using, and Manipulating Data in the Database</h2>
+<p>As always, we start with the first step, which is <strong>creating the database</strong>. It’s like a <strong>digital filing cabinet</strong> where we organize related data.  </p>
+<h3><strong>Step 1: Creating the Database</strong></h3>
+<p>To create a database, use the following SQL command:  </p>
+<pre><code class="language-sql">CREATE DATABASE my_online_shop;
+</code></pre>
+<p>This will create the database.  </p>
+<h3><strong>Step 2: Using the Database</strong></h3>
+<p>To use the database we just created, we use:  </p>
+<pre><code class="language-sql">USE my_online_shop;
+</code></pre>
+<p>This helps us access the database.  </p>
+<hr>
+<h3><strong>Step 3: Creating Tables</strong></h3>
+<p>Tables have <strong>rows and columns</strong>, like a spreadsheet in our database.  </p>
+<h4>Example: Creating a "users" Table</h4>
+<pre><code class="language-sql">CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50),
+    email VARCHAR(100),
+    signup_date DATE
+);
+</code></pre>
+<h4><strong>Explanation:</strong></h4>
+<ul>
+<li><code>id INT AUTO_INCREMENT PRIMARY KEY</code> → The <strong>primary key</strong> ensures uniqueness and is automatically incremented.  </li>
+<li><code>name VARCHAR(50)</code> → Can store up to 50 characters.  </li>
+<li><code>email VARCHAR(100)</code> → Stores emails.  </li>
+<li><code>signup_date DATE</code> → Stores the date of signup.</li>
+</ul>
+<blockquote>
+<p><strong>Foreign Key</strong>: A primary key from another table, used to establish relationships between tables.  </p>
+</blockquote>
+<hr>
+<h3><strong>Step 4: Inserting Data into the Table</strong></h3>
+<p>To insert a record into the "users" table:  </p>
+<pre><code class="language-sql">INSERT INTO users (name, email, signup_date)
+VALUES ('bete', 'bete@gmail.com', '2024-10-12');
+</code></pre>
+<hr>
+<h2><strong>Manipulating Data in SQL</strong></h2>
+<h3><strong>Retrieving Data</strong></h3>
+<h4>Get all users:</h4>
+<pre><code class="language-sql">SELECT * FROM users;
+</code></pre>
+<h4>Get only specific columns (name and email):</h4>
+<pre><code class="language-sql">SELECT name, email FROM users;
+</code></pre>
+<h4>Get a user by signup date:</h4>
+<pre><code class="language-sql">SELECT name FROM users WHERE signup_date = '2024-10-01';
+</code></pre>
+<h4>Order users alphabetically:</h4>
+<pre><code class="language-sql">SELECT * FROM users ORDER BY name ASC;
+</code></pre>
+<hr>
+<h3><strong>Updating Data</strong></h3>
+<p>If there is a typo in the name, update it using:  </p>
+<pre><code class="language-sql">UPDATE users SET name = 'king' WHERE name = 'beta';
+</code></pre>
+<hr>
+<h3><strong>Deleting Data</strong></h3>
+<h4>Delete a specific user (ID = 100):</h4>
+<pre><code class="language-sql">DELETE FROM users WHERE id = 100;
+</code></pre>
+<hr>
+<h2><strong>Advanced SQL Queries</strong></h2>
+<h3><strong>Joining Tables</strong></h3>
+<p>We have <strong>users</strong> and <strong>orders</strong> tables, and we need to join them using <code>user_id</code>:  </p>
+<pre><code class="language-sql">SELECT users.name, orders.total
+FROM users
+INNER JOIN orders ON users.id = orders.user_id;
+</code></pre>
+<hr>
+<h3><strong>Grouping Data</strong></h3>
+<p>To count users by country:  </p>
+<pre><code class="language-sql">SELECT country, COUNT(*) AS user_count
+FROM users
+GROUP BY country;
+</code></pre>
+<hr>
+<h2><strong>Altering Tables</strong></h2>
+<h3><strong>Add a new column (phone number):</strong></h3>
+<pre><code class="language-sql">ALTER TABLE users ADD COLUMN phone VARCHAR(15);
+</code></pre>
+<h3><strong>Modify the phone column size:</strong></h3>
+<pre><code class="language-sql">ALTER TABLE users MODIFY COLUMN phone VARCHAR(12);
+</code></pre>
+<h3><strong>Drop a column:</strong></h3>
+<pre><code class="language-sql">ALTER TABLE users DROP COLUMN phone;
+</code></pre>
+<hr>
+<h2><strong>Dropping Databases and Tables</strong></h2>
+<h3><strong>Drop an entire database:</strong></h3>
+<pre><code class="language-sql">DROP DATABASE my_online_shop;
+</code></pre>
+<h3><strong>Drop only a table (users):</strong></h3>
+<pre><code class="language-sql">DROP TABLE users;
+</code></pre>
+<hr>
+<h2><strong>Deleting All Data from a Table</strong></h2>
+<h3><strong>Delete all rows but allow undo:</strong></h3>
+<pre><code class="language-sql">DELETE FROM users;
+</code></pre>
+<h3><strong>Delete all rows (irreversible action):</strong></h3>
+<pre><code class="language-sql">TRUNCATE TABLE users;
+</code></pre>
+<hr>
+<h2><strong>Creating a View</strong></h2>
+<p>Views act as <strong>virtual tables</strong> that simplify complex queries and restrict access to sensitive data.  </p>
+<pre><code class="language-sql">CREATE VIEW active_customers AS 
+SELECT name, email 
+FROM users 
+WHERE status = "active";
+</code></pre>
+<hr>
+<h2><strong>Additional Information</strong></h2>
+<ul>
+<li><strong>Unique Keys:</strong> Ensures unique values but allows NULL values.  </li>
+<li><strong>Composite Key:</strong> A primary key made by combining two or more columns.  </li>
+<li><strong>Indexes:</strong> Speed up searches in specific columns.</li>
+</ul>
+<h4><strong>Example: Creating an Index</strong></h4>
+<pre><code class="language-sql">CREATE INDEX idx_email ON users(email);
+</code></pre>
+<hr>
+<p>This is a <strong>brief summary</strong> of MySQL. 🚀</p>
+
+            </div>
+
+            <a href="blog.html" class="back-to-blog">
+                <i class="fas fa-arrow-left"></i> Back to Blog
+            </a>
+        </article>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 Sudharshan Hegde. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-cpp.min.js"></script>
+</body>
+</html>
