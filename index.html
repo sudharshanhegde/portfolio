@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,20 +8,21 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <a href="blog.html" class="nav-link"><i class="fas fa-blog"></i> Blog</a>
     <style>
-        :root {
+         :root {
             --primary: #2A5C82;
             --secondary: #3B8AC4;
             --dark: #1A2B3C;
             --light: #F5F9FC;
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-
+        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: 'Poppins', sans-serif;
         }
+        
         .nav-link {
             position: fixed;
             top: 20px;
@@ -32,31 +34,32 @@
             color: white !important;
             text-decoration: none;
             font-weight: 600;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
             display: flex;
             align-items: center;
             gap: 0.8rem;
             transition: var(--transition);
-            border: 2px solid rgba(255,255,255,0.3);
+            border: 2px solid rgba(255, 255, 255, 0.3);
         }
         
         .nav-link:hover {
             background: var(--secondary);
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
         }
         
         .nav-link i {
             font-size: 1.2rem;
         }
+        
         body {
             background-color: var(--light);
             color: var(--dark);
             line-height: 1.6;
             overflow-x: hidden;
         }
-
         /* Animated Header */
+        
         header {
             background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             color: white;
@@ -64,42 +67,44 @@
             text-align: center;
             clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
         }
-
+        
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 0 2rem;
+            width: 100%;
         }
-
+        
         .profile-photo {
             width: auto;
             height: 300px;
             border-radius: 50%;
-            border: 3px solid rgba(255,255,255,0.2);
+            border: 3px solid rgba(255, 255, 255, 0.2);
             margin-bottom: 1.5rem;
             transition: var(--transition);
             cursor: pointer;
         }
-
+        
         .profile-photo:hover {
             transform: scale(1.05);
             border-color: white;
         }
-
+        
         .social-links {
             margin-top: 1.5rem;
             display: flex;
             justify-content: center;
             gap: 1.5rem;
+            flex-wrap: wrap;
         }
-
+        
         .social-links a {
             color: white;
             font-size: 1.5rem;
             position: relative;
             transition: var(--transition);
         }
-
+        
         .social-links a::after {
             content: '';
             position: absolute;
@@ -110,31 +115,31 @@
             background: white;
             transition: var(--transition);
         }
-
+        
         .social-links a:hover::after {
             width: 100%;
         }
-
         /* Sections Animation */
+        
         section {
             padding: 6rem 0;
             opacity: 0;
             transform: translateY(20px);
             transition: var(--transition);
         }
-
+        
         section.visible {
             opacity: 1;
             transform: translateY(0);
         }
-
+        
         .section-title {
             text-align: center;
             margin-bottom: 3rem;
             font-size: 2.5rem;
             position: relative;
         }
-
+        
         .section-title::after {
             content: '';
             position: absolute;
@@ -145,36 +150,36 @@
             height: 3px;
             background: var(--primary);
         }
-
         /* Skills Grid */
+        
         .skills-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 2rem;
         }
-
+        
         .skill-card {
             background: white;
             padding: 2rem;
             border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             transition: var(--transition);
             cursor: pointer;
         }
-
+        
         .skill-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
         }
-
         /* Timeline */
+        
         .timeline {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 3rem;
             position: relative;
         }
-
+        
         .timeline::before {
             content: '';
             position: absolute;
@@ -185,48 +190,48 @@
             background: var(--primary);
             transform: translateX(-50%);
         }
-
+        
         .timeline-item {
             background: white;
             padding: 2rem;
             border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             transition: var(--transition);
         }
-
+        
         .timeline-item:hover {
             transform: translateY(-3px);
         }
-
         /* Projects */
+        
         .projects-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 2rem;
         }
-
+        
         .project-card {
             background: white;
             border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             transition: var(--transition);
         }
-
+        
         .project-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
         }
-
+        
         .project-content {
             padding: 2rem;
         }
-
+        
         .project-links {
             margin-top: 1.5rem;
             display: flex;
             gap: 1rem;
         }
-
+        
         .project-link {
             display: inline-flex;
             align-items: center;
@@ -237,32 +242,32 @@
             text-decoration: none;
             transition: var(--transition);
         }
-
+        
         .project-link:hover {
             background: var(--secondary);
         }
-
         /* Contact Section */
+        
         .contact-section {
             background: var(--dark);
             color: white;
             padding: 6rem 0;
             clip-path: polygon(0 10%, 100% 0, 100% 100%, 0 100%);
         }
-
+        
         .contact-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 3rem;
         }
-
+        
         .contact-info p {
             margin-bottom: 1rem;
             display: flex;
             align-items: center;
             gap: 1rem;
         }
-
+        
         .contact-form input,
         .contact-form textarea {
             width: 100%;
@@ -270,17 +275,17 @@
             margin-bottom: 1.5rem;
             border: none;
             border-radius: 8px;
-            background: rgba(255,255,255,0.1);
+            background: rgba(255, 255, 255, 0.1);
             color: white;
             transition: var(--transition);
         }
-
+        
         .contact-form input:focus,
         .contact-form textarea:focus {
             outline: none;
-            background: rgba(255,255,255,0.2);
+            background: rgba(255, 255, 255, 0.2);
         }
-
+        
         .btn {
             background: var(--secondary);
             color: white;
@@ -293,13 +298,29 @@
             align-items: center;
             gap: 0.5rem;
         }
-
+        
         .btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
-
+        
         @media (max-width: 768px) {
+            header {
+                padding: 6rem 0 3rem;
+            }
+            .profile-photo {
+                height: 200px;
+            }
+            .container {
+                padding: 0 1.5rem;
+            }
+            .nav-link {
+                padding: 0.75rem 1.5rem;
+                font-size: 0.9rem;
+            }
+            .section-title {
+                font-size: 2rem;
+            }
             .timeline {
                 grid-template-columns: 1fr;
             }
@@ -312,9 +333,66 @@
             section {
                 padding: 4rem 0;
             }
+            .skills-grid,
+            .projects-grid {
+                grid-template-columns: 1fr;
+            }
+            .social-links {
+                flex-direction: column;
+                align-items: center;
+                gap: 1rem;
+            }
+            .social-links a.btn {
+                padding: 0.75rem 1.5rem;
+                font-size: 0.9rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            header {
+                padding: 5rem 0 2.5rem;
+            }
+            .profile-photo {
+                height: 150px;
+            }
+            .container {
+                padding: 0 1rem;
+            }
+            .section-title {
+                font-size: 1.75rem;
+                margin-bottom: 2rem;
+            }
+            .contact-section {
+                clip-path: polygon(0 5%, 100% 0, 100% 100%, 0 100%);
+            }
+            section {
+                padding: 3rem 0;
+            }
+            .skill-card,
+            .timeline-item,
+            .project-card {
+                padding: 1.5rem;
+            }
+            .project-link {
+                width: 100%;
+                justify-content: center;
+            }
+            .project-links {
+                flex-direction: column;
+            }
+            .nav-link {
+                top: 10px;
+                left: 10px;
+                padding: 0.5rem 1rem;
+                font-size: 0.8rem;
+            }
+            .nav-link i {
+                font-size: 1rem;
+            }
         }
     </style>
 </head>
+
 <body>
     <header>
         <div class="container">
@@ -335,8 +413,9 @@
     <section class="about">
         <div class="container">
             <h2 class="section-title">About Me</h2>
-            <p class="about-text">Aspiring Software Engineer with strong foundation in C, C++, Python, currently pursuing B.Tech in Computer Science at UVCE. Passionate about problem solving, algorithms, and backend development. Actively enhancing skills through daily DSA practice and IBM's Backend Development Course.</p>
-            
+            <p class="about-text">Aspiring Software Engineer with strong foundation in C, C++, Python, currently pursuing B.Tech in Computer Science at UVCE. Passionate about problem solving, algorithms, and backend development. Actively enhancing skills through daily DSA
+                practice and IBM's Backend Development Course.</p>
+
             <br>
             <div class="skills-grid">
                 <div class="skill-card">
@@ -349,7 +428,7 @@
                         <li>Linux/Shell Scripting</li>
                     </ul>
                 </div>
-                
+
                 <div class="skill-card">
                     <h3>Certifications</h3>
                     <ul>
@@ -372,7 +451,7 @@
                     <p>B.Tech in Computer Science</p>
                     <p>2022 - Present</p>
                 </div>
-                
+
                 <div class="timeline-item">
                     <h3>Quantech Origin</h3>
                     <p>Soft Skills Intern</p>
@@ -405,34 +484,31 @@
                         <div class="project-links">
                             <!-- Add project repository link -->
                             <a href="https://github.com/sudharshanhegde/passwordManager" class="project-link" target="_blank">
-                                <i class="fab fa-github"></i>
-                                View Code
+                                <i class="fab fa-github"></i> View Code
                             </a>
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="project-card">
                     <div class="project-content">
                         <h3>Covid-19 Tracker</h3>
                         <p>Real-time pandemic data visualization website</p>
                         <div class="project-links">
                             <a href="https://github.com/sudharshanhegde/covid" class="project-link" target="_blank">
-                                <i class="fab fa-github"></i>
-                                View Code
+                                <i class="fab fa-github"></i> View Code
                             </a>
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="project-card">
                     <div class="project-content">
                         <h3>Art Gallery Website</h3>
                         <p>Full-stack digital art exhibition platform</p>
                         <div class="project-links">
                             <a href="https://github.com/sudharshanhegde/picksartMiniProjectDbms" class="project-link" target="_blank">
-                                <i class="fab fa-github"></i>
-                                View Code
+                                <i class="fab fa-github"></i> View Code
                             </a>
                         </div>
                     </div>
@@ -474,7 +550,7 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <!-- Load environment variables configuration -->
     <script src="env-config.js"></script>
-    
+
     <script>
         // Initialize EmailJS
         (function() {
@@ -482,7 +558,7 @@
             const userId = (window.ENV && window.ENV.EMAILJS_USER_ID) ? window.ENV.EMAILJS_USER_ID : "lgrpUkm1V6VIAJ7Ys";
             emailjs.init(userId);
         })();
-        
+
         // Scroll Animations
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
@@ -490,7 +566,9 @@
                     entry.target.classList.add('visible');
                 }
             });
-        }, { threshold: 0.1 });
+        }, {
+            threshold: 0.1
+        });
 
         document.querySelectorAll('section').forEach(section => {
             observer.observe(section);
@@ -498,7 +576,7 @@
 
         // Smooth Scroll
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
+            anchor.addEventListener('click', function(e) {
                 e.preventDefault();
                 document.querySelector(this.getAttribute('href')).scrollIntoView({
                     behavior: 'smooth'
@@ -509,16 +587,16 @@
         // Form Submission
         document.getElementById('contact-form').addEventListener('submit', function(e) {
             e.preventDefault();
-            
+
             // Show sending status
             const submitBtn = document.getElementById('submit-btn');
             const formStatus = document.getElementById('form-status');
             const originalBtnText = submitBtn.innerHTML;
-            
+
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
             formStatus.textContent = '';
-            
+
             // Prepare template parameters
             const templateParams = {
                 from_name: this.name.value,
@@ -526,22 +604,22 @@
                 message: this.message.value,
                 to_name: "Sudharshan" // Add recipient name
             };
-            
+
             // Get service and template IDs from environment variables, fall back to defaults for development
             const serviceId = (window.ENV && window.ENV.EMAILJS_SERVICE_ID) ? window.ENV.EMAILJS_SERVICE_ID : "service_2teabe3";
             const templateId = (window.ENV && window.ENV.EMAILJS_TEMPLATE_ID) ? window.ENV.EMAILJS_TEMPLATE_ID : "template_futuaec";
-            
+
             // Send email using EmailJS
             emailjs.send(serviceId, templateId, templateParams, {
-                // Add SSL/TLS configuration to avoid certificate issues
-                secure: true
-            })
+                    // Add SSL/TLS configuration to avoid certificate issues
+                    secure: true
+                })
                 .then(function() {
                     // Success
                     submitBtn.innerHTML = '<i class="fas fa-check"></i> Sent!';
                     formStatus.textContent = 'Thank you for your message! I will respond shortly.';
                     formStatus.style.color = '#4caf50';
-                    
+
                     // Reset form after 2 seconds
                     setTimeout(() => {
                         document.getElementById('contact-form').reset();
@@ -556,21 +634,21 @@
                     formStatus.textContent = 'Sorry, there was a problem sending your message. Please try again.';
                     formStatus.style.color = '#f44336';
                 });
-                emailjs.on("error", (err) => {
-              console.log("EmailJS detailed error:", err);
+            emailjs.on("error", (err) => {
+                console.log("EmailJS detailed error:", err);
             });
         });
-       
-            document.querySelector('a[download]').addEventListener('click', function(e) {
-                e.preventDefault();
-                const link = document.createElement('a');
-                link.href = this.href;
-                link.download = this.download;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            });
-           
+
+        document.querySelector('a[download]').addEventListener('click', function(e) {
+            e.preventDefault();
+            const link = document.createElement('a');
+            link.href = this.href;
+            link.download = this.download;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
     </script>
 </body>
+
 </html>
