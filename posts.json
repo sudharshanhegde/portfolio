@@ -1,5 +1,15 @@
 [
   {
+    "title": "Data manipulation for machine learning",
+    "date": "2025-05-16",
+    "excerpt": "Getting Started with Data Manipulation in Machine Learning",
+    "filename": "data-manipulation-for-machine-learning.html",
+    "tags": [
+      "machine learning",
+      "python"
+    ]
+  },
+  {
     "title": "day 6 mysql guide",
     "date": "2025-04-01",
     "excerpt": "Brief summary about mysql.",
