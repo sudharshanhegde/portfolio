@@ -1,5 +1,17 @@
 [
   {
+    "title": "machine learning and their libraries",
+    "date": "2025-05-19",
+    "excerpt": "Understanding Data Handling, Linear Algebra, and Machine Learning Basics in Python",
+    "filename": "machine-learning-and-their-libraries.html",
+    "tags": [
+      "machine learning",
+      "numpy",
+      "pandas",
+      "python"
+    ]
+  },
+  {
     "title": "Data manipulation for machine learning",
     "date": "2025-05-16",
     "excerpt": "Getting Started with Data Manipulation in Machine Learning",

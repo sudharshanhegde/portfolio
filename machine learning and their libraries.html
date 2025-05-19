@@ -1,0 +1,544 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head><script type="text/javascript" src="/___vscode_livepreview_injected_script"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>machine learning and their libraries - Sudharshan Hegde's Blog</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css">
+    <style>
+         :root {
+            --primary: #2A5C82;
+            --secondary: #3B8AC4;
+            --dark: #1A2B3C;
+            --light: #F5F9FC;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        /* Header */
+        
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 6rem 0 3rem;
+            text-align: center;
+            clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            width: 100%;
+        }
+        
+        .header-excerpt {
+            max-width: 700px;
+            margin: 1rem auto 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+        /* Navigation */
+        
+        .nav-links {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .nav-link {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            color: white;
+            text-decoration: none;
+            backdrop-filter: blur(10px);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        /* Post content */
+        
+        .post-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 3rem;
+            margin-top: -50px;
+            margin-bottom: 3rem;
+        }
+        
+        .post-date {
+            color: var(--secondary);
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+        
+        .post-title {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.3;
+        }
+        
+        .post-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .tag {
+            background: rgba(59, 138, 196, 0.1);
+            color: var(--primary);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .post-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+        
+        .post-content p {
+            margin-bottom: 1.5rem;
+        }
+        
+        .post-content h2,
+        .post-content h3,
+        .post-content h4 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .post-content ul,
+        .post-content ol {
+            margin-bottom: 1.5rem;
+            padding-left: 2rem;
+        }
+        
+        .post-content pre {
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+            overflow: auto;
+        }
+        
+        .post-content code {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+        }
+        
+        .post-content blockquote {
+            border-left: 4px solid var(--primary);
+            padding-left: 1.5rem;
+            margin-left: 0;
+            margin-right: 0;
+            margin-bottom: 1.5rem;
+            font-style: italic;
+            color: #555;
+        }
+        
+        .post-content img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        /* Footer */
+        
+        footer {
+            text-align: center;
+            padding: 2rem 0;
+            color: #777;
+            font-size: 0.9rem;
+        }
+        
+        .back-to-blog {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--primary);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            transition: var(--transition);
+        }
+        
+        .back-to-blog:hover {
+            background: var(--secondary);
+            transform: translateY(-3px);
+        }
+        /* Mobile Responsive Styles */
+        
+        @media (max-width: 768px) {
+            header {
+                padding: 5rem 0 2.5rem;
+            }
+            .container {
+                padding: 0 1.5rem;
+            }
+            .post-container {
+                padding: 2rem;
+                margin-top: -30px;
+            }
+            .post-title {
+                font-size: 2rem;
+            }
+            .post-content {
+                font-size: 1rem;
+            }
+            .nav-link {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            header {
+                padding: 4rem 0 2rem;
+                clip-path: polygon(0 0, 100% 0, 100% 95%, 0 100%);
+            }
+            .container {
+                padding: 0 1rem;
+            }
+            .post-container {
+                padding: 1.5rem;
+                margin-top: -20px;
+                border-radius: 12px;
+            }
+            .post-title {
+                font-size: 1.75rem;
+                margin-bottom: 1rem;
+            }
+            .header-excerpt {
+                font-size: 0.9rem;
+            }
+            .post-content {
+                font-size: 0.95rem;
+                line-height: 1.7;
+            }
+            .nav-links {
+                top: 10px;
+                right: 10px;
+                flex-direction: column;
+                gap: 8px;
+            }
+            .nav-link {
+                padding: 0.5rem 1rem;
+                font-size: 0.8rem;
+            }
+            .nav-link i {
+                font-size: 1rem;
+                margin-right: 5px;
+            }
+            .post-content pre {
+                font-size: 0.8rem;
+            }
+            .post-content code {
+                font-size: 0.8rem;
+            }
+            .back-to-blog {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link"><i class="fas fa-home"></i> Home</a>
+            <a href="blog.html" class="nav-link"><i class="fas fa-blog"></i> Blog</a>
+        </div>
+        <div class="container">
+            <h1>machine learning and their libraries</h1>
+            <p class="header-excerpt">Understanding Data Handling, Linear Algebra, and Machine Learning Basics in Python</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <article class="post-container">
+            <span class="post-date">May 19, 2025</span>
+            <h1 class="post-title">machine learning and their libraries</h1>
+
+            <div class="post-tags">
+                <span class="tag">machine learning</span><span class="tag">numpy</span><span class="tag">pandas</span><span class="tag">python</span>
+            </div>
+
+            <div class="post-content">
+                <h1>Understanding Data Handling, Linear Algebra, and Machine Learning Basics in Python</h1>
+<h3>CSV and Pandas Basics</h3>
+<p>A <strong>CSV (Comma Separated Values)</strong> file stores tabular data where each value is separated by a comma.</p>
+<p>To read CSV files easily in Python, we use the <strong>pandas</strong> library:</p>
+<pre><code class="language-python">import pandas as pd
+
+data = pd.read_csv('data_file.csv')
+print(data)
+</code></pre>
+<p>This prints all the values present in the CSV file.</p>
+<h3>Handling Missing Values in Data</h3>
+<p>Sometimes, datasets have missing or null values. There are two ways to handle them:</p>
+<ul>
+<li><strong>Imputation</strong>: Replace missing values with estimates.</li>
+<li><strong>Deletion</strong>: Remove rows or columns containing missing values.</li>
+</ul>
+<p>A common approach is to fill missing values with the <strong>mean</strong> of that column.</p>
+<p>In pandas, the function to do this is <code>fillna()</code>:</p>
+<pre><code class="language-python">inputs = inputs.fillna(inputs.mean())
+</code></pre>
+<p>This fills all missing data with the column mean.</p>
+<hr>
+<h3>From Data to Tensors: Linear Algebra Basics with PyTorch</h3>
+<p>After cleaning data, we convert it to <strong>tensor format</strong> for numerical operations.</p>
+<h4>Dot Products</h4>
+<p>Dot product is fundamental in linear algebra.</p>
+<p>In PyTorch, you find it like this:</p>
+<pre><code class="language-python">torch.dot(x, y)
+</code></pre>
+<h4>Matrix-Vector Products</h4>
+<p>To multiply a matrix with a vector, use:</p>
+<pre><code class="language-python">torch.mv(A, x)
+</code></pre>
+<p>Or use the <code>@</code> operator which can also do cross products.</p>
+<h4>Matrix-Matrix Multiplication</h4>
+<p>Use:</p>
+<pre><code class="language-python">torch.mm(A, B)
+</code></pre>
+<p>Or simply:</p>
+<pre><code class="language-python">A @ B
+</code></pre>
+<h4>Norms of Vectors</h4>
+<p>The <strong>norm</strong> measures the size or length of a vector.</p>
+<p>Properties of norms include:</p>
+<ol>
+<li>When you multiply a vector by a scalar, its norm is multiplied by the absolute value of that scalar.</li>
+<li>The triangle inequality holds, meaning the norm of the sum of two vectors is less than or equal to the sum of their norms.</li>
+<li>The norm is always non-negative and is zero only if the vector itself is zero.</li>
+</ol>
+<p>The <strong>L2 norm</strong> (also called Euclidean norm) of a vector is the square root of the sum of the squares of its components.</p>
+<p>In PyTorch, you can calculate this using:</p>
+<pre><code class="language-python">torch.norm(x)
+</code></pre>
+<p>The <strong>L1 norm</strong> (Manhattan norm) is the sum of the absolute values of the vector components:</p>
+<pre><code class="language-python">torch.abs(x).sum()
+</code></pre>
+<hr>
+<h3>Visualizing Data with Matplotlib</h3>
+<p>To visualize data, <strong>matplotlib</strong> is useful. The <code>set_axes()</code> function lets you set labels, ranges, and scales for plots.</p>
+<hr>
+<h3>Linear Neural Networks for Regression</h3>
+<p>Let’s start simple with linear regression.</p>
+<p>We assume the relationship between features and the target is linear.</p>
+<p>For example, the predicted price is calculated by multiplying the weight assigned to the area by the area value, plus the weight assigned to the age by the age value, plus a bias term.</p>
+<p>More generally, if there are many input features, the prediction is the sum of each feature multiplied by its corresponding weight, plus the bias.</p>
+<p>We use a <strong>loss function</strong> to measure prediction error, often the squared difference between predicted and actual values for regression tasks.</p>
+<hr>
+<h3>Gradient Descent</h3>
+<p>Gradient descent is an optimization method that iteratively reduces loss by adjusting parameters in the direction that decreases error.</p>
+<p>At each iteration, we randomly select a small batch of data, calculate the gradient of the loss with respect to parameters on this batch, multiply it by a learning rate (a small positive number), and update the parameters accordingly.</p>
+<hr>
+<h3>Normal Distribution Visualization</h3>
+<p>To calculate the value of a normal distribution (Gaussian) for a given input, mean, and standard deviation, use this function:</p>
+<pre><code class="language-python">import math
+import numpy as np
+
+def normal(x, mu, sigma):
+    coefficient = 1 divided by the square root of (2 times pi times sigma squared)
+    exponent = negative one-half times (x minus mu) squared divided by sigma squared
+    return coefficient times exponential of exponent
+</code></pre>
+<p>This function returns the probability density of the normal distribution at x.</p>
+<hr>
+<h3>NumPy: Numerical Python</h3>
+<p><strong>Features:</strong></p>
+<ol>
+<li>The main data structure is <code>ndarray</code> which supports efficient multi-dimensional arrays.</li>
+<li>Provides functions for linear algebra, statistics, and random number generation.</li>
+<li>Supports element-wise operations without explicit reshaping.</li>
+<li>Works well with other libraries like pandas and matplotlib.</li>
+<li>Allows faster and memory-efficient computations.</li>
+</ol>
+<hr>
+<h3>How to Use NumPy</h3>
+<p>Install:</p>
+<pre><code class="language-bash">pip install numpy
+</code></pre>
+<p>Import:</p>
+<pre><code class="language-python">import numpy as np
+</code></pre>
+<p>Create array from list:</p>
+<pre><code class="language-python">list1 = [10, 20, 30]
+arr1 = np.array(list1)
+print(type(arr1))  # numpy.ndarray
+</code></pre>
+<p>Common functions:</p>
+<ul>
+<li><code>np.arange(start, stop, step)</code> creates evenly spaced values.</li>
+<li><code>np.zeros(shape)</code> creates an array of zeros.</li>
+<li><code>np.ones(shape)</code> creates an array of ones.</li>
+<li><code>np.linspace(start, stop, num_steps)</code> creates evenly spaced numbers over an interval.</li>
+<li><code>np.eye(n)</code> creates an identity matrix.</li>
+<li><code>np.random.rand(shape)</code> creates samples from a uniform distribution between 0 and 1.</li>
+<li><code>np.random.randn(shape)</code> creates samples from the standard normal distribution.</li>
+<li><code>np.random.randint(low, high)</code> generates random integers between low and high.</li>
+<li><code>np.random.seed()</code> sets the random seed for reproducibility.</li>
+<li><code>reshape()</code> changes the shape of arrays.</li>
+</ul>
+<p>Helper functions include:</p>
+<ul>
+<li><code>min()</code>, <code>max()</code>, <code>argmin()</code>, <code>argmax()</code></li>
+<li><code>shape</code> gives the dimensions of the array.</li>
+<li><code>dtype</code> shows the data type of array elements.</li>
+</ul>
+<p>You can slice arrays and assign values like this:</p>
+<pre><code class="language-python">arr[0:4] = 100
+</code></pre>
+<p>Conditional selection example:</p>
+<pre><code class="language-python">arr = np.arange(1, 11)
+print(arr[arr > 2])  # prints values greater than 2
+</code></pre>
+<p>Mathematical functions supported:</p>
+<ul>
+<li>square root, exponential, sine, logarithm, mean, etc.</li>
+</ul>
+<p>Axis-wise operations are also possible for multi-dimensional arrays.</p>
+<hr>
+<h3>Pandas for Data Manipulation</h3>
+<p>Pandas helps with:</p>
+<ul>
+<li>Reading and writing Excel, SQL, and CSV files.</li>
+<li>Cleaning and preparing data.</li>
+<li>Reshaping data.</li>
+<li>Visualizing data with built-in plotting.</li>
+</ul>
+<p>A <strong>DataFrame</strong> is like a table with rows and columns.</p>
+<p>Create DataFrame from array:</p>
+<pre><code class="language-python">import pandas as pd
+
+data = np.array([[1, 2, 3], [4, 5, 6]])
+df = pd.DataFrame(data, columns=['A', 'B', 'C'])
+print(df)
+</code></pre>
+<p>Output:</p>
+<pre><code>   A  B  C
+0  1  2  3
+1  4  5  6
+</code></pre>
+<p>Create DataFrame from dictionary:</p>
+<pre><code class="language-python">dict = {'name': ["aparna", "pankaj", "sudhir", "Geeku"],
+        'degree': ["MBA", "BCA", "M.Tech", "MBA"],
+        'score': [90, 40, 80, 98]}
+
+df = pd.DataFrame(dict)
+print(df)
+</code></pre>
+<p>Output:</p>
+<pre><code>    name  degree  score
+0  aparna     MBA     90
+1  pankaj     BCA     40
+2  sudhir  M.Tech     80
+3   Geeku     MBA     98
+</code></pre>
+<hr>
+<h3>Pandas Series</h3>
+<p>Create Series from dictionary:</p>
+<pre><code class="language-python">data_dict = {'Pandas': 10, 'in': 20, 'python': 30}
+ser = pd.Series(data_dict)
+print(ser)
+</code></pre>
+<p>Output:</p>
+<pre><code>Pandas    10
+in        20
+python    30
+dtype: int64
+</code></pre>
+<hr>
+<h3>Useful Pandas Functions</h3>
+<ul>
+<li><code>head()</code> — shows first 5 rows.</li>
+<li><code>tail()</code> — shows last 5 rows.</li>
+<li><code>info()</code> — provides summary information.</li>
+<li><code>sort_values()</code> — sort by column values.</li>
+<li><code>sort_index()</code> — sort by index.</li>
+<li><code>reset_index()</code> — reset the index.</li>
+<li><code>rename()</code> — rename columns or rows.</li>
+<li><code>melt()</code> — transform columns into rows.</li>
+<li><code>drop()</code> — remove rows or columns.</li>
+<li><code>at()</code> — access a single value by label.</li>
+<li><code>filter()</code> — filter rows or columns.</li>
+<li><code>where()</code> — apply conditional filtering.</li>
+<li><code>query()</code> — query data using expressions.</li>
+</ul>
+<hr>
+<h3>Combining DataFrames</h3>
+<ul>
+<li><code>merge()</code> — perform joins like left, right, or outer join.</li>
+<li><code>concat()</code> — concatenate DataFrames either by rows or columns.</li>
+</ul>
+<hr>
+<h3>Aggregations & Null Checks</h3>
+<ul>
+<li><code>value_counts()</code> — count occurrences of unique values.</li>
+<li><code>sum()</code>, <code>cumsum()</code> — sum and cumulative sum.</li>
+<li><code>var()</code>, <code>median()</code> — variance and median.</li>
+<li><code>isnull()</code> — detect missing values.</li>
+<li><code>isnull().sum()</code> — count missing values per column.</li>
+</ul>
+<hr>
+<p>This covers essential data processing, linear algebra basics with PyTorch, and usage of NumPy and Pandas in machine learning and data science journey.</p>
+<hr>
+<p>Thank you for reading!</p>
+
+            </div>
+
+            <a href="blog.html" class="back-to-blog">
+                <i class="fas fa-arrow-left"></i> Back to Blog
+            </a>
+        </article>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 Sudharshan Hegde. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-cpp.min.js"></script>
+</body>
+
+</html>
