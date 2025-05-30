@@ -1,5 +1,16 @@
 [
   {
+    "title": "Matplotlib ",
+    "date": "2025-05-30",
+    "excerpt": "matplotlib and basics of regression metrics",
+    "filename": "matplotlib-.html",
+    "tags": [
+      "machine learning",
+      "matplotlib'",
+      "python"
+    ]
+  },
+  {
     "title": "machine learning and their libraries",
     "date": "2025-05-19",
     "excerpt": "Understanding Data Handling, Linear Algebra, and Machine Learning Basics in Python",

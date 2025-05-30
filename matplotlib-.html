@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head><script type="text/javascript" src="/___vscode_livepreview_injected_script"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matplotlib  - Sudharshan Hegde's Blog</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css">
+    <style>
+         :root {
+            --primary: #2A5C82;
+            --secondary: #3B8AC4;
+            --dark: #1A2B3C;
+            --light: #F5F9FC;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        /* Header */
+        
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 6rem 0 3rem;
+            text-align: center;
+            clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            width: 100%;
+        }
+        
+        .header-excerpt {
+            max-width: 700px;
+            margin: 1rem auto 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+        /* Navigation */
+        
+        .nav-links {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .nav-link {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            color: white;
+            text-decoration: none;
+            backdrop-filter: blur(10px);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        /* Post content */
+        
+        .post-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 3rem;
+            margin-top: -50px;
+            margin-bottom: 3rem;
+        }
+        
+        .post-date {
+            color: var(--secondary);
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+        
+        .post-title {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.3;
+        }
+        
+        .post-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .tag {
+            background: rgba(59, 138, 196, 0.1);
+            color: var(--primary);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .post-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+        
+        .post-content p {
+            margin-bottom: 1.5rem;
+        }
+        
+        .post-content h2,
+        .post-content h3,
+        .post-content h4 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .post-content ul,
+        .post-content ol {
+            margin-bottom: 1.5rem;
+            padding-left: 2rem;
+        }
+        
+        .post-content pre {
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+            overflow: auto;
+        }
+        
+        .post-content code {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+        }
+        
+        .post-content blockquote {
+            border-left: 4px solid var(--primary);
+            padding-left: 1.5rem;
+            margin-left: 0;
+            margin-right: 0;
+            margin-bottom: 1.5rem;
+            font-style: italic;
+            color: #555;
+        }
+        
+        .post-content img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        /* Footer */
+        
+        footer {
+            text-align: center;
+            padding: 2rem 0;
+            color: #777;
+            font-size: 0.9rem;
+        }
+        
+        .back-to-blog {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--primary);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            transition: var(--transition);
+        }
+        
+        .back-to-blog:hover {
+            background: var(--secondary);
+            transform: translateY(-3px);
+        }
+        /* Mobile Responsive Styles */
+        
+        @media (max-width: 768px) {
+            header {
+                padding: 5rem 0 2.5rem;
+            }
+            .container {
+                padding: 0 1.5rem;
+            }
+            .post-container {
+                padding: 2rem;
+                margin-top: -30px;
+            }
+            .post-title {
+                font-size: 2rem;
+            }
+            .post-content {
+                font-size: 1rem;
+            }
+            .nav-link {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            header {
+                padding: 4rem 0 2rem;
+                clip-path: polygon(0 0, 100% 0, 100% 95%, 0 100%);
+            }
+            .container {
+                padding: 0 1rem;
+            }
+            .post-container {
+                padding: 1.5rem;
+                margin-top: -20px;
+                border-radius: 12px;
+            }
+            .post-title {
+                font-size: 1.75rem;
+                margin-bottom: 1rem;
+            }
+            .header-excerpt {
+                font-size: 0.9rem;
+            }
+            .post-content {
+                font-size: 0.95rem;
+                line-height: 1.7;
+            }
+            .nav-links {
+                top: 10px;
+                right: 10px;
+                flex-direction: column;
+                gap: 8px;
+            }
+            .nav-link {
+                padding: 0.5rem 1rem;
+                font-size: 0.8rem;
+            }
+            .nav-link i {
+                font-size: 1rem;
+                margin-right: 5px;
+            }
+            .post-content pre {
+                font-size: 0.8rem;
+            }
+            .post-content code {
+                font-size: 0.8rem;
+            }
+            .back-to-blog {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link"><i class="fas fa-home"></i> Home</a>
+            <a href="blog.html" class="nav-link"><i class="fas fa-blog"></i> Blog</a>
+        </div>
+        <div class="container">
+            <h1>Matplotlib </h1>
+            <p class="header-excerpt">matplotlib and basics of regression metrics</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <article class="post-container">
+            <span class="post-date">May 30, 2025</span>
+            <h1 class="post-title">Matplotlib </h1>
+
+            <div class="post-tags">
+                <span class="tag">machine learning</span><span class="tag">matplotlib'</span><span class="tag">python</span>
+            </div>
+
+            <div class="post-content">
+                <h1>Introduction to Matplotlib and Regression Basics</h1>
+<p><code>matplotlib.pyplot</code> is a module from the Matplotlib library that provides a simple interface for creating plots and adding elements like lines, text, and images. It’s a go-to tool for data visualization in Python.</p>
+<h2>Installing Matplotlib</h2>
+<p>To install Matplotlib, use the following command:</p>
+<pre><code class="language-bash">pip install matplotlib
+</code></pre>
+<h2>Using Pyplot</h2>
+<p>The first step in using <code>pyplot</code> is to import it:</p>
+<pre><code class="language-python">import matplotlib.pyplot as plt
+</code></pre>
+<p>Next, we create data using lists or arrays and plot it using <code>plt.plot()</code>. Additional elements like titles, axis labels, and legends can be added using specific methods. Finally, the plot is displayed using <code>plt.show()</code>.</p>
+<h3>Customizing the Plot Area</h3>
+<p>We can use <code>plt.figure()</code> to gain more control over the plotting area. The <code>figsize</code> parameter allows us to set the figure's dimensions:</p>
+<pre><code class="language-python">fig = plt.figure(figsize=(6, 4))
+ax = fig.add_subplot(1, 1, 1)
+</code></pre>
+<p><code>add_subplot()</code> returns the axes object that we can further customize.</p>
+<h2>Working with Legends</h2>
+<p>Legends help describe the plot elements. A few useful attributes are:</p>
+<ul>
+<li><code>shadow</code>: Adds a shadow behind the legend. Default is <code>None</code>.</li>
+<li><code>markerscale</code>: Adjusts the size of legend markers relative to the plot.</li>
+<li><code>numpoints</code>: Specifies the number of marker points in the legend for 2D lines.</li>
+<li><code>fontsize</code>: Sets the font size of the legend text.</li>
+<li><code>facecolor</code>: Sets the background color of the legend.</li>
+<li><code>edgecolor</code>: Sets the border color of the legend box.</li>
+</ul>
+<h2>Line Plot</h2>
+<p>A line plot is used to compare two variables. We can set:</p>
+<ul>
+<li><code>color</code>: Color of the line.</li>
+<li><code>linestyle</code>: Solid, dashed, dotted, etc.</li>
+<li><code>linewidth</code>: Thickness of the line.</li>
+<li><code>marker</code>: Shape of the data points (circle, triangle, etc.).</li>
+<li><code>label</code>: Name to be used in the legend.</li>
+</ul>
+<p>Example:</p>
+<pre><code class="language-python">plt.plot(x, y, color='blue', linestyle='--', linewidth=2, marker='o', label='Line A')
+plt.legend()
+</code></pre>
+<h2>Scatter Plot</h2>
+<p>A scatter plot shows the relationship between two variables using individual data points. If the points form a clear pattern, the variables are likely related.</p>
+<pre><code class="language-python">plt.scatter(x, y)
+</code></pre>
+<p>Parameters include:</p>
+<ul>
+<li><code>c</code>: Color of the markers.</li>
+<li><code>s</code>: Size of the markers.</li>
+<li><code>marker</code>: Shape (circle, triangle, etc.).</li>
+<li><code>edgecolors</code>: Color of the marker edges.</li>
+</ul>
+<h2>Bar Chart</h2>
+<p>Bar charts are used to compare different categories. The <code>bar()</code> function creates vertical bars, while <code>barh()</code> creates horizontal bars.</p>
+<pre><code class="language-python">plt.bar(x, y, color='green', edgecolor='black', align='center', label='Group A')
+plt.legend()
+</code></pre>
+<p>Parameters:</p>
+<ul>
+<li><code>color</code>: Fill color of the bars.</li>
+<li><code>edgecolor</code>: Outline color.</li>
+<li><code>label</code>: For legends.</li>
+<li><code>align</code>: Aligns bars with the ticks on the axis.</li>
+</ul>
+<h2>Pie Chart</h2>
+<p>Pie charts are useful for showing proportions among a small number of categories.</p>
+<pre><code class="language-python">plt.pie(values, labels=labels, startangle=90, autopct='%1.1f%%', colors=colors)
+</code></pre>
+<p>Parameters:</p>
+<ul>
+<li><code>labels</code>: Names of the slices.</li>
+<li><code>startangle</code>: Starting angle for the first slice.</li>
+<li><code>autopct</code>: String format for displaying percentage.</li>
+<li><code>colors</code>: Slice colors.</li>
+</ul>
+<h2>Histogram</h2>
+<p>Histograms show the distribution of data across intervals or “bins.”</p>
+<pre><code class="language-python">plt.hist(data, bins=10, color='skyblue', density=True)
+</code></pre>
+<ul>
+<li><code>bins</code>: Number of divisions.</li>
+<li><code>color</code>: Bar color.</li>
+<li><code>density</code>: If set to <code>True</code>, the histogram is normalized.</li>
+</ul>
+<h2>3D Line Plot</h2>
+<p>For 3D visualizations, use the following setup:</p>
+<pre><code class="language-python">from mpl_toolkits.mplot3d import Axes3D
+
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+ax.plot(x, y, z)
+</code></pre>
+<p>Setting <code>projection='3d'</code> enables 3D plotting.</p>
+<h2>Working with Images</h2>
+<p>Matplotlib can also be used to work with images:</p>
+<pre><code class="language-python">img = plt.imread('image.png')
+plt.imshow(img)
+plt.axis('off')
+plt.show()
+</code></pre>
+<hr>
+<h1>Basics of Linear and Logistic Regression</h1>
+<h2>Linear Regression</h2>
+<p>Linear regression is a supervised learning algorithm that fits the best possible straight line to a set of data points. It assumes a linear relationship between input and output:</p>
+<pre><code>y = mx + c
+</code></pre>
+<p>The objective is to minimize the error between the actual and predicted values, often using the <strong>least squares method</strong>.</p>
+<h3>Evaluation Metrics</h3>
+<ul>
+<li><strong>Mean Squared Error (MSE)</strong>: Average of squared differences between actual and predicted values.</li>
+<li><strong>Mean Absolute Error (MAE)</strong>: Average of absolute differences.</li>
+<li><strong>Root Mean Squared Error (RMSE)</strong>: Square root of MSE.</li>
+</ul>
+<h2>Logistic Regression</h2>
+<p>Logistic regression is a classification algorithm used in supervised learning. It transforms the continuous output of a linear function into a probability using the <strong>sigmoid function</strong>. The output is then mapped to a class label based on a threshold (typically 0.5).</p>
+<p>Used for tasks where the output is categorical, such as spam detection or binary classification problems.</p>
+<h2>Bayesian Linear Regression</h2>
+<p>Bayesian linear regression incorporates prior knowledge into the model using Bayes’ Theorem:</p>
+<pre><code>P(A|B) = [P(B|A) * P(A)] / P(B)
+</code></pre>
+<p>Where:</p>
+<ul>
+<li><code>P(A|B)</code>: Posterior probability after observing data.</li>
+<li><code>P(B|A)</code>: Likelihood of the data given the parameters.</li>
+<li><code>P(A)</code>: Prior belief about the parameters.</li>
+<li><code>P(B)</code>: Marginal likelihood of the data.</li>
+</ul>
+<hr>
+<p>Thank you for reading.</p>
+
+            </div>
+
+            <a href="blog.html" class="back-to-blog">
+                <i class="fas fa-arrow-left"></i> Back to Blog
+            </a>
+        </article>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 Sudharshan Hegde. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-cpp.min.js"></script>
+</body>
+
+</html>
+
