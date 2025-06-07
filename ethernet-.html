@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head><script type="text/javascript" src="/___vscode_livepreview_injected_script"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ethernet  - Sudharshan Hegde's Blog</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css">
+    <style>
+         :root {
+            --primary: #2A5C82;
+            --secondary: #3B8AC4;
+            --dark: #1A2B3C;
+            --light: #F5F9FC;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        /* Header */
+        
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 6rem 0 3rem;
+            text-align: center;
+            clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            width: 100%;
+        }
+        
+        .header-excerpt {
+            max-width: 700px;
+            margin: 1rem auto 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+        /* Navigation */
+        
+        .nav-links {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .nav-link {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            color: white;
+            text-decoration: none;
+            backdrop-filter: blur(10px);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        /* Post content */
+        
+        .post-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 3rem;
+            margin-top: -50px;
+            margin-bottom: 3rem;
+        }
+        
+        .post-date {
+            color: var(--secondary);
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+        
+        .post-title {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.3;
+        }
+        
+        .post-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .tag {
+            background: rgba(59, 138, 196, 0.1);
+            color: var(--primary);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .post-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+        
+        .post-content p {
+            margin-bottom: 1.5rem;
+        }
+        
+        .post-content h2,
+        .post-content h3,
+        .post-content h4 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .post-content ul,
+        .post-content ol {
+            margin-bottom: 1.5rem;
+            padding-left: 2rem;
+        }
+        
+        .post-content pre {
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+            overflow: auto;
+        }
+        
+        .post-content code {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+        }
+        
+        .post-content blockquote {
+            border-left: 4px solid var(--primary);
+            padding-left: 1.5rem;
+            margin-left: 0;
+            margin-right: 0;
+            margin-bottom: 1.5rem;
+            font-style: italic;
+            color: #555;
+        }
+        
+        .post-content img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        /* Footer */
+        
+        footer {
+            text-align: center;
+            padding: 2rem 0;
+            color: #777;
+            font-size: 0.9rem;
+        }
+        
+        .back-to-blog {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--primary);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            transition: var(--transition);
+        }
+        
+        .back-to-blog:hover {
+            background: var(--secondary);
+            transform: translateY(-3px);
+        }
+        /* Mobile Responsive Styles */
+        
+        @media (max-width: 768px) {
+            header {
+                padding: 5rem 0 2.5rem;
+            }
+            .container {
+                padding: 0 1.5rem;
+            }
+            .post-container {
+                padding: 2rem;
+                margin-top: -30px;
+            }
+            .post-title {
+                font-size: 2rem;
+            }
+            .post-content {
+                font-size: 1rem;
+            }
+            .nav-link {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            header {
+                padding: 4rem 0 2rem;
+                clip-path: polygon(0 0, 100% 0, 100% 95%, 0 100%);
+            }
+            .container {
+                padding: 0 1rem;
+            }
+            .post-container {
+                padding: 1.5rem;
+                margin-top: -20px;
+                border-radius: 12px;
+            }
+            .post-title {
+                font-size: 1.75rem;
+                margin-bottom: 1rem;
+            }
+            .header-excerpt {
+                font-size: 0.9rem;
+            }
+            .post-content {
+                font-size: 0.95rem;
+                line-height: 1.7;
+            }
+            .nav-links {
+                top: 10px;
+                right: 10px;
+                flex-direction: column;
+                gap: 8px;
+            }
+            .nav-link {
+                padding: 0.5rem 1rem;
+                font-size: 0.8rem;
+            }
+            .nav-link i {
+                font-size: 1rem;
+                margin-right: 5px;
+            }
+            .post-content pre {
+                font-size: 0.8rem;
+            }
+            .post-content code {
+                font-size: 0.8rem;
+            }
+            .back-to-blog {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link"><i class="fas fa-home"></i> Home</a>
+            <a href="blog.html" class="nav-link"><i class="fas fa-blog"></i> Blog</a>
+        </div>
+        <div class="container">
+            <h1>Ethernet </h1>
+            <p class="header-excerpt">Ethernet Frames, ARP, and Network Access Control</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <article class="post-container">
+            <span class="post-date">June 7, 2025</span>
+            <h1 class="post-title">Ethernet </h1>
+
+            <div class="post-tags">
+                <span class="tag">Ethernet</span><span class="tag">computer networks</span><span class="tag">Adress resolution protocol</span><span class="tag">network access control</span>
+            </div>
+
+            <div class="post-content">
+                <h1>Ethernet Frames, ARP, and Network Access Control</h1>
+<h2>Ethernet Frame – The Building Block of Ethernet Networks</h2>
+<p>An <strong>Ethernet frame</strong> is the basic unit of communication in Ethernet networks. It encapsulates data and moves it between devices in a well-structured format to ensure smooth and efficient delivery.</p>
+<h3>Why Ethernet Frame is Important:</h3>
+<ul>
+<li>It organizes and transmits data in a structured format</li>
+<li>It carries essential metadata for communication</li>
+</ul>
+<h3>Components of an Ethernet Frame:</h3>
+<ol>
+<li><p><strong>Preamble (7 bytes)</strong>
+A pattern of alternating 0s and 1s used to synchronize the sender and receiver clocks, signaling the start of a frame.</p>
+</li>
+<li><p><strong>Start Frame Delimiter (1 byte)</strong>
+Follows the preamble and indicates where the actual frame data begins.</p>
+</li>
+<li><p><strong>Destination MAC Address (6 bytes)</strong>
+Physical address of the device that is supposed to receive the frame.</p>
+</li>
+<li><p><strong>Source MAC Address (6 bytes)</strong>
+Physical address of the sender’s device.</p>
+</li>
+<li><p><strong>EtherType (2 bytes)</strong>
+Identifies the protocol being used, like IPv4 or IPv6. In some variants, it can represent payload length.</p>
+</li>
+<li><p><strong>Data (46–1500 bytes)</strong>
+The actual payload or information being transmitted.</p>
+</li>
+<li><p><strong>Frame Check Sequence (4 bytes)</strong>
+Contains a CRC (Cyclic Redundancy Check) for detecting errors. The receiver recalculates it to ensure data integrity.</p>
+</li>
+</ol>
+<hr>
+<h2>Ethernet Frame Variants</h2>
+<h3>1. <strong>Ethernet II Frame</strong></h3>
+<p>This is the standard used in modern networks. It includes the EtherType field to indicate higher-layer protocols like IPv4 or IPv6. It's the default for TCP/IP communication.</p>
+<h3>2. <strong>IEEE 802.3 Frame</strong></h3>
+<p>Instead of EtherType, it uses a length field. It’s less common in today’s Ethernet setups.</p>
+<h3>3. <strong>VLAN Tagging</strong></h3>
+<p>In VLAN-enabled networks, a 4-byte VLAN tag is inserted between the source MAC address and EtherType field. This identifies the VLAN and enables logical separation of networks.</p>
+<h3>Key Functions:</h3>
+<ul>
+<li>Data encapsulation</li>
+<li>Error detection</li>
+<li>Addressing</li>
+<li>Flow control</li>
+</ul>
+<hr>
+<h2>Address Resolution Protocol (ARP)</h2>
+<p><strong>ARP</strong> works at the <strong>Data Link Layer</strong> (Layer 2) and helps map a logical <strong>IP address</strong> to a physical <strong>MAC address</strong>. It's essential for enabling communication within a <strong>local subnet</strong>.</p>
+<h3>How ARP Works:</h3>
+<ol>
+<li><p><strong>Request</strong>
+When a device wants to communicate, it sends a broadcast asking <em>"Who has this IP?"</em>.</p>
+</li>
+<li><p><strong>Response</strong>
+The device with the requested IP replies with its MAC address in a unicast reply.</p>
+</li>
+<li><p><strong>Cache</strong>
+Devices store resolved mappings in an <strong>ARP cache</strong> to avoid repeating the process.</p>
+</li>
+</ol>
+<h3>Types of ARP:</h3>
+<ul>
+<li><strong>Gratuitous ARP</strong> – Sent without being requested, usually for updating other devices after IP/MAC changes.</li>
+<li><strong>Proxy ARP</strong> – A router answers ARP requests on behalf of another device, helping with communication across subnets.</li>
+<li><strong>Reverse ARP (RARP)</strong> – Converts MAC addresses back to IP addresses.</li>
+</ul>
+<hr>
+<h2>ARP Security Concerns</h2>
+<h3>ARP Spoofing</h3>
+<p>A malicious actor sends fake ARP messages, making it appear as if their MAC address matches that of a legitimate device (like a server or router). This can lead to data theft or manipulation.</p>
+<h3>Cache Poisoning</h3>
+<p>Incorrect entries are added to a device’s ARP cache, causing data to be misrouted, potentially to an attacker.</p>
+<hr>
+<h2>Network Access Control (NAC)</h2>
+<p><strong>NAC</strong> is used to secure a network by managing who and what can connect to it. It ensures only <strong>authenticated</strong>, <strong>authorized</strong>, and <strong>compliant</strong> devices are granted access.</p>
+<h3>How NAC Works:</h3>
+<ol>
+<li><p><strong>Authentication</strong>
+Verifies the identity of users or devices.</p>
+</li>
+<li><p><strong>Authorization</strong>
+Determines access levels based on identity and compliance.</p>
+</li>
+<li><p><strong>Compliance Check</strong>
+Verifies if the device meets security standards (e.g., antivirus status, system updates).</p>
+</li>
+<li><p><strong>Ongoing Monitoring</strong>
+NAC continues to monitor device behavior and compliance throughout the connection session.</p>
+</li>
+</ol>
+<hr>
+<h3>Types of NAC:</h3>
+<ul>
+<li><strong>Pre-admission NAC</strong> – Evaluates devices <em>before</em> granting access to the network.</li>
+<li><strong>Post-admission NAC</strong> – Monitors device activity <em>after</em> access is granted and can restrict access if policy violations are detected.</li>
+</ul>
+<hr>
+<h3>Key Components:</h3>
+<ul>
+<li><p><strong>Policy Server</strong>
+Central system defining access rules and evaluating requests.</p>
+</li>
+<li><p><strong>Enforcement Points</strong>
+Network devices like routers, switches, and firewalls enforce access based on decisions from the policy server.</p>
+</li>
+<li><p><strong>Authentication Methods</strong>
+NAC supports protocols like <strong>802.1X</strong>, <strong>RADIUS</strong>, and <strong>LDAP</strong> for validating users and devices.</p>
+</li>
+</ul>
+<hr>
+<h3>Applications of NAC:</h3>
+<ol>
+<li><strong>Corporate Networks</strong> – To manage employee and guest access.</li>
+<li><strong>Educational Institutions</strong> – For securely connecting students and staff devices.</li>
+<li><strong>Healthcare Systems</strong> – To ensure patient data is accessed only by compliant devices.</li>
+<li><strong>IoT Security</strong> – NAC protects smart devices that connect to the network.</li>
+</ol>
+<hr>
+<p>Thank you for reading.</p>
+
+            </div>
+
+            <a href="blog.html" class="back-to-blog">
+                <i class="fas fa-arrow-left"></i> Back to Blog
+            </a>
+        </article>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 Sudharshan Hegde. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-cpp.min.js"></script>
+</body>
+
+</html>

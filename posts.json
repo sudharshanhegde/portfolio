@@ -1,5 +1,17 @@
 [
   {
+    "title": "Ethernet ",
+    "date": "2025-06-07",
+    "excerpt": "Ethernet Frames, ARP, and Network Access Control",
+    "filename": "ethernet-.html",
+    "tags": [
+      "Ethernet",
+      "computer networks",
+      "Adress resolution protocol",
+      "network access control"
+    ]
+  },
+  {
     "title": "Distributed operating system and processes",
     "date": "2025-06-07",
     "excerpt": "Understanding various operating systems and process\n",
