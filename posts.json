@@ -1,5 +1,18 @@
 [
   {
+    "title": "Distributed operating system and processes",
+    "date": "2025-06-07",
+    "excerpt": "Understanding various operating systems and process\n",
+    "filename": "distributed-operating-system-and-processes.html",
+    "tags": [
+      "operating system",
+      "process",
+      "distributed operating system",
+      "clustered operating system",
+      "embedded operating system"
+    ]
+  },
+  {
     "title": "Matplotlib ",
     "date": "2025-05-30",
     "excerpt": "matplotlib and basics of regression metrics",

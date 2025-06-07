@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head><script type="text/javascript" src="/___vscode_livepreview_injected_script"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Distributed operating system and processes - Sudharshan Hegde's Blog</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css">
+    <style>
+         :root {
+            --primary: #2A5C82;
+            --secondary: #3B8AC4;
+            --dark: #1A2B3C;
+            --light: #F5F9FC;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        /* Header */
+        
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 6rem 0 3rem;
+            text-align: center;
+            clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            width: 100%;
+        }
+        
+        .header-excerpt {
+            max-width: 700px;
+            margin: 1rem auto 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+        /* Navigation */
+        
+        .nav-links {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .nav-link {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            color: white;
+            text-decoration: none;
+            backdrop-filter: blur(10px);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        /* Post content */
+        
+        .post-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 3rem;
+            margin-top: -50px;
+            margin-bottom: 3rem;
+        }
+        
+        .post-date {
+            color: var(--secondary);
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+        
+        .post-title {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.3;
+        }
+        
+        .post-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .tag {
+            background: rgba(59, 138, 196, 0.1);
+            color: var(--primary);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .post-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+        
+        .post-content p {
+            margin-bottom: 1.5rem;
+        }
+        
+        .post-content h2,
+        .post-content h3,
+        .post-content h4 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .post-content ul,
+        .post-content ol {
+            margin-bottom: 1.5rem;
+            padding-left: 2rem;
+        }
+        
+        .post-content pre {
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+            overflow: auto;
+        }
+        
+        .post-content code {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+        }
+        
+        .post-content blockquote {
+            border-left: 4px solid var(--primary);
+            padding-left: 1.5rem;
+            margin-left: 0;
+            margin-right: 0;
+            margin-bottom: 1.5rem;
+            font-style: italic;
+            color: #555;
+        }
+        
+        .post-content img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        /* Footer */
+        
+        footer {
+            text-align: center;
+            padding: 2rem 0;
+            color: #777;
+            font-size: 0.9rem;
+        }
+        
+        .back-to-blog {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--primary);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            transition: var(--transition);
+        }
+        
+        .back-to-blog:hover {
+            background: var(--secondary);
+            transform: translateY(-3px);
+        }
+        /* Mobile Responsive Styles */
+        
+        @media (max-width: 768px) {
+            header {
+                padding: 5rem 0 2.5rem;
+            }
+            .container {
+                padding: 0 1.5rem;
+            }
+            .post-container {
+                padding: 2rem;
+                margin-top: -30px;
+            }
+            .post-title {
+                font-size: 2rem;
+            }
+            .post-content {
+                font-size: 1rem;
+            }
+            .nav-link {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            header {
+                padding: 4rem 0 2rem;
+                clip-path: polygon(0 0, 100% 0, 100% 95%, 0 100%);
+            }
+            .container {
+                padding: 0 1rem;
+            }
+            .post-container {
+                padding: 1.5rem;
+                margin-top: -20px;
+                border-radius: 12px;
+            }
+            .post-title {
+                font-size: 1.75rem;
+                margin-bottom: 1rem;
+            }
+            .header-excerpt {
+                font-size: 0.9rem;
+            }
+            .post-content {
+                font-size: 0.95rem;
+                line-height: 1.7;
+            }
+            .nav-links {
+                top: 10px;
+                right: 10px;
+                flex-direction: column;
+                gap: 8px;
+            }
+            .nav-link {
+                padding: 0.5rem 1rem;
+                font-size: 0.8rem;
+            }
+            .nav-link i {
+                font-size: 1rem;
+                margin-right: 5px;
+            }
+            .post-content pre {
+                font-size: 0.8rem;
+            }
+            .post-content code {
+                font-size: 0.8rem;
+            }
+            .back-to-blog {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link"><i class="fas fa-home"></i> Home</a>
+            <a href="blog.html" class="nav-link"><i class="fas fa-blog"></i> Blog</a>
+        </div>
+        <div class="container">
+            <h1>Distributed operating system and processes</h1>
+            <p class="header-excerpt">Understanding various operating systems and process
+</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <article class="post-container">
+            <span class="post-date">June 7, 2025</span>
+            <h1 class="post-title">Distributed operating system and processes</h1>
+
+            <div class="post-tags">
+                <span class="tag">operating system</span><span class="tag">process</span><span class="tag">distributed operating system</span><span class="tag">clustered operating system</span><span class="tag">embedded operating system</span>
+            </div>
+
+            <div class="post-content">
+                <h1>Understanding Operating Systems: Distributed, Clustered, Embedded, and Process Management</h1>
+<p>Operating systems are the backbone of modern computing, and understanding their types and functionalities is crucial, especially in today’s interconnected world. In this post, I’ll walk through three important types of operating systems—<strong>Distributed OS</strong>, <strong>Clustered OS</strong>, and <strong>Embedded OS</strong>—along with a clear explanation of how processes are managed in an OS.</p>
+<hr>
+<h2>Distributed Operating System (DOS)</h2>
+<p>A <strong>Distributed Operating System</strong> manages a group of independent computers and makes them appear to the user as a single coherent system.</p>
+<p>It handles resource sharing, communication, and task coordination across multiple interconnected machines. This setup allows various tasks to run smoothly even if they’re spread across different physical systems.</p>
+<h3>Key Features of Distributed OS:</h3>
+<ul>
+<li><strong>Transparency</strong> – The system hides the complexity from users.</li>
+<li><strong>Resource Sharing</strong> – Components like files, printers, and processors are shared across the network.</li>
+<li><strong>Fault Tolerance</strong> – Even if one node fails, the system continues to operate.</li>
+<li><strong>Scalability</strong> – Easy to expand the system by adding more nodes.</li>
+<li><strong>Concurrency</strong> – Supports multiple tasks running at the same time.</li>
+</ul>
+<h3>Benefits:</h3>
+<ul>
+<li>Improved performance</li>
+<li>Tolerant to faults and failures</li>
+<li>Scalable as per need</li>
+<li>Cost-effective by utilizing commodity hardware</li>
+</ul>
+<hr>
+<h2>Clustered Operating System</h2>
+<p>A <strong>Clustered Operating System</strong> is designed to manage a group of independent computers, known as <strong>nodes</strong>, that work together to achieve a common goal. These systems are mainly used where high availability and reliability are critical.</p>
+<p>A cluster manager plays a central role in coordinating the activities of different nodes. The system typically uses <strong>shared storage</strong> and <strong>high-speed communication networks</strong> to ensure synchronization.</p>
+<h3>Types of Clustered Systems:</h3>
+<ul>
+<li><strong>Hardware Clustered Systems</strong> – Use dedicated high-speed interconnections; often act like a powerful server.</li>
+<li><strong>Software Clustered Systems</strong> – Coordination is handled through software platforms (e.g., Kubernetes).</li>
+</ul>
+<h3>Advantages:</h3>
+<ul>
+<li>Enables <strong>parallel task execution</strong></li>
+<li>Uses <strong>redundant nodes</strong> for continuous operation</li>
+<li>Easy to add or remove nodes</li>
+<li>Can run on <strong>commodity hardware</strong></li>
+</ul>
+<hr>
+<h2>Embedded Operating System</h2>
+<p>An <strong>Embedded Operating System</strong> is designed to run on <strong>embedded systems</strong>, which are specialized devices like washing machines, traffic lights, or medical devices.</p>
+<p>These OSs are optimized for <strong>real-time operations</strong>, where tasks need to be executed within a strict timeframe. They are minimalistic, consume very low power, and are highly reliable.</p>
+<h3>Components:</h3>
+<ul>
+<li><strong>Kernel</strong> – Core part that manages hardware and ensures efficient execution.</li>
+<li><strong>Task Scheduler</strong> – Helps prioritize and execute tasks.</li>
+<li><strong>Device Drivers</strong> – Interfaces that allow communication with hardware.</li>
+<li><strong>Memory Manager</strong> – Manages limited memory resources.</li>
+<li><strong>Protocols</strong> – Enable device-to-device or device-to-network communication.</li>
+</ul>
+<hr>
+<h2>Understanding Processes in an Operating System</h2>
+<p>A <strong>Process</strong> is simply a program in execution. When you double-click a program icon, the operating system loads it into memory, turning it into a process. This process interacts with resources like CPU, memory, and I/O devices to perform tasks.</p>
+<p>Each process has a <strong>Process Control Block (PCB)</strong> which holds vital information such as process ID, state, and resource details.</p>
+<h3>Memory Layout of a Process:</h3>
+<ul>
+<li><strong>Text Segment</strong> – Contains executable instructions.</li>
+<li><strong>Data Segment</strong> – Holds global and static variables.</li>
+<li><strong>Heap</strong> – Used for dynamic memory allocation.</li>
+<li><strong>Stack</strong> – Stores local variables, function calls, and return addresses.</li>
+</ul>
+<hr>
+<h2>What Happens When You Launch a Program?</h2>
+<ol>
+<li>OS loads the executable file into memory.</li>
+<li>A <strong>process</strong> is created.</li>
+<li>A unique <strong>Process Control Block (PCB)</strong> is assigned.</li>
+<li>A <strong>unique Process ID</strong> is generated.</li>
+</ol>
+<hr>
+<h2>Process States</h2>
+<p>A process doesn’t stay in one state. It goes through several states during its lifecycle:</p>
+<ul>
+<li><strong>New</strong> – The process is being created.</li>
+<li><strong>Ready</strong> – It is ready to run but waiting for CPU.</li>
+<li><strong>Running</strong> – It is currently executing.</li>
+<li><strong>Waiting</strong> – It is waiting for some event (like I/O).</li>
+<li><strong>Terminated</strong> – The process has finished executing.</li>
+<li><strong>Suspended</strong> – Temporarily stopped and can be resumed.</li>
+</ul>
+<h3>Why Manage Process States?</h3>
+<ul>
+<li>Helps the system <strong>efficiently use CPU</strong></li>
+<li>Enables <strong>multitasking</strong> and smooth resource sharing</li>
+<li>Improves <strong>responsiveness</strong></li>
+<li>Manages waiting processes effectively</li>
+</ul>
+<hr>
+<p>Thank you for reading.</p>
+
+            </div>
+
+            <a href="blog.html" class="back-to-blog">
+                <i class="fas fa-arrow-left"></i> Back to Blog
+            </a>
+        </article>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 Sudharshan Hegde. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-cpp.min.js"></script>
+</body>
+
+</html>
