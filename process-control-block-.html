@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head><script type="text/javascript" src="/___vscode_livepreview_injected_script"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Process control block  - Sudharshan Hegde's Blog</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css">
+    <style>
+         :root {
+            --primary: #2A5C82;
+            --secondary: #3B8AC4;
+            --dark: #1A2B3C;
+            --light: #F5F9FC;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        /* Header */
+        
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 6rem 0 3rem;
+            text-align: center;
+            clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            width: 100%;
+        }
+        
+        .header-excerpt {
+            max-width: 700px;
+            margin: 1rem auto 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+        /* Navigation */
+        
+        .nav-links {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .nav-link {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            color: white;
+            text-decoration: none;
+            backdrop-filter: blur(10px);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        /* Post content */
+        
+        .post-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 3rem;
+            margin-top: -50px;
+            margin-bottom: 3rem;
+        }
+        
+        .post-date {
+            color: var(--secondary);
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+        
+        .post-title {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.3;
+        }
+        
+        .post-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .tag {
+            background: rgba(59, 138, 196, 0.1);
+            color: var(--primary);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .post-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+        
+        .post-content p {
+            margin-bottom: 1.5rem;
+        }
+        
+        .post-content h2,
+        .post-content h3,
+        .post-content h4 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .post-content ul,
+        .post-content ol {
+            margin-bottom: 1.5rem;
+            padding-left: 2rem;
+        }
+        
+        .post-content pre {
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+            overflow: auto;
+        }
+        
+        .post-content code {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+        }
+        
+        .post-content blockquote {
+            border-left: 4px solid var(--primary);
+            padding-left: 1.5rem;
+            margin-left: 0;
+            margin-right: 0;
+            margin-bottom: 1.5rem;
+            font-style: italic;
+            color: #555;
+        }
+        
+        .post-content img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        /* Footer */
+        
+        footer {
+            text-align: center;
+            padding: 2rem 0;
+            color: #777;
+            font-size: 0.9rem;
+        }
+        
+        .back-to-blog {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--primary);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            transition: var(--transition);
+        }
+        
+        .back-to-blog:hover {
+            background: var(--secondary);
+            transform: translateY(-3px);
+        }
+        /* Mobile Responsive Styles */
+        
+        @media (max-width: 768px) {
+            header {
+                padding: 5rem 0 2.5rem;
+            }
+            .container {
+                padding: 0 1.5rem;
+            }
+            .post-container {
+                padding: 2rem;
+                margin-top: -30px;
+            }
+            .post-title {
+                font-size: 2rem;
+            }
+            .post-content {
+                font-size: 1rem;
+            }
+            .nav-link {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            header {
+                padding: 4rem 0 2rem;
+                clip-path: polygon(0 0, 100% 0, 100% 95%, 0 100%);
+            }
+            .container {
+                padding: 0 1rem;
+            }
+            .post-container {
+                padding: 1.5rem;
+                margin-top: -20px;
+                border-radius: 12px;
+            }
+            .post-title {
+                font-size: 1.75rem;
+                margin-bottom: 1rem;
+            }
+            .header-excerpt {
+                font-size: 0.9rem;
+            }
+            .post-content {
+                font-size: 0.95rem;
+                line-height: 1.7;
+            }
+            .nav-links {
+                top: 10px;
+                right: 10px;
+                flex-direction: column;
+                gap: 8px;
+            }
+            .nav-link {
+                padding: 0.5rem 1rem;
+                font-size: 0.8rem;
+            }
+            .nav-link i {
+                font-size: 1rem;
+                margin-right: 5px;
+            }
+            .post-content pre {
+                font-size: 0.8rem;
+            }
+            .post-content code {
+                font-size: 0.8rem;
+            }
+            .back-to-blog {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link"><i class="fas fa-home"></i> Home</a>
+            <a href="blog.html" class="nav-link"><i class="fas fa-blog"></i> Blog</a>
+        </div>
+        <div class="container">
+            <h1>Process control block </h1>
+            <p class="header-excerpt">Understanding Process Control Block, Context Switching, and Kernel/User Modes in Operating Systems</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <article class="post-container">
+            <span class="post-date">June 8, 2025</span>
+            <h1 class="post-title">Process control block </h1>
+
+            <div class="post-tags">
+                <span class="tag">process control block</span><span class="tag">operating system</span><span class="tag">kernel mode and user mode</span><span class="tag">context switching</span>
+            </div>
+
+            <div class="post-content">
+                <h1>Understanding Process Control Block, Context Switching, and Kernel/User Modes in Operating Systems</h1>
+<p>In this blog, we’ll go over the <strong>Process Control Block (PCB)</strong>, how <strong>context switching</strong> works, and the difference between <strong>kernel mode and user mode</strong>. These are all core concepts in operating systems and crucial for understanding how multitasking and process management work behind the scenes.</p>
+<hr>
+<h2>Process Control Block (PCB)</h2>
+<p>A <strong>Process Control Block</strong> is a data structure maintained by the operating system to keep track of information about a process.</p>
+<h3>Components of a PCB:</h3>
+<ol>
+<li><p><strong>Process State</strong>
+Shows whether the process is in ready, running, waiting, or terminated state.</p>
+</li>
+<li><p><strong>Process Identification</strong>
+A unique ID is assigned to each process to distinguish it from others.</p>
+</li>
+<li><p><strong>Program Counter</strong>
+Stores the address of the next instruction to execute. This ensures the process resumes correctly after being paused or interrupted.</p>
+</li>
+<li><p><strong>CPU Registers</strong>
+Includes accumulators, index registers, stack pointers, general-purpose registers, and condition codes. These are saved during interrupts to allow proper continuation.</p>
+</li>
+<li><p><strong>Memory Management Information</strong>
+Contains details like base and limit registers or page tables to ensure the process accesses only its allocated memory.</p>
+</li>
+<li><p><strong>Accounting and Scheduling Information</strong>
+Holds CPU usage, priority levels, and how long the process has been waiting. This helps the OS schedule tasks efficiently.</p>
+</li>
+<li><p><strong>I/O Status Information</strong>
+Tracks input/output operations, open files, and the I/O devices being used by the process.</p>
+</li>
+</ol>
+<h3>Why PCB is Important:</h3>
+<ul>
+<li>Enables <strong>context switching</strong></li>
+<li>Aids in <strong>scheduling decisions</strong></li>
+<li>Supports <strong>error handling</strong></li>
+<li>Manages <strong>resource allocation</strong></li>
+</ul>
+<hr>
+<h2>Context Switching in Operating Systems</h2>
+<p><strong>Context</strong> refers to all the information the CPU needs to execute a process. <strong>Context switching</strong> is the process of storing the state of a currently running process and loading the state of another process.</p>
+<p>This allows multiple processes to run seemingly at the same time—essential for multitasking and efficient CPU use.</p>
+<h3>What Happens During Context Switching:</h3>
+<ol>
+<li><p><strong>Interrupt or System Call</strong>
+A process is interrupted (like I/O completion or a timer interrupt), and the OS takes control.</p>
+</li>
+<li><p><strong>Saving Current Process State</strong>
+The OS saves all relevant data (like CPU registers and program counter) into the process’s PCB.</p>
+</li>
+<li><p><strong>Loading the Next Process State</strong>
+The OS loads the context of the next process from its PCB into the CPU.</p>
+</li>
+<li><p><strong>Resuming Execution</strong>
+The CPU starts or resumes executing the new process.</p>
+</li>
+</ol>
+<h3>Key Components Involved:</h3>
+<ul>
+<li><strong>Process Control Block</strong></li>
+<li><strong>CPU Registers</strong> (saved/restored)</li>
+<li><strong>Interrupts</strong></li>
+<li><strong>Scheduler</strong> (decides the next process)</li>
+</ul>
+<h3>Advantages of Context Switching:</h3>
+<ul>
+<li>Improves <strong>CPU utilization</strong></li>
+<li>Enables <strong>multitasking</strong></li>
+<li>Ensures <strong>fairness</strong> among processes</li>
+<li>Provides <strong>flexibility</strong></li>
+</ul>
+<h3>Disadvantages:</h3>
+<ul>
+<li>Introduces <strong>overhead</strong></li>
+<li>Can reduce <strong>performance</strong> if switches are too frequent</li>
+<li>Adds <strong>complexity</strong> in OS design and management</li>
+</ul>
+<hr>
+<h2>Kernel Mode vs User Mode</h2>
+<p>Operating systems have <strong>dual mode operations</strong>—user mode and kernel mode—to protect the system and manage resources effectively.</p>
+<h3>User Mode:</h3>
+<ul>
+<li>The CPU runs applications initiated by the user.</li>
+<li>Has <strong>limited access</strong> to hardware and system resources.</li>
+<li>Applications are isolated; errors in one don’t crash the whole system.</li>
+<li>Relies on <strong>system calls</strong> to interact with the OS.</li>
+</ul>
+<h3>Kernel Mode:</h3>
+<ul>
+<li>Also known as <strong>system mode</strong>, <strong>privileged mode</strong>, or <strong>supervisor mode</strong>.</li>
+<li>OS core runs here with <strong>full access</strong> to all resources.</li>
+<li>Handles tasks like <strong>process scheduling</strong>, <strong>memory management</strong>, and <strong>hardware communication</strong>.</li>
+<li><strong>Errors here can crash the entire system</strong> because of the level of access.</li>
+</ul>
+<hr>
+<h2>Mode Switching: How and Why It Happens</h2>
+<h3>Events that Trigger a Mode Change:</h3>
+<ol>
+<li><strong>System Calls</strong></li>
+<li><strong>Interrupts</strong></li>
+<li><strong>Faults</strong></li>
+</ol>
+<h3>What Happens During Mode Change:</h3>
+<ul>
+<li>The <strong>CPU switches mode</strong> (controlled by a mode bit in the CPU).</li>
+<li>In kernel mode, the OS executes critical tasks.</li>
+<li>After completion, the CPU switches back to user mode and resumes the user process.</li>
+</ul>
+<hr>
+<h2>Dual Mode Operations</h2>
+<ul>
+<li><strong>Mode Bit:</strong> Indicates whether the CPU is in <strong>kernel mode (0)</strong> or <strong>user mode (1)</strong>.</li>
+<li>On <strong>system boot</strong>, the hardware starts in kernel mode and loads the OS.</li>
+<li>When a user application runs, it operates in user mode.</li>
+<li>If a <strong>trap or interrupt</strong> occurs, the CPU switches to kernel mode to handle it.</li>
+<li>After processing, it switches back to user mode to resume the application.</li>
+</ul>
+<hr>
+<p>Thank you for reading.</p>
+
+            </div>
+
+            <a href="blog.html" class="back-to-blog">
+                <i class="fas fa-arrow-left"></i> Back to Blog
+            </a>
+        </article>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 Sudharshan Hegde. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-cpp.min.js"></script>
+</body>
+
+</html>

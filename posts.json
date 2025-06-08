@@ -1,5 +1,17 @@
 [
   {
+    "title": "Process control block ",
+    "date": "2025-06-08",
+    "excerpt": "Understanding Process Control Block, Context Switching, and Kernel/User Modes in Operating Systems",
+    "filename": "process-control-block-.html",
+    "tags": [
+      "process control block",
+      "operating system",
+      "kernel mode and user mode",
+      "context switching"
+    ]
+  },
+  {
     "title": "Ethernet ",
     "date": "2025-06-07",
     "excerpt": "Ethernet Frames, ARP, and Network Access Control",
