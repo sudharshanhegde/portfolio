@@ -1,5 +1,16 @@
 [
   {
+    "title": "Scheduling in operating system",
+    "date": "2025-06-09",
+    "excerpt": "Process Scheduling and Schedulers in Operating Systems",
+    "filename": "scheduling-in-operating-system.html",
+    "tags": [
+      "process scheduling",
+      "operating system",
+      "algorithms"
+    ]
+  },
+  {
     "title": "Process control block ",
     "date": "2025-06-08",
     "excerpt": "Understanding Process Control Block, Context Switching, and Kernel/User Modes in Operating Systems",
