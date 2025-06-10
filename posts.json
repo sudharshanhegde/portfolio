@@ -1,5 +1,17 @@
 [
   {
+    "title": "network protocols",
+    "date": "2025-06-10",
+    "excerpt": "Network Protocols and OSI Layers",
+    "filename": "network-protocols.html",
+    "tags": [
+      "network layer",
+      "computer networks",
+      "session layer",
+      "transport layer"
+    ]
+  },
+  {
     "title": "Scheduling in operating system",
     "date": "2025-06-09",
     "excerpt": "Process Scheduling and Schedulers in Operating Systems",
