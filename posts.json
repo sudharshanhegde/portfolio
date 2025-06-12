@@ -1,5 +1,17 @@
 [
   {
+    "title": "Threads in OS",
+    "date": "2025-06-12",
+    "excerpt": "Understanding Threads in Operating Systems",
+    "filename": "threads-in-os.html",
+    "tags": [
+      "Threads",
+      "operating system",
+      "Kernel level thread",
+      "user level thread"
+    ]
+  },
+  {
     "title": "network protocols",
     "date": "2025-06-10",
     "excerpt": "Network Protocols and OSI Layers",
