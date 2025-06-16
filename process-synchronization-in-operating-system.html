@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head><script type="text/javascript" src="/___vscode_livepreview_injected_script"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Process Synchronization in Operating System - Sudharshan Hegde's Blog</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css">
+    <style>
+         :root {
+            --primary: #2A5C82;
+            --secondary: #3B8AC4;
+            --dark: #1A2B3C;
+            --light: #F5F9FC;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        /* Header */
+        
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 6rem 0 3rem;
+            text-align: center;
+            clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            width: 100%;
+        }
+        
+        .header-excerpt {
+            max-width: 700px;
+            margin: 1rem auto 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+        /* Navigation */
+        
+        .nav-links {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .nav-link {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            color: white;
+            text-decoration: none;
+            backdrop-filter: blur(10px);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        /* Post content */
+        
+        .post-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 3rem;
+            margin-top: -50px;
+            margin-bottom: 3rem;
+        }
+        
+        .post-date {
+            color: var(--secondary);
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+        
+        .post-title {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.3;
+        }
+        
+        .post-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .tag {
+            background: rgba(59, 138, 196, 0.1);
+            color: var(--primary);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .post-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+        
+        .post-content p {
+            margin-bottom: 1.5rem;
+        }
+        
+        .post-content h2,
+        .post-content h3,
+        .post-content h4 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .post-content ul,
+        .post-content ol {
+            margin-bottom: 1.5rem;
+            padding-left: 2rem;
+        }
+        
+        .post-content pre {
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+            overflow: auto;
+        }
+        
+        .post-content code {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+        }
+        
+        .post-content blockquote {
+            border-left: 4px solid var(--primary);
+            padding-left: 1.5rem;
+            margin-left: 0;
+            margin-right: 0;
+            margin-bottom: 1.5rem;
+            font-style: italic;
+            color: #555;
+        }
+        
+        .post-content img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        /* Footer */
+        
+        footer {
+            text-align: center;
+            padding: 2rem 0;
+            color: #777;
+            font-size: 0.9rem;
+        }
+        
+        .back-to-blog {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--primary);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            transition: var(--transition);
+        }
+        
+        .back-to-blog:hover {
+            background: var(--secondary);
+            transform: translateY(-3px);
+        }
+        /* Mobile Responsive Styles */
+        
+        @media (max-width: 768px) {
+            header {
+                padding: 5rem 0 2.5rem;
+            }
+            .container {
+                padding: 0 1.5rem;
+            }
+            .post-container {
+                padding: 2rem;
+                margin-top: -30px;
+            }
+            .post-title {
+                font-size: 2rem;
+            }
+            .post-content {
+                font-size: 1rem;
+            }
+            .nav-link {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            header {
+                padding: 4rem 0 2rem;
+                clip-path: polygon(0 0, 100% 0, 100% 95%, 0 100%);
+            }
+            .container {
+                padding: 0 1rem;
+            }
+            .post-container {
+                padding: 1.5rem;
+                margin-top: -20px;
+                border-radius: 12px;
+            }
+            .post-title {
+                font-size: 1.75rem;
+                margin-bottom: 1rem;
+            }
+            .header-excerpt {
+                font-size: 0.9rem;
+            }
+            .post-content {
+                font-size: 0.95rem;
+                line-height: 1.7;
+            }
+            .nav-links {
+                top: 10px;
+                right: 10px;
+                flex-direction: column;
+                gap: 8px;
+            }
+            .nav-link {
+                padding: 0.5rem 1rem;
+                font-size: 0.8rem;
+            }
+            .nav-link i {
+                font-size: 1rem;
+                margin-right: 5px;
+            }
+            .post-content pre {
+                font-size: 0.8rem;
+            }
+            .post-content code {
+                font-size: 0.8rem;
+            }
+            .back-to-blog {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link"><i class="fas fa-home"></i> Home</a>
+            <a href="blog.html" class="nav-link"><i class="fas fa-blog"></i> Blog</a>
+        </div>
+        <div class="container">
+            <h1>Process Synchronization in Operating System</h1>
+            <p class="header-excerpt">Process Synchronization in Operating Systems</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <article class="post-container">
+            <span class="post-date">June 16, 2025</span>
+            <h1 class="post-title">Process Synchronization in Operating System</h1>
+
+            <div class="post-tags">
+                <span class="tag">Operating system</span><span class="tag">Starvation</span><span class="tag">Aging</span><span class="tag">bankers algorithm</span><span class="tag">semaphores</span><span class="tag">critical section problem</span><span class="tag">deadlock</span>
+            </div>
+
+            <div class="post-content">
+                <h1>Process Synchronization in Operating Systems</h1>
+<p>In multitasking environments, multiple processes often need to access shared resources. <strong>Process synchronization</strong> ensures that these processes do so without interference, corruption of data, or inconsistent results. It is crucial for preventing <strong>race conditions</strong>, <strong>deadlocks</strong>, and <strong>starvation</strong>.</p>
+<hr>
+<h2>Tools Used for Process Synchronization</h2>
+<h3>1. <strong>Semaphores</strong></h3>
+<p>Semaphores are integer variables used to control access to shared resources.</p>
+<ul>
+<li><strong>Binary Semaphore</strong>: Value is either 0 or 1. Functions like a lock.</li>
+<li><strong>Counting Semaphore</strong>: Value can range over an unrestricted domain. Tracks availability of multiple resources.</li>
+</ul>
+<h3>2. <strong>Mutexes (Mutual Exclusion Locks)</strong></h3>
+<p>A mutex allows only one process to enter a critical section at a time. It ensures that shared resources are accessed by only one thread or process concurrently.</p>
+<h3>3. <strong>Monitors</strong></h3>
+<p>Monitors are high-level synchronization constructs that combine shared data and the procedures that operate on them. Only one process can execute in a monitor at a time.</p>
+<h3>4. <strong>Barriers</strong></h3>
+<p>Used in parallel computing, barriers make all threads or processes wait until each reaches a particular point before any can proceed.</p>
+<hr>
+<h2>Challenges in Process Synchronization</h2>
+<ol>
+<li><strong>Deadlocks</strong> – Processes waiting indefinitely for each other’s resources.</li>
+<li><strong>Starvation</strong> – A process is perpetually denied access to resources.</li>
+<li><strong>Race Conditions</strong> – Multiple processes access shared data concurrently, leading to unpredictable results.</li>
+<li><strong>Priority Inversion</strong> – Lower-priority process holds a resource needed by a higher-priority process.</li>
+</ol>
+<hr>
+<h2>The Critical Section Problem</h2>
+<p>Occurs when multiple processes attempt to access and modify shared data concurrently.</p>
+<h3>Key Components:</h3>
+<ol>
+<li><strong>Entry Section</strong>: Code that requests entry into the critical section.</li>
+<li><strong>Critical Section</strong>: Code that accesses shared resources. Only one process can execute this at a time.</li>
+<li><strong>Exit Section</strong>: Code executed after leaving the critical section.</li>
+<li><strong>Remainder Section</strong>: Code outside the critical section.</li>
+</ol>
+<h3>Requirements for a Solution:</h3>
+<ul>
+<li><strong>Mutual Exclusion</strong>: Only one process in critical section at a time.</li>
+<li><strong>Progress</strong>: If no process is in the critical section, selection of the next should not be delayed.</li>
+<li><strong>Bounded Waiting</strong>: There should be a limit on the number of times a process is bypassed.</li>
+</ul>
+<h3>Solutions:</h3>
+<ul>
+<li><strong>Software Solutions</strong>: Algorithms like Peterson’s and Dekker’s.</li>
+<li><strong>Hardware Solutions</strong>: Special instructions like <code>TestAndSet</code>, <code>CompareAndSwap</code>.</li>
+<li><strong>Operating System Solutions</strong>: Semaphores, mutexes, monitors.</li>
+</ul>
+<hr>
+<h2>Semaphores</h2>
+<p>Semaphores are used to manage resource access and ensure synchronization among processes or threads.</p>
+<h3>Types:</h3>
+<ul>
+<li><strong>Counting Semaphores</strong>: Allow multiple processes to access a finite number of instances of a resource.</li>
+<li><strong>Binary Semaphores</strong>: Work like simple locks, allowing either access (1) or no access (0).</li>
+</ul>
+<h3>Operations:</h3>
+<ul>
+<li><strong>Wait (P operation)</strong>: Decreases the semaphore value. If the value is less than zero, the process is blocked.</li>
+<li><strong>Signal (V operation)</strong>: Increases the semaphore value and wakes up blocked processes if any.</li>
+</ul>
+<h3>Pros:</h3>
+<ul>
+<li>Prevents race conditions</li>
+<li>Supports both single and multiple resource management</li>
+<li>Facilitates inter-process communication</li>
+</ul>
+<h3>Cons:</h3>
+<ul>
+<li>Improper use can cause deadlocks</li>
+<li>Complex implementation</li>
+<li>Overuse may degrade performance</li>
+</ul>
+<hr>
+<h2>Producer-Consumer Problem</h2>
+<p>This classic synchronization problem illustrates safe access to a shared buffer.</p>
+<ul>
+<li><strong>Producer</strong>: Generates data and adds it to the buffer.</li>
+<li><strong>Consumer</strong>: Removes data from the buffer.</li>
+<li>Both must synchronize to avoid accessing a full or empty buffer.</li>
+</ul>
+<h3>Tools Used:</h3>
+<ul>
+<li><p><strong>Semaphores</strong>:</p>
+<ul>
+<li><code>Full</code>: Counts filled buffer slots</li>
+<li><code>Empty</code>: Counts empty buffer slots</li>
+</ul>
+</li>
+<li><p><strong>Mutex</strong>: Ensures only one process accesses the buffer at a time</p>
+</li>
+</ul>
+<h3>Solutions:</h3>
+<ul>
+<li><strong>Using Semaphores</strong>: Manages resource availability and prevents buffer overflows/underflows.</li>
+<li><strong>Using Monitors</strong>: Simplifies logic by encapsulating synchronization.</li>
+<li><strong>Message Passing</strong>: Avoids shared memory, reducing synchronization complexity.</li>
+</ul>
+<hr>
+<h2>Deadlocks in Operating Systems</h2>
+<p>A <strong>deadlock</strong> is a situation where processes are blocked because each process is holding a resource and waiting for another.</p>
+<h3>Necessary Conditions:</h3>
+<ol>
+<li><strong>Mutual Exclusion</strong></li>
+<li><strong>Hold and Wait</strong></li>
+<li><strong>No Preemption</strong></li>
+<li><strong>Circular Wait</strong></li>
+</ol>
+<h3>Deadlock Handling Methods:</h3>
+<ul>
+<li><strong>Prevention</strong>: Eliminate one of the necessary conditions.</li>
+<li><strong>Avoidance</strong>: Dynamically ensure the system is in a safe state.</li>
+<li><strong>Detection and Recovery</strong>: Let deadlocks occur, detect them, and then recover.</li>
+</ul>
+<hr>
+<h2>Banker's Algorithm</h2>
+<p>A <strong>deadlock avoidance algorithm</strong> that checks whether a resource allocation leads to a safe state.</p>
+<h3>Steps:</h3>
+<ol>
+<li><strong>Resource Request</strong>: Validate against maximum claim and current availability.</li>
+<li><strong>Safety Check</strong>: Simulate allocation and ensure all processes can eventually complete.</li>
+</ol>
+<h3>Pros:</h3>
+<ul>
+<li>Avoids unsafe states</li>
+<li>Dynamically checks resource allocations</li>
+<li>Improves system utilization</li>
+</ul>
+<hr>
+<h2>Starvation and Aging</h2>
+<h3>Starvation</h3>
+<p>Occurs when low-priority processes wait indefinitely due to constant preemption by higher-priority ones.</p>
+<h4>Characteristics:</h4>
+<ul>
+<li>Unfair resource allocation</li>
+<li>Often seen in priority scheduling systems</li>
+</ul>
+<h4>Solutions:</h4>
+<ol>
+<li><strong>Aging</strong>: Gradually increase the priority of waiting processes.</li>
+<li><strong>Fair Scheduling</strong>: Use algorithms like Round Robin to ensure fairness.</li>
+<li><strong>Resource Time Limits</strong>: Cap the time a process can hold a resource.</li>
+</ol>
+<h3>Aging</h3>
+<p>A technique to combat starvation:</p>
+<ul>
+<li>As a process waits in the queue, its priority increases over time.</li>
+<li>Eventually, it reaches a high enough priority to get scheduled.</li>
+<li>Ensures fairness in resource distribution.</li>
+</ul>
+<hr>
+<p>Thank You for reading.</p>
+
+            </div>
+
+            <a href="blog.html" class="back-to-blog">
+                <i class="fas fa-arrow-left"></i> Back to Blog
+            </a>
+        </article>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 Sudharshan Hegde. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-cpp.min.js"></script>
+</body>
+
+</html>

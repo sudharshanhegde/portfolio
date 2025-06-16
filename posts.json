@@ -1,5 +1,20 @@
 [
   {
+    "title": "Process Synchronization in Operating System",
+    "date": "2025-06-16",
+    "excerpt": "Process Synchronization in Operating Systems",
+    "filename": "process-synchronization-in-operating-system.html",
+    "tags": [
+      "Operating system",
+      "Starvation",
+      "Aging",
+      "bankers algorithm",
+      "semaphores",
+      "critical section problem",
+      "deadlock"
+    ]
+  },
+  {
     "title": "Threads in OS",
     "date": "2025-06-12",
     "excerpt": "Understanding Threads in Operating Systems",
