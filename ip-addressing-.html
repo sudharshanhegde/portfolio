@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head><script type="text/javascript" src="/___vscode_livepreview_injected_script"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IP addressing  - Sudharshan Hegde's Blog</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css">
+    <style>
+         :root {
+            --primary: #2A5C82;
+            --secondary: #3B8AC4;
+            --dark: #1A2B3C;
+            --light: #F5F9FC;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        /* Header */
+        
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 6rem 0 3rem;
+            text-align: center;
+            clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            width: 100%;
+        }
+        
+        .header-excerpt {
+            max-width: 700px;
+            margin: 1rem auto 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+        /* Navigation */
+        
+        .nav-links {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .nav-link {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            color: white;
+            text-decoration: none;
+            backdrop-filter: blur(10px);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        /* Post content */
+        
+        .post-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 3rem;
+            margin-top: -50px;
+            margin-bottom: 3rem;
+        }
+        
+        .post-date {
+            color: var(--secondary);
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+        
+        .post-title {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.3;
+        }
+        
+        .post-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .tag {
+            background: rgba(59, 138, 196, 0.1);
+            color: var(--primary);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .post-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+        
+        .post-content p {
+            margin-bottom: 1.5rem;
+        }
+        
+        .post-content h2,
+        .post-content h3,
+        .post-content h4 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .post-content ul,
+        .post-content ol {
+            margin-bottom: 1.5rem;
+            padding-left: 2rem;
+        }
+        
+        .post-content pre {
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+            overflow: auto;
+        }
+        
+        .post-content code {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+        }
+        
+        .post-content blockquote {
+            border-left: 4px solid var(--primary);
+            padding-left: 1.5rem;
+            margin-left: 0;
+            margin-right: 0;
+            margin-bottom: 1.5rem;
+            font-style: italic;
+            color: #555;
+        }
+        
+        .post-content img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        /* Footer */
+        
+        footer {
+            text-align: center;
+            padding: 2rem 0;
+            color: #777;
+            font-size: 0.9rem;
+        }
+        
+        .back-to-blog {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--primary);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            transition: var(--transition);
+        }
+        
+        .back-to-blog:hover {
+            background: var(--secondary);
+            transform: translateY(-3px);
+        }
+        /* Mobile Responsive Styles */
+        
+        @media (max-width: 768px) {
+            header {
+                padding: 5rem 0 2.5rem;
+            }
+            .container {
+                padding: 0 1.5rem;
+            }
+            .post-container {
+                padding: 2rem;
+                margin-top: -30px;
+            }
+            .post-title {
+                font-size: 2rem;
+            }
+            .post-content {
+                font-size: 1rem;
+            }
+            .nav-link {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            header {
+                padding: 4rem 0 2rem;
+                clip-path: polygon(0 0, 100% 0, 100% 95%, 0 100%);
+            }
+            .container {
+                padding: 0 1rem;
+            }
+            .post-container {
+                padding: 1.5rem;
+                margin-top: -20px;
+                border-radius: 12px;
+            }
+            .post-title {
+                font-size: 1.75rem;
+                margin-bottom: 1rem;
+            }
+            .header-excerpt {
+                font-size: 0.9rem;
+            }
+            .post-content {
+                font-size: 0.95rem;
+                line-height: 1.7;
+            }
+            .nav-links {
+                top: 10px;
+                right: 10px;
+                flex-direction: column;
+                gap: 8px;
+            }
+            .nav-link {
+                padding: 0.5rem 1rem;
+                font-size: 0.8rem;
+            }
+            .nav-link i {
+                font-size: 1rem;
+                margin-right: 5px;
+            }
+            .post-content pre {
+                font-size: 0.8rem;
+            }
+            .post-content code {
+                font-size: 0.8rem;
+            }
+            .back-to-blog {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link"><i class="fas fa-home"></i> Home</a>
+            <a href="blog.html" class="nav-link"><i class="fas fa-blog"></i> Blog</a>
+        </div>
+        <div class="container">
+            <h1>IP addressing </h1>
+            <p class="header-excerpt">IP Addressing</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <article class="post-container">
+            <span class="post-date">June 18, 2025</span>
+            <h1 class="post-title">IP addressing </h1>
+
+            <div class="post-tags">
+                <span class="tag">IPv4</span><span class="tag">IPv6</span><span class="tag">computer networks</span><span class="tag">Subnetting</span><span class="tag">supernetting</span><span class="tag">classful addressing</span><span class="tag">classless addressing</span>
+            </div>
+
+            <div class="post-content">
+                <h1>IP Addressing</h1>
+<p>IP addressing is used to uniquely identify devices on the network and enable efficient routing and delivery of data packets. It works on the <strong>network layer</strong> and enables seamless communication across local and global networks.</p>
+<h2>Why is it needed?</h2>
+<ol>
+<li>It provides unique identification for each device in the network and ensures there is no two devices sharing the same address.</li>
+<li>It facilitates the routing of the data packets across the interconnected networks and enables global communication.</li>
+<li>It defines what is LAN and what is WAN or the internet.</li>
+</ol>
+<hr>
+<h1>IPv4</h1>
+<p>It is the fourth version of the Internet Protocol. It uses <strong>32-bit numerical address</strong> to uniquely identify devices on the network. It is written in <strong>dotted decimal notation</strong> — each address is divided into four octets separated by periods with values ranging from 0 to 255.</p>
+<h2>IPv4 Header</h2>
+<p>It consists of several fields that enable the data transmission, routing, and control. Its minimum size is <strong>20 bytes</strong> and can extend up to <strong>60 bytes</strong> with optional fields included.</p>
+<h3>Components of IPv4 Header:</h3>
+<ul>
+<li><strong>Version</strong>: Specifies the version being used (4 for IPv4). Ensures that packet is interpreted correctly by the receiving devices.</li>
+<li><strong>Header Length</strong>: Indicates the length of header in 32-bit words. Helps identify where the actual payload data begins.</li>
+<li><strong>Type of Service</strong>: Provides how the packet should be handled in terms of priority and quality of service, minimizing delay or maximizing throughput.</li>
+<li><strong>Total Length</strong>: Specifies the total size of the packet, including header and payload data, in bytes. Maximum value is 65,535 bytes.</li>
+<li><strong>Identification</strong>: Unique identifier assigned to each packet to aid in reassembling fragmented packets back into the original message.</li>
+<li><strong>Flags</strong>: A set of three bits used to control packet fragmentation — whether the packet can be fragmented or whether more fragments are expected.</li>
+<li><strong>Fragment Offset</strong>: Indicates the position of the current fragment in relation to original data, ensuring fragments are correctly reassembled.</li>
+<li><strong>Time to Live (TTL)</strong>: Specifies the maximum number of hops a packet can traverse before being discarded. Prevents indefinite looping in the network.</li>
+<li><strong>Protocol</strong>: Identifies the protocol used in the data portion of the packet (e.g., TCP or UDP).</li>
+<li><strong>Header Checksum</strong>: A value used to detect errors in the header. If checksum doesn't match at the router, the packet is discarded.</li>
+<li><strong>Source Address</strong>: Specifies the device from which the packet originated.</li>
+<li><strong>Destination Address</strong>: Specifies the device to which the packet is being sent.</li>
+<li><strong>Options</strong>: Provides additional functionality like routing preferences or timestamps. Not commonly used due to performance impact.</li>
+</ul>
+<blockquote>
+<p>![[Pasted image 20250618163103.png]]</p>
+</blockquote>
+<hr>
+<h2>Address Classes in IPv4</h2>
+<ul>
+<li><p><strong>Class A</strong>: Designed for large networks with millions of devices.
+<code>Range: 1.0.0.0 to 126.255.255.255</code>
+Used by ISPs and multinational companies.</p>
+</li>
+<li><p><strong>Class B</strong>: Suitable for medium-sized networks.
+<code>Range: 128.0.0.0 to 191.255.255.255</code>
+Used by universities and large organizations.</p>
+</li>
+<li><p><strong>Class C</strong>: Used for smaller networks in small businesses.
+<code>Range: 192.0.0.0 to 223.255.255.255</code></p>
+</li>
+<li><p><strong>Class D</strong>: Reserved for multicast transmissions.
+<code>Range: 224.0.0.0 to 239.255.255.255</code>
+Used for streaming and conferencing applications.</p>
+</li>
+<li><p><strong>Class E</strong>: Reserved for experimental purposes.
+<code>Range: 240.0.0.0 to 255.255.255.255</code></p>
+</li>
+</ul>
+<h3>Limitations of IPv4:</h3>
+<ul>
+<li>IPv4 provides <strong>4.3 billion unique addresses</strong>, which is insufficient for modern global requirements.</li>
+<li>No built-in encryption or authentication, making data transmissions vulnerable.</li>
+<li>Rapid internet growth has led to near exhaustion of IPv4 addresses.</li>
+</ul>
+<blockquote>
+<p>It is used in LANs, WANs, and early internet infrastructure to assign addresses to devices.</p>
+</blockquote>
+<hr>
+<h1>IPv6</h1>
+<p>It uses <strong>128-bit addresses</strong> to overcome limitations of IPv4 and provides an <strong>unlimited address pool</strong> to support modern internet demands. Addresses are written in <strong>colon-hexadecimal</strong> notation. The address consists of <strong>eight 16-bit segments</strong> separated by colons and can include shorthand notation for consecutive zero segments.</p>
+<p>IPv6 is designed to be <strong>simpler and more efficient</strong> than IPv4. Header size is <strong>40 bytes</strong>, which reduces processing overhead and enhances routing performance.</p>
+<h2>Components in IPv6 Header:</h2>
+<ul>
+<li><strong>Version</strong></li>
+<li><strong>Traffic Class</strong></li>
+<li><strong>Flow Label</strong></li>
+<li><strong>Payload Length</strong></li>
+<li><strong>Next Header</strong></li>
+<li><strong>Hop Limit</strong></li>
+<li><strong>Source Address</strong></li>
+<li><strong>Destination Address</strong></li>
+</ul>
+<blockquote>
+<p>![[Pasted image 20250618202517.png]]</p>
+</blockquote>
+<blockquote>
+<p>IPv6 offers a large address space, built-in security, device auto-configuration, efficient routing, and compatibility with IPv4.</p>
+</blockquote>
+<hr>
+<h1>Subnetting</h1>
+<p>Subnetting is the process of dividing a larger network into smaller, more manageable <strong>sub-networks (subnets)</strong>. It is useful for organizing networks, reducing congestion, and optimizing IP address allocation.</p>
+<h2>Why It Is Used:</h2>
+<ul>
+<li><strong>Reduces network congestion</strong> by limiting broadcast traffic within smaller subnets.</li>
+<li><strong>Enhances network security</strong> by restricting unauthorized access and isolating sensitive data.</li>
+<li><strong>Optimizes IP address usage</strong> by avoiding waste in networks that don't need large address pools.</li>
+</ul>
+<h2>How Does It Work:</h2>
+<ul>
+<li><p><strong>Subnet Mask</strong>: A value that separates the network and host part of the IP address.
+Example: <code>255.255.255.0</code> indicates first 24 bits are for network and remaining for hosts.</p>
+</li>
+<li><p><strong>CIDR Notation</strong>: Specifies number of bits used for the network.
+Example: <code>192.168.1.0/24</code> means 24 bits for network and 8 bits for host addresses.</p>
+</li>
+</ul>
+<hr>
+<h1>Supernetting</h1>
+<p>Supernetting combines multiple smaller networks into a larger one. It is used for <strong>route aggregation</strong> to simplify routing and reduce the size of routing tables.</p>
+<h2>Benefits:</h2>
+<ul>
+<li><strong>Reduces routing table size</strong> by aggregating routes and reducing entries in the router table, improving performance.</li>
+<li><strong>Optimizes routing efficiency</strong> by combining contiguous networks into a single entity.</li>
+<li><strong>Simplifies network management</strong> and allows administrators to manage fewer networks while maintaining connectivity.</li>
+</ul>
+<h2>How It Works:</h2>
+<ul>
+<li>Combines contiguous subnets into a larger network.</li>
+<li>Uses a <strong>shorter subnet mask</strong> to cover a broader range of addresses.</li>
+</ul>
+<hr>
+<h1>Classful vs Classless Addressing</h1>
+<h2>Classful Addressing:</h2>
+<ul>
+<li>Divides IP addresses into fixed classes (A, B, C, D, E) with predefined subnet masks.</li>
+<li>Leads to inefficient IP allocation in larger networks.</li>
+<li>Easy to understand and suitable for small networks with predictable needs.</li>
+<li><strong>Disadvantage</strong>: Wastes IP addresses due to fixed subnet sizes, lacks flexibility for modern networks.</li>
+</ul>
+<h2>Classless Addressing:</h2>
+<ul>
+<li>Eliminates rigid boundaries of classful addressing.</li>
+<li>Allows <strong>Variable Length Subnet Masking (VLSM)</strong> for more efficient IP allocation.</li>
+<li>Requires <strong>more complex calculation and planning</strong> compared to classful addressing.</li>
+</ul>
+<hr>
+<p>Thank you for reading.</p>
+
+            </div>
+
+            <a href="blog.html" class="back-to-blog">
+                <i class="fas fa-arrow-left"></i> Back to Blog
+            </a>
+        </article>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 Sudharshan Hegde. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-cpp.min.js"></script>
+</body>
+
+</html>

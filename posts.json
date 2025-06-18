@@ -1,5 +1,20 @@
 [
   {
+    "title": "IP addressing ",
+    "date": "2025-06-18",
+    "excerpt": "IP Addressing",
+    "filename": "ip-addressing-.html",
+    "tags": [
+      "IPv4",
+      "IPv6",
+      "computer networks",
+      "Subnetting",
+      "supernetting",
+      "classful addressing",
+      "classless addressing"
+    ]
+  },
+  {
     "title": "Process Synchronization in Operating System",
     "date": "2025-06-16",
     "excerpt": "Process Synchronization in Operating Systems",
