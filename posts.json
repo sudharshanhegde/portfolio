@@ -1,5 +1,17 @@
 [
   {
+    "title": "Network Address Translation",
+    "date": "2025-06-20",
+    "excerpt": "Overview on NAT, DHCP and DNS",
+    "filename": "network-address-translation.html",
+    "tags": [
+      "Network address translation",
+      "Computer networks",
+      "Domain name system",
+      "Dynamic host control protocol"
+    ]
+  },
+  {
     "title": "IP addressing ",
     "date": "2025-06-18",
     "excerpt": "IP Addressing",

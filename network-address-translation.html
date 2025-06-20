@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head><script type="text/javascript" src="/___vscode_livepreview_injected_script"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Address Translation - Sudharshan Hegde's Blog</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css">
+    <style>
+         :root {
+            --primary: #2A5C82;
+            --secondary: #3B8AC4;
+            --dark: #1A2B3C;
+            --light: #F5F9FC;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        /* Header */
+        
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 6rem 0 3rem;
+            text-align: center;
+            clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            width: 100%;
+        }
+        
+        .header-excerpt {
+            max-width: 700px;
+            margin: 1rem auto 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+        /* Navigation */
+        
+        .nav-links {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .nav-link {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            color: white;
+            text-decoration: none;
+            backdrop-filter: blur(10px);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        /* Post content */
+        
+        .post-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 3rem;
+            margin-top: -50px;
+            margin-bottom: 3rem;
+        }
+        
+        .post-date {
+            color: var(--secondary);
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+        
+        .post-title {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.3;
+        }
+        
+        .post-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .tag {
+            background: rgba(59, 138, 196, 0.1);
+            color: var(--primary);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .post-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+        
+        .post-content p {
+            margin-bottom: 1.5rem;
+        }
+        
+        .post-content h2,
+        .post-content h3,
+        .post-content h4 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .post-content ul,
+        .post-content ol {
+            margin-bottom: 1.5rem;
+            padding-left: 2rem;
+        }
+        
+        .post-content pre {
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+            overflow: auto;
+        }
+        
+        .post-content code {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+        }
+        
+        .post-content blockquote {
+            border-left: 4px solid var(--primary);
+            padding-left: 1.5rem;
+            margin-left: 0;
+            margin-right: 0;
+            margin-bottom: 1.5rem;
+            font-style: italic;
+            color: #555;
+        }
+        
+        .post-content img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        /* Footer */
+        
+        footer {
+            text-align: center;
+            padding: 2rem 0;
+            color: #777;
+            font-size: 0.9rem;
+        }
+        
+        .back-to-blog {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--primary);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            transition: var(--transition);
+        }
+        
+        .back-to-blog:hover {
+            background: var(--secondary);
+            transform: translateY(-3px);
+        }
+        /* Mobile Responsive Styles */
+        
+        @media (max-width: 768px) {
+            header {
+                padding: 5rem 0 2.5rem;
+            }
+            .container {
+                padding: 0 1.5rem;
+            }
+            .post-container {
+                padding: 2rem;
+                margin-top: -30px;
+            }
+            .post-title {
+                font-size: 2rem;
+            }
+            .post-content {
+                font-size: 1rem;
+            }
+            .nav-link {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            header {
+                padding: 4rem 0 2rem;
+                clip-path: polygon(0 0, 100% 0, 100% 95%, 0 100%);
+            }
+            .container {
+                padding: 0 1rem;
+            }
+            .post-container {
+                padding: 1.5rem;
+                margin-top: -20px;
+                border-radius: 12px;
+            }
+            .post-title {
+                font-size: 1.75rem;
+                margin-bottom: 1rem;
+            }
+            .header-excerpt {
+                font-size: 0.9rem;
+            }
+            .post-content {
+                font-size: 0.95rem;
+                line-height: 1.7;
+            }
+            .nav-links {
+                top: 10px;
+                right: 10px;
+                flex-direction: column;
+                gap: 8px;
+            }
+            .nav-link {
+                padding: 0.5rem 1rem;
+                font-size: 0.8rem;
+            }
+            .nav-link i {
+                font-size: 1rem;
+                margin-right: 5px;
+            }
+            .post-content pre {
+                font-size: 0.8rem;
+            }
+            .post-content code {
+                font-size: 0.8rem;
+            }
+            .back-to-blog {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link"><i class="fas fa-home"></i> Home</a>
+            <a href="blog.html" class="nav-link"><i class="fas fa-blog"></i> Blog</a>
+        </div>
+        <div class="container">
+            <h1>Network Address Translation</h1>
+            <p class="header-excerpt">Overview on NAT, DHCP and DNS</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <article class="post-container">
+            <span class="post-date">June 20, 2025</span>
+            <h1 class="post-title">Network Address Translation</h1>
+
+            <div class="post-tags">
+                <span class="tag">Network address translation</span><span class="tag">Computer networks</span><span class="tag">Domain name system</span><span class="tag">Dynamic host control protocol</span>
+            </div>
+
+            <div class="post-content">
+                <h2><strong>Network Address Translation (NAT)</strong></h2>
+<p>NAT is a method used by routers and firewalls to modify IP addresses in data packets as they traverse between private and public networks. It allows multiple devices on a private network to share a single public IP address, ensuring efficient usage of the IPv4 address space.</p>
+<h3><strong>Types of NAT</strong></h3>
+<ul>
+<li><p><strong>Static NAT</strong>:
+Maps one private IP address to a single public IP address. Commonly used for internal servers hosting web applications or other services that require consistent external access.</p>
+</li>
+<li><p><strong>Dynamic NAT</strong>:
+Maps private IP addresses to a pool of available public IP addresses. Allows multiple devices to access the internet without requiring a unique public IP for each device.</p>
+</li>
+<li><p><strong>Port Address Translation (PAT)</strong> (also known as <strong>NAT Overload</strong>):
+Maps multiple private IPs to a single public IP address using unique port numbers. Common in home and small office networks where multiple devices share one public IP.</p>
+</li>
+</ul>
+<h3><strong>Advantages of NAT</strong></h3>
+<ul>
+<li>Conserves public IP addresses</li>
+<li>Improves security by hiding internal IP addresses</li>
+<li>Enables internet access for private networks</li>
+</ul>
+<h3><strong>Limitations of NAT</strong></h3>
+<ul>
+<li><strong>Latency</strong>: Address translation can introduce communication delays</li>
+<li><strong>Compatibility Issues</strong>: May interfere with protocols that require direct end-to-end connectivity</li>
+</ul>
+<hr>
+<h2><strong>Dynamic Host Configuration Protocol (DHCP)</strong></h2>
+<p>DHCP automates the process of assigning IP addresses and other configuration details to devices in a network. It eliminates the need for manual configuration and ensures efficient IP address usage.</p>
+<h3><strong>How DHCP Works</strong></h3>
+<ol>
+<li><p><strong>Discovery</strong>:
+The client broadcasts a request for an IP address when it joins the network.</p>
+</li>
+<li><p><strong>Offer</strong>:
+The DHCP server responds with an available IP address and other network settings.</p>
+</li>
+<li><p><strong>Request</strong>:
+The client requests to lease the offered IP address.</p>
+</li>
+<li><p><strong>Acknowledgement</strong>:
+The server confirms the lease and assigns the IP address to the client.</p>
+</li>
+</ol>
+<h3><strong>Key Components</strong></h3>
+<ul>
+<li><strong>Server</strong></li>
+<li><strong>Client</strong></li>
+<li><strong>Lease Time</strong></li>
+</ul>
+<h3><strong>Advantages of DHCP</strong></h3>
+<ul>
+<li>Automates IP address management</li>
+<li>Reduces configuration errors</li>
+<li>Scalable for large and dynamic networks</li>
+</ul>
+<h3><strong>Limitations of DHCP</strong></h3>
+<ul>
+<li>Highly dependent on the DHCP server</li>
+<li>Potential for misconfiguration</li>
+</ul>
+<hr>
+<h2><strong>Domain Name System (DNS)</strong></h2>
+<p>DNS translates user-friendly domain names into numerical IP addresses required for computer communication.</p>
+<h3><strong>How DNS Works</strong></h3>
+<ol>
+<li><p><strong>Query</strong>:
+The user enters a domain name in the browser.</p>
+</li>
+<li><p><strong>Resolution</strong>:
+A recursive resolver queries the root, TLD, and authoritative DNS servers to find the domain’s IP address.</p>
+</li>
+<li><p><strong>Response</strong>:
+The DNS server returns the IP address of the requested domain.</p>
+</li>
+<li><p><strong>Connection</strong>:
+The browser uses the resolved IP address to connect and retrieve content from the web server.</p>
+</li>
+</ol>
+<h3><strong>Common DNS Record Types</strong></h3>
+<ul>
+<li><strong>A Record</strong>: Maps domain names to IPv4 addresses</li>
+<li><strong>AAAA Record</strong>: Maps domain names to IPv6 addresses</li>
+<li><strong>CNAME Record</strong>: Maps one domain name to another (aliases)</li>
+<li><strong>MX Record</strong>: Specifies mail servers for email delivery</li>
+</ul>
+<h3><strong>Advantages of DNS</strong></h3>
+<ul>
+<li><strong>User-Friendly</strong>: Allows users to access websites using domain names instead of IP addresses</li>
+<li><strong>Scalability</strong>: Hierarchical structure supports the size and growth of the internet</li>
+<li><strong>Redundancy</strong>: Distributes queries across multiple servers to reduce downtime</li>
+</ul>
+<h3><strong>Limitations of DNS</strong></h3>
+<ul>
+<li><strong>Vulnerabilities</strong>: Susceptible to attacks like DNS spoofing and cache poisoning</li>
+<li><strong>Server Downtime</strong>: Can disrupt access if DNS servers are unavailable</li>
+</ul>
+<hr>
+<p>Thank you for reading.</p>
+
+            </div>
+
+            <a href="blog.html" class="back-to-blog">
+                <i class="fas fa-arrow-left"></i> Back to Blog
+            </a>
+        </article>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 Sudharshan Hegde. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-cpp.min.js"></script>
+</body>
+
+</html>
