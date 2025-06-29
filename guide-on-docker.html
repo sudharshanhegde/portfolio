@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head><script type="text/javascript" src="/___vscode_livepreview_injected_script"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guide on Docker - Sudharshan Hegde's Blog</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css">
+    <style>
+         :root {
+            --primary: #2A5C82;
+            --secondary: #3B8AC4;
+            --dark: #1A2B3C;
+            --light: #F5F9FC;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        /* Header */
+        
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 6rem 0 3rem;
+            text-align: center;
+            clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            width: 100%;
+        }
+        
+        .header-excerpt {
+            max-width: 700px;
+            margin: 1rem auto 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+        /* Navigation */
+        
+        .nav-links {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .nav-link {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            color: white;
+            text-decoration: none;
+            backdrop-filter: blur(10px);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        /* Post content */
+        
+        .post-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 3rem;
+            margin-top: -50px;
+            margin-bottom: 3rem;
+        }
+        
+        .post-date {
+            color: var(--secondary);
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+        
+        .post-title {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.3;
+        }
+        
+        .post-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .tag {
+            background: rgba(59, 138, 196, 0.1);
+            color: var(--primary);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .post-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+        
+        .post-content p {
+            margin-bottom: 1.5rem;
+        }
+        
+        .post-content h2,
+        .post-content h3,
+        .post-content h4 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .post-content ul,
+        .post-content ol {
+            margin-bottom: 1.5rem;
+            padding-left: 2rem;
+        }
+        
+        .post-content pre {
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+            overflow: auto;
+        }
+        
+        .post-content code {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+        }
+        
+        .post-content blockquote {
+            border-left: 4px solid var(--primary);
+            padding-left: 1.5rem;
+            margin-left: 0;
+            margin-right: 0;
+            margin-bottom: 1.5rem;
+            font-style: italic;
+            color: #555;
+        }
+        
+        .post-content img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        /* Footer */
+        
+        footer {
+            text-align: center;
+            padding: 2rem 0;
+            color: #777;
+            font-size: 0.9rem;
+        }
+        
+        .back-to-blog {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--primary);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            transition: var(--transition);
+        }
+        
+        .back-to-blog:hover {
+            background: var(--secondary);
+            transform: translateY(-3px);
+        }
+        /* Mobile Responsive Styles */
+        
+        @media (max-width: 768px) {
+            header {
+                padding: 5rem 0 2.5rem;
+            }
+            .container {
+                padding: 0 1.5rem;
+            }
+            .post-container {
+                padding: 2rem;
+                margin-top: -30px;
+            }
+            .post-title {
+                font-size: 2rem;
+            }
+            .post-content {
+                font-size: 1rem;
+            }
+            .nav-link {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            header {
+                padding: 4rem 0 2rem;
+                clip-path: polygon(0 0, 100% 0, 100% 95%, 0 100%);
+            }
+            .container {
+                padding: 0 1rem;
+            }
+            .post-container {
+                padding: 1.5rem;
+                margin-top: -20px;
+                border-radius: 12px;
+            }
+            .post-title {
+                font-size: 1.75rem;
+                margin-bottom: 1rem;
+            }
+            .header-excerpt {
+                font-size: 0.9rem;
+            }
+            .post-content {
+                font-size: 0.95rem;
+                line-height: 1.7;
+            }
+            .nav-links {
+                top: 10px;
+                right: 10px;
+                flex-direction: column;
+                gap: 8px;
+            }
+            .nav-link {
+                padding: 0.5rem 1rem;
+                font-size: 0.8rem;
+            }
+            .nav-link i {
+                font-size: 1rem;
+                margin-right: 5px;
+            }
+            .post-content pre {
+                font-size: 0.8rem;
+            }
+            .post-content code {
+                font-size: 0.8rem;
+            }
+            .back-to-blog {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link"><i class="fas fa-home"></i> Home</a>
+            <a href="blog.html" class="nav-link"><i class="fas fa-blog"></i> Blog</a>
+        </div>
+        <div class="container">
+            <h1>Guide on Docker</h1>
+            <p class="header-excerpt">Mastering docker</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <article class="post-container">
+            <span class="post-date">June 29, 2025</span>
+            <h1 class="post-title">Guide on Docker</h1>
+
+            <div class="post-tags">
+                <span class="tag">docker</span><span class="tag">software engineering</span>
+            </div>
+
+            <div class="post-content">
+                <h1>Docker</h1>
+<h3>What is Docker?</h3>
+<p>Docker is a tool that packages an application and all its dependencies—including code, libraries, configurations, and OS-level components—into a portable unit called a <strong>container</strong>.  </p>
+<p>Containers can run consistently across any environment: on your laptop, a cloud server, or another machine. This ensures identical behavior regardless of the underlying system.</p>
+<hr>
+<h3>Why Use Docker?</h3>
+<ol>
+<li><strong>Consistency</strong>: Containers run identically everywhere, simplifying debugging.  </li>
+<li><strong>Dependency Isolation</strong>: Resolves "works on my machine" issues by bundling exact library versions, eliminating conflicts.  </li>
+<li><strong>Environment Isolation</strong>: Runs multiple apps with conflicting setups (e.g., Python 2 vs 3) side-by-side without interference.</li>
+</ol>
+<hr>
+<h3>How Docker Works</h3>
+<p>Docker uses a client-server architecture:  </p>
+<ul>
+<li><strong>Docker Engine</strong> (daemon): Runs on the host OS to manage containers, images, networks, and volumes.  </li>
+<li><strong>Docker Client</strong>: CLI tool to interact with the Engine.</li>
+</ul>
+<h4>Key Components:</h4>
+<ol>
+<li><strong>Image</strong>:<br>A read-only blueprint of your app—a snapshot of all dependencies. Built from a <code>Dockerfile</code>, it’s immutable and portable.  </li>
+<li><strong>Container</strong>:<br>A live, isolated instance of an image. Can be started, stopped, or destroyed without affecting the host OS.  </li>
+<li><strong>Dockerfile</strong>:<br>A script defining steps to build an image (e.g., installing dependencies, copying code).  </li>
+<li><strong>Docker Hub</strong>:<br>A cloud registry (like GitHub) for storing and versioning Docker images.</li>
+</ol>
+<hr>
+<h3>Containers vs. Virtual Machines (VMs)</h3>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Virtual Machine (VM)</th>
+<th>Docker Container</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>OS</td>
+<td>Full OS per VM</td>
+<td>Shares host OS kernel</td>
+</tr>
+<tr>
+<td>Resource Usage</td>
+<td>Heavy (GBs of RAM/Disk)</td>
+<td>Lightweight (MBs)</td>
+</tr>
+<tr>
+<td>Boot Time</td>
+<td>Minutes</td>
+<td>Seconds</td>
+</tr>
+<tr>
+<td>Isolation</td>
+<td>Hardware-level</td>
+<td>Process-level</td>
+</tr>
+<tr>
+<td>Portability</td>
+<td>Complex</td>
+<td>Simple (via images)</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>Example: Dockerfile Explained</h3>
+<pre><code class="language-dockerfile">FROM node:18          # Base image: Node.js v18
+WORKDIR /app          # Sets working directory to /app
+COPY package*.json ./ # Copies dependency files
+RUN npm install       # Installs dependencies
+COPY . .              # Copies app code
+EXPOSE 3000           # Opens port 3000
+CMD ["node", "app.js"] # Runs the app
+</code></pre>
+<h4>Build & Run:</h4>
+<pre><code class="language-bash">docker build -t my-node-app .   # Builds image from Dockerfile
+docker run -p 3000:3000 my-node-app  # Runs container, maps host port 3000 → container port 3000
+</code></pre>
+<hr>
+<h3>Essential Docker Commands</h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>docker ps</code></td>
+<td>Lists running containers</td>
+</tr>
+<tr>
+<td><code>docker ps -a</code></td>
+<td>Lists all containers (running/stopped)</td>
+</tr>
+<tr>
+<td><code>docker images</code></td>
+<td>Lists all images</td>
+</tr>
+<tr>
+<td><code>docker run -it ubuntu</code></td>
+<td>Starts interactive Ubuntu container</td>
+</tr>
+<tr>
+<td><code>docker exec -it <id> bash</code></td>
+<td>Opens shell in a running container</td>
+</tr>
+<tr>
+<td><code>docker stop <id></code></td>
+<td>Stops a container</td>
+</tr>
+<tr>
+<td><code>docker rm <id></code></td>
+<td>Deletes a stopped container</td>
+</tr>
+<tr>
+<td><code>docker rmi <id></code></td>
+<td>Deletes an image</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>Docker Volumes</h3>
+<p>Persist data beyond container lifecycle:  </p>
+<pre><code class="language-bash">docker volume create mydata              # Creates a volume
+docker run -v mydata:/app/data myapp    # Mounts 'mydata' to /app/data
+</code></pre>
+<p>Volumes are managed by Docker and survive container deletion.</p>
+<hr>
+<h3>Docker Compose</h3>
+<p>Manages multi-container apps (e.g., app + database) via a declarative <code>docker-compose.yml</code> file:  </p>
+<pre><code class="language-bash">docker-compose up   # Starts all services
+docker-compose down # Stops and removes everything
+</code></pre>
+<hr>
+<h3>.dockerignore</h3>
+<p>Exclude files/directories (like <code>node_modules</code> or secrets) from being copied into images. Works like <code>.gitignore</code>.</p>
+<hr>
+<h3>Key Benefits Recap</h3>
+<ul>
+<li><strong>Reproducibility</strong>: Eliminates "it works on my machine" problems.  </li>
+<li><strong>Isolation</strong>: Prevents dependency conflicts between apps.  </li>
+<li><strong>Efficiency</strong>: Containers share the host OS kernel, reducing overhead.  </li>
+<li><strong>Portability</strong>: "Build once, run anywhere" consistency.</li>
+</ul>
+<hr>
+<p>thank you for reading.</p>
+
+            </div>
+
+            <a href="blog.html" class="back-to-blog">
+                <i class="fas fa-arrow-left"></i> Back to Blog
+            </a>
+        </article>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 Sudharshan Hegde. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-cpp.min.js"></script>
+</body>
+
+</html>

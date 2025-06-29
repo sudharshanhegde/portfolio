@@ -1,5 +1,15 @@
 [
   {
+    "title": "Guide on Docker",
+    "date": "2025-06-29",
+    "excerpt": "Mastering docker",
+    "filename": "guide-on-docker.html",
+    "tags": [
+      "docker",
+      "software engineering"
+    ]
+  },
+  {
     "title": "Network Address Translation",
     "date": "2025-06-20",
     "excerpt": "Overview on NAT, DHCP and DNS",
