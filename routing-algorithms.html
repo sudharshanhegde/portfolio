@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head><script type="text/javascript" src="/___vscode_livepreview_injected_script"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Routing algorithms - Sudharshan Hegde's Blog</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css">
+    <style>
+         :root {
+            --primary: #2A5C82;
+            --secondary: #3B8AC4;
+            --dark: #1A2B3C;
+            --light: #F5F9FC;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        /* Header */
+        
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 6rem 0 3rem;
+            text-align: center;
+            clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            width: 100%;
+        }
+        
+        .header-excerpt {
+            max-width: 700px;
+            margin: 1rem auto 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+        /* Navigation */
+        
+        .nav-links {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .nav-link {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            color: white;
+            text-decoration: none;
+            backdrop-filter: blur(10px);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        /* Post content */
+        
+        .post-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 3rem;
+            margin-top: -50px;
+            margin-bottom: 3rem;
+        }
+        
+        .post-date {
+            color: var(--secondary);
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+        
+        .post-title {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.3;
+        }
+        
+        .post-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .tag {
+            background: rgba(59, 138, 196, 0.1);
+            color: var(--primary);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .post-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+        
+        .post-content p {
+            margin-bottom: 1.5rem;
+        }
+        
+        .post-content h2,
+        .post-content h3,
+        .post-content h4 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .post-content ul,
+        .post-content ol {
+            margin-bottom: 1.5rem;
+            padding-left: 2rem;
+        }
+        
+        .post-content pre {
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+            overflow: auto;
+        }
+        
+        .post-content code {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+        }
+        
+        .post-content blockquote {
+            border-left: 4px solid var(--primary);
+            padding-left: 1.5rem;
+            margin-left: 0;
+            margin-right: 0;
+            margin-bottom: 1.5rem;
+            font-style: italic;
+            color: #555;
+        }
+        
+        .post-content img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        /* Footer */
+        
+        footer {
+            text-align: center;
+            padding: 2rem 0;
+            color: #777;
+            font-size: 0.9rem;
+        }
+        
+        .back-to-blog {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--primary);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            transition: var(--transition);
+        }
+        
+        .back-to-blog:hover {
+            background: var(--secondary);
+            transform: translateY(-3px);
+        }
+        /* Mobile Responsive Styles */
+        
+        @media (max-width: 768px) {
+            header {
+                padding: 5rem 0 2.5rem;
+            }
+            .container {
+                padding: 0 1.5rem;
+            }
+            .post-container {
+                padding: 2rem;
+                margin-top: -30px;
+            }
+            .post-title {
+                font-size: 2rem;
+            }
+            .post-content {
+                font-size: 1rem;
+            }
+            .nav-link {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            header {
+                padding: 4rem 0 2rem;
+                clip-path: polygon(0 0, 100% 0, 100% 95%, 0 100%);
+            }
+            .container {
+                padding: 0 1rem;
+            }
+            .post-container {
+                padding: 1.5rem;
+                margin-top: -20px;
+                border-radius: 12px;
+            }
+            .post-title {
+                font-size: 1.75rem;
+                margin-bottom: 1rem;
+            }
+            .header-excerpt {
+                font-size: 0.9rem;
+            }
+            .post-content {
+                font-size: 0.95rem;
+                line-height: 1.7;
+            }
+            .nav-links {
+                top: 10px;
+                right: 10px;
+                flex-direction: column;
+                gap: 8px;
+            }
+            .nav-link {
+                padding: 0.5rem 1rem;
+                font-size: 0.8rem;
+            }
+            .nav-link i {
+                font-size: 1rem;
+                margin-right: 5px;
+            }
+            .post-content pre {
+                font-size: 0.8rem;
+            }
+            .post-content code {
+                font-size: 0.8rem;
+            }
+            .back-to-blog {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link"><i class="fas fa-home"></i> Home</a>
+            <a href="blog.html" class="nav-link"><i class="fas fa-blog"></i> Blog</a>
+        </div>
+        <div class="container">
+            <h1>Routing algorithms</h1>
+            <p class="header-excerpt">Routing algorithms and switching techniques</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <article class="post-container">
+            <span class="post-date">July 11, 2025</span>
+            <h1 class="post-title">Routing algorithms</h1>
+
+            <div class="post-tags">
+                <span class="tag">Routing algorithms</span><span class="tag">packet switching</span><span class="tag">circuit switching</span><span class="tag">message switching</span><span class="tag">computer networks</span>
+            </div>
+
+            <div class="post-content">
+                <h1>Routing Algorithms</h1>
+<p>Routing algorithms enable the movement of packets across interconnected networks. They are essential for ensuring uninterrupted and efficient communication in large-scale networks and are used by enterprises, service providers, and data centers.</p>
+<h2>Purpose of Routing Algorithms</h2>
+<ol>
+<li><p><strong>Ensuring Efficient Data Delivery</strong>: Routing algorithms minimize delays, maximize throughput, and select the shortest or least congested path for data packets.</p>
+</li>
+<li><p><strong>Optimizing Network Resource Usage</strong>: They balance traffic across multiple paths, prevent overloading of specific links, and ensure effective use of network bandwidth.</p>
+</li>
+<li><p><strong>Providing Load Balancing</strong>: In dynamic networks, routing algorithms distribute traffic evenly, reducing bottlenecks and avoiding single points of failure.</p>
+</li>
+</ol>
+<hr>
+<h2>Static Routing</h2>
+<p>Static routing is a type of routing where the network administrator manually configures routes in the routing table of a router. These routes are fixed and remain unchanged unless explicitly modified by the administrator. Static routes do not adapt to network changes, making them ideal for small, stable networks.</p>
+<h3>Features of Static Routing</h3>
+<ol>
+<li><p><strong>Predictability</strong>: Routes are predefined, and network behavior is consistent and predictable. This eliminates uncertainties that may arise in dynamically changing topologies.</p>
+</li>
+<li><p><strong>No Overhead</strong>: Static routes do not generate additional network traffic for route advertisements or updates, preserving bandwidth for critical data.</p>
+</li>
+<li><p><strong>Manual Configuration</strong>: Every change in network topology requires manual updates to the routing table, giving administrators complete control over the routing process.</p>
+</li>
+</ol>
+<hr>
+<h2>Dynamic Routing</h2>
+<p>Dynamic routing uses protocols to automatically update routing tables in response to network changes. It ensures routers have accurate network information and enables them to adjust paths dynamically to maintain efficient communication.</p>
+<h3>Features</h3>
+<ul>
+<li><p><strong>Adaptability</strong>: Routing algorithms continuously monitor the network and update routes in response to changes such as link failures or congestion.</p>
+</li>
+<li><p><strong>Periodic Updates</strong>: Routers exchange routing information at regular intervals to keep routing tables up to date.</p>
+</li>
+<li><p><strong>Protocol-Based</strong>: Dynamic routing relies on protocols like RIP, OSPF, and BGP to calculate and exchange routing information.</p>
+</li>
+</ul>
+<h3>Advantages of Dynamic Routing</h3>
+<ul>
+<li><p><strong>Scalability</strong>: It can efficiently manage large and complex networks, making it suitable for enterprises and ISPs.</p>
+</li>
+<li><p><strong>Resilience</strong>: Dynamic routes adapt to network changes automatically, ensuring uninterrupted communication during link failures or congestion.</p>
+</li>
+<li><p><strong>Reduced Administrative Overhead</strong>: It eliminates the need for manual route configuration and updates.</p>
+</li>
+</ul>
+<h3>Disadvantages</h3>
+<ul>
+<li><p><strong>Bandwidth Consumption</strong>: Periodic routing updates consume network bandwidth and may affect performance in bandwidth-constrained environments.</p>
+</li>
+<li><p><strong>Complex Configuration</strong>: Setting up and managing dynamic routing protocols requires specialized knowledge and expertise.</p>
+</li>
+</ul>
+<p>Dynamic routing is ideal for large, dynamic networks where topology changes are frequent. It is widely deployed in enterprise networks, large-scale data centers, and ISP environments.</p>
+<hr>
+<h2>Common Routing Algorithms</h2>
+<h3>Hybrid Routing</h3>
+<p>Hybrid routing combines both distance vector and link-state algorithms to balance efficiency and complexity. Protocols like EIGRP exemplify hybrid routing.</p>
+<hr>
+<h2>1. Distance Vector Routing Protocols</h2>
+<p>Distance vector protocols select the best path based on distance to the destination, typically measured in hop counts. Routers periodically exchange routing tables with neighbors to update route information.</p>
+<h3>Characteristics</h3>
+<ul>
+<li><strong>Decentralized Decision-Making</strong>: Routers rely solely on information from neighbors to update their routing tables, without a global network view.</li>
+</ul>
+<h3>Advantages</h3>
+<ol>
+<li><p>Ease of implementation</p>
+</li>
+<li><p>Low resource requirements</p>
+</li>
+</ol>
+<h3>Disadvantages</h3>
+<ol>
+<li><p>Slow convergence</p>
+</li>
+<li><p>Count-to-infinity problem</p>
+</li>
+</ol>
+<h3>Common Distance Vector Protocols</h3>
+<ul>
+<li><p><strong>RIP (Routing Information Protocol)</strong>: Uses hop count as a metric with a maximum limit of 15 hops to prevent routing loops. It sends periodic updates every 30 seconds.</p>
+</li>
+<li><p><strong>EIGRP (Enhanced Interior Gateway Routing Protocol)</strong>: A hybrid protocol with distance vector characteristics and advanced features like multiple metrics. It offers faster convergence and better scalability than traditional distance vector protocols.</p>
+</li>
+</ul>
+<hr>
+<h2>2. Link State Routing Protocols</h2>
+<p>Link-state protocols build a complete map of the network topology using Link State Advertisements (LSAs). Algorithms like Dijkstra's shortest path algorithm calculate the optimal path to each destination.</p>
+<h3>Characteristics</h3>
+<ul>
+<li><p><strong>Faster Convergence</strong>: Changes in the network are propagated quickly, reducing downtime and improving reliability.</p>
+</li>
+<li><p><strong>Scalability</strong>: Link-state routing is well-suited for managing large-scale networks.</p>
+</li>
+<li><p><strong>Optimal Path Selection</strong>: Full network topology information ensures minimal latency and efficient path selection.</p>
+</li>
+</ul>
+<h3>Disadvantage</h3>
+<ul>
+<li><strong>Resource Intensive</strong>: Requires more processing power and memory. Configuration and management demand a high level of expertise.</li>
+</ul>
+<h3>Common Link-State Protocols</h3>
+<ul>
+<li><p><strong>OSPF (Open Shortest Path First)</strong>: Divides the network into hierarchical areas to optimize routing in large networks. Uses Dijkstra’s algorithm to compute shortest paths.</p>
+</li>
+<li><p><strong>IS-IS (Intermediate System to Intermediate System)</strong>: Similar to OSPF but designed for service provider networks. Supports both IPv4 and IPv6.</p>
+</li>
+</ul>
+<hr>
+<h2>Border Gateway Protocol (BGP)</h2>
+<p>BGP is a path vector routing protocol used for routing data between autonomous systems on the Internet. It is critical for managing global Internet routing and allows administrators granular control over routing decisions.</p>
+<h3>Key Features</h3>
+<ul>
+<li><p><strong>Path Vector Protocol</strong>: Uses path attributes to determine the best route, ensuring loop-free routing.</p>
+</li>
+<li><p><strong>Scalability</strong>: Designed to manage millions of routes in the global Internet efficiently.</p>
+</li>
+<li><p><strong>Policy-Based Routing</strong>: Allows administrators to define custom policies for routing based on security, performance, or cost.</p>
+</li>
+<li><p><strong>Reliability</strong>: Uses TCP (port 179) to establish sessions with neighboring routers, ensuring stable communication.</p>
+</li>
+</ul>
+<h3>How It Works</h3>
+<ol>
+<li><p><strong>Neighbor Establishment</strong>: BGP routers establish sessions with peers using TCP, enabling reliable information exchange.</p>
+</li>
+<li><p><strong>Route Advertisement</strong>: Routers share the routes they know, including path attributes such as next-hop and multi-exit discriminator.</p>
+</li>
+<li><p><strong>Route Selection</strong>: Routers evaluate received routes based on path length, origin, and local policies to choose the best path.</p>
+</li>
+<li><p><strong>Route Propagation</strong>: Selected routes are propagated to other BGP peers, distributing routing information across the network.</p>
+</li>
+</ol>
+<hr>
+<h2>Interior Gateway Protocols (IGPs)</h2>
+<p>IGPs operate within a single autonomous system and enable efficient internal network routing. They are simpler than BGP and focus on fast convergence and optimized local routing.</p>
+<h3>Features</h3>
+<ul>
+<li><p><strong>Metric-Based Routing</strong>: Uses composite metrics such as bandwidth, delay, reliability, and load to determine the best path.</p>
+</li>
+<li><p><strong>High Hop Limit</strong>: Supports a maximum hop count of 255, allowing larger network support compared to RIP.</p>
+</li>
+<li><p><strong>Slower Convergence</strong>: Some older IGPs react slowly to network changes.</p>
+</li>
+</ul>
+<hr>
+<h2>EIGRP (Enhanced Interior Gateway Routing Protocol)</h2>
+<p>EIGRP is known for its scalability and efficiency.</p>
+<h3>Features</h3>
+<ul>
+<li><p><strong>Fast Convergence</strong>: Uses Diffusing Update Algorithm (DUAL) to quickly recalculate routes during changes.</p>
+</li>
+<li><p><strong>Classless Routing</strong>: Supports Variable Length Subnet Masking (VLSM) for efficient IP address allocation.</p>
+</li>
+<li><p><strong>Efficient Bandwidth Usage</strong>: Sends only incremental updates rather than full routing tables.</p>
+</li>
+</ul>
+<h3>Advantages</h3>
+<ul>
+<li><p>Scalable</p>
+</li>
+<li><p>Fast convergence</p>
+</li>
+</ul>
+<hr>
+<h2>Open Shortest Path First (OSPF)</h2>
+<p>OSPF is a link-state routing protocol designed for large, complex networks. It computes the shortest path using Dijkstra’s algorithm.</p>
+<h3>Features</h3>
+<ul>
+<li><p><strong>Area-Based Design</strong>: Divides the network into areas to reduce routing overhead and improve scalability.</p>
+</li>
+<li><p><strong>Classless Routing</strong>: Supports VLSM for efficient IP address usage.</p>
+</li>
+<li><p><strong>Fast Convergence</strong>: Adapts quickly to network changes, making it suitable for dynamic environments.</p>
+</li>
+</ul>
+<hr>
+<h1>Switching Techniques</h1>
+<p>Switching techniques are essential for determining how data flows through a network. They establish communication paths, manage data traffic, and optimize network resource usage. Different techniques are suited to different types of communication, from real-time calls to asynchronous data transfers.</p>
+<h3>Purpose</h3>
+<ul>
+<li><p>Facilitate data transfer</p>
+</li>
+<li><p>Optimize network resource utilization</p>
+</li>
+<li><p>Support various communication types</p>
+</li>
+</ul>
+<hr>
+<h2>Circuit Switching</h2>
+<p>Circuit switching establishes a dedicated communication path between sender and receiver before data transfer begins. It reserves network resources, ensuring continuous and uninterrupted flow during the session.</p>
+<h3>Advantages</h3>
+<ol>
+<li><p><strong>Reliable Communication</strong>: Dedicated path eliminates delays or interruptions, ideal for voice and video calls.</p>
+</li>
+<li><p><strong>Guaranteed Bandwidth</strong>: Exclusive resource allocation prevents congestion or interference.</p>
+</li>
+</ol>
+<h3>Disadvantages</h3>
+<ol>
+<li><p><strong>Inefficient Resource Utilization</strong>: Resources remain allocated even when idle.</p>
+</li>
+<li><p><strong>High Setup Time</strong>: Time is required to establish the communication path.</p>
+</li>
+</ol>
+<h3>Applications</h3>
+<p>Used in real-time, high-quality communication scenarios such as telephone networks and video conferencing.</p>
+<hr>
+<h2>Packet Switching</h2>
+<p>In packet switching, data is broken into smaller units called packets that are transmitted independently. Each packet may take a different route to the destination and is reassembled in the correct order.</p>
+<h3>Features</h3>
+<ul>
+<li><p><strong>Dynamic Routing</strong>: Packets traverse different routes to avoid congestion and optimize resource usage.</p>
+</li>
+<li><p><strong>No Dedicated Path</strong>: Resources are used on demand, increasing efficiency.</p>
+</li>
+</ul>
+<h3>Advantages</h3>
+<ol>
+<li><p>Efficient resource utilization</p>
+</li>
+<li><p>Scalability</p>
+</li>
+<li><p>Resilience</p>
+</li>
+</ol>
+<h3>Disadvantages</h3>
+<ol>
+<li><p>Out-of-order delivery</p>
+</li>
+<li><p>Delay variability</p>
+</li>
+</ol>
+<h3>Applications</h3>
+<p>Used in Internet protocols such as HTTP, FTP, and email. Also beneficial for video streaming, online gaming, and peer-to-peer file sharing.</p>
+<hr>
+<h2>Message Switching</h2>
+<p>Message switching involves sending the entire message to an intermediate node where it is temporarily stored before being forwarded to the next node. It eliminates the need for a dedicated path, making it suitable for non-real-time applications.</p>
+<h3>Features</h3>
+<ul>
+<li><p><strong>Store-and-Forward</strong>: Messages are temporarily stored at intermediate nodes, reducing dependency on immediate link availability.</p>
+</li>
+<li><p><strong>No Dedicated Path</strong>: Messages are dynamically routed based on network conditions.</p>
+</li>
+</ul>
+<h3>Advantages</h3>
+<ol>
+<li><p>Suitable for non-real-time applications like email</p>
+</li>
+<li><p>Temporary storage prevents data loss during congestion</p>
+</li>
+</ol>
+<h3>Disadvantages</h3>
+<ol>
+<li><p>High latency, unsuitable for real-time communication</p>
+</li>
+<li><p>Intermediate nodes require significant storage during peak traffic</p>
+</li>
+</ol>
+<hr>
+<p>Thank you for reading.</p>
+
+            </div>
+
+            <a href="blog.html" class="back-to-blog">
+                <i class="fas fa-arrow-left"></i> Back to Blog
+            </a>
+        </article>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 Sudharshan Hegde. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-cpp.min.js"></script>
+</body>
+
+</html>

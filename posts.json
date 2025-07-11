@@ -1,5 +1,18 @@
 [
   {
+    "title": "Routing algorithms",
+    "date": "2025-07-11",
+    "excerpt": "Routing algorithms and switching techniques",
+    "filename": "routing-algorithms.html",
+    "tags": [
+      "Routing algorithms",
+      "packet switching",
+      "circuit switching",
+      "message switching",
+      "computer networks"
+    ]
+  },
+  {
     "title": "Guide on Docker",
     "date": "2025-06-29",
     "excerpt": "Mastering docker",
