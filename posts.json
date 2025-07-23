@@ -1,5 +1,20 @@
 [
   {
+    "title": "Memory allocation strategies",
+    "date": "2025-07-23",
+    "excerpt": "Memory allocation strategies in Operating system",
+    "filename": "memory-allocation-strategies.html",
+    "tags": [
+      "Operating system",
+      "paging",
+      "segmentation",
+      "contiguous allocation",
+      "worst fit",
+      "best fit",
+      "first fit"
+    ]
+  },
+  {
     "title": "Routing algorithms",
     "date": "2025-07-11",
     "excerpt": "Routing algorithms and switching techniques",

@@ -1,0 +1,382 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head><script type="text/javascript" src="/___vscode_livepreview_injected_script"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory allocation strategies - Sudharshan Hegde's Blog</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css">
+    <style>
+         :root {
+            --primary: #2A5C82;
+            --secondary: #3B8AC4;
+            --dark: #1A2B3C;
+            --light: #F5F9FC;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        /* Header */
+        
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 6rem 0 3rem;
+            text-align: center;
+            clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            width: 100%;
+        }
+        
+        .header-excerpt {
+            max-width: 700px;
+            margin: 1rem auto 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+        /* Navigation */
+        
+        .nav-links {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .nav-link {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            color: white;
+            text-decoration: none;
+            backdrop-filter: blur(10px);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        /* Post content */
+        
+        .post-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 3rem;
+            margin-top: -50px;
+            margin-bottom: 3rem;
+        }
+        
+        .post-date {
+            color: var(--secondary);
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+        
+        .post-title {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.3;
+        }
+        
+        .post-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .tag {
+            background: rgba(59, 138, 196, 0.1);
+            color: var(--primary);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .post-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+        
+        .post-content p {
+            margin-bottom: 1.5rem;
+        }
+        
+        .post-content h2,
+        .post-content h3,
+        .post-content h4 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .post-content ul,
+        .post-content ol {
+            margin-bottom: 1.5rem;
+            padding-left: 2rem;
+        }
+        
+        .post-content pre {
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+            overflow: auto;
+        }
+        
+        .post-content code {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+        }
+        
+        .post-content blockquote {
+            border-left: 4px solid var(--primary);
+            padding-left: 1.5rem;
+            margin-left: 0;
+            margin-right: 0;
+            margin-bottom: 1.5rem;
+            font-style: italic;
+            color: #555;
+        }
+        
+        .post-content img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        /* Footer */
+        
+        footer {
+            text-align: center;
+            padding: 2rem 0;
+            color: #777;
+            font-size: 0.9rem;
+        }
+        
+        .back-to-blog {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--primary);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            transition: var(--transition);
+        }
+        
+        .back-to-blog:hover {
+            background: var(--secondary);
+            transform: translateY(-3px);
+        }
+        /* Mobile Responsive Styles */
+        
+        @media (max-width: 768px) {
+            header {
+                padding: 5rem 0 2.5rem;
+            }
+            .container {
+                padding: 0 1.5rem;
+            }
+            .post-container {
+                padding: 2rem;
+                margin-top: -30px;
+            }
+            .post-title {
+                font-size: 2rem;
+            }
+            .post-content {
+                font-size: 1rem;
+            }
+            .nav-link {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            header {
+                padding: 4rem 0 2rem;
+                clip-path: polygon(0 0, 100% 0, 100% 95%, 0 100%);
+            }
+            .container {
+                padding: 0 1rem;
+            }
+            .post-container {
+                padding: 1.5rem;
+                margin-top: -20px;
+                border-radius: 12px;
+            }
+            .post-title {
+                font-size: 1.75rem;
+                margin-bottom: 1rem;
+            }
+            .header-excerpt {
+                font-size: 0.9rem;
+            }
+            .post-content {
+                font-size: 0.95rem;
+                line-height: 1.7;
+            }
+            .nav-links {
+                top: 10px;
+                right: 10px;
+                flex-direction: column;
+                gap: 8px;
+            }
+            .nav-link {
+                padding: 0.5rem 1rem;
+                font-size: 0.8rem;
+            }
+            .nav-link i {
+                font-size: 1rem;
+                margin-right: 5px;
+            }
+            .post-content pre {
+                font-size: 0.8rem;
+            }
+            .post-content code {
+                font-size: 0.8rem;
+            }
+            .back-to-blog {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link"><i class="fas fa-home"></i> Home</a>
+            <a href="blog.html" class="nav-link"><i class="fas fa-blog"></i> Blog</a>
+        </div>
+        <div class="container">
+            <h1>Memory allocation strategies</h1>
+            <p class="header-excerpt">Memory allocation strategies in Operating system</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <article class="post-container">
+            <span class="post-date">July 23, 2025</span>
+            <h1 class="post-title">Memory allocation strategies</h1>
+
+            <div class="post-tags">
+                <span class="tag">Operating system</span><span class="tag">paging</span><span class="tag">segmentation</span><span class="tag">contiguous allocation</span><span class="tag">worst fit</span><span class="tag">best fit</span><span class="tag">first fit</span>
+            </div>
+
+            <div class="post-content">
+                <h3><strong>First Fit</strong></h3>
+<p>In this method, memory blocks are scanned sequentially, and the process is assigned to the first block that is large enough to hold it. The system begins searching from the start of the memory list and allocates the first suitable block it finds, leaving any remaining space as a smaller, free block.</p>
+<ul>
+<li><strong>Advantages:</strong> This method offers fast allocation since the search stops as soon as a suitable block is found. It is simple to implement and has minimal computational overhead.</li>
+<li><strong>Disadvantages:</strong> This approach can lead to external fragmentation and may not utilize memory efficiently, as it can leave many small, unusable memory fragments near the beginning of memory.</li>
+</ul>
+<h3><strong>Best Fit</strong></h3>
+<p>In this method, the system searches for the smallest available memory block that can accommodate the process. This requires scanning all free blocks to find the one that, once allocated, will leave the smallest amount of unused space.</p>
+<ul>
+<li><strong>Advantages:</strong> It reduces wasted space by creating the smallest possible leftover fragments. It can be particularly effective in systems with many small processes.</li>
+<li><strong>Disadvantages:</strong> It has high computational overhead due to the need to scan all free blocks for every allocation. It can also lead to external fragmentation by creating numerous tiny, unusable free blocks.</li>
+</ul>
+<h3><strong>Worst Fit</strong></h3>
+<p>This method assigns a process to the largest available memory block. The idea is to leave the largest possible leftover space, which may be useful for accommodating larger processes in the future. All free blocks are scanned to select the largest one.</p>
+<ul>
+<li><strong>Advantages:</strong> It can reduce the creation of small, unusable fragments by leaving a large, contiguous block of free memory.</li>
+<li><strong>Disadvantages:</strong> It is computationally expensive as it requires scanning all free blocks. This method can lead to poor memory utilization, as small processes may occupy very large blocks, potentially preventing larger processes from being allocated memory, even when the total free memory is sufficient.</li>
+</ul>
+<hr>
+<h3><strong>Contiguous Allocation</strong></h3>
+<p>In contiguous allocation, a process is allocated a single, continuous block of memory. All instructions and data for the process reside in one uninterrupted region, which makes it straightforward for the system to find and access them.</p>
+<h4><strong>How it works</strong></h4>
+<ol>
+<li><strong>Memory Reservation:</strong> The operating system finds a single free block large enough to hold the entire process.</li>
+<li><strong>Loading Process:</strong> The process's code and data are placed into this contiguous memory region.</li>
+<li><strong>Execution:</strong> The CPU can access memory locations directly and sequentially, which ensures fast access times.</li>
+<li><strong>Deallocation:</strong> When the process completes, the entire block is freed, which can leave a "hole" or gap in the memory.</li>
+</ol>
+<ul>
+<li><strong>Advantages:</strong> It is simple to implement and offers fast memory access due to the sequential memory layout.</li>
+<li><strong>Disadvantages:</strong> It suffers from <strong>external fragmentation</strong>, where small, unusable gaps are created as processes are loaded and removed. Finding a suitable free block can become time-consuming as memory becomes more fragmented.</li>
+</ul>
+<h3><strong>Paging</strong></h3>
+<p>Paging is a memory management scheme that divides a process's memory into fixed-size blocks called <strong>pages</strong>. The main memory is similarly divided into fixed-size blocks called <strong>frames</strong>.</p>
+<p>Process pages can be placed into any available frames, regardless of their physical position. This allows for more flexible memory use and reduces external fragmentation. The system uses a <strong>page table</strong> to map logical addresses to physical frames.</p>
+<h4><strong>How it works</strong></h4>
+<ol>
+<li>A process is divided into equal-sized chunks called <strong>pages</strong>.</li>
+<li>The main memory is divided into <strong>frames</strong> of the same size as the pages.</li>
+<li>Each page of the process is placed into any available frame, and a <strong>page table</strong> keeps track of which frame holds which page.</li>
+<li>When the CPU references a memory address, it uses the page table to translate the logical page number to the corresponding physical frame number.</li>
+</ol>
+<ul>
+<li><strong>Advantages:</strong> It eliminates external fragmentation because memory is allocated in uniform frames. Processes do not need continuous memory, which makes allocation more flexible and simplifies memory management.</li>
+<li><strong>Disadvantages:</strong> It involves additional overhead due to the address translation required by the page table. <strong>Internal fragmentation</strong> can occur if the last page of a process does not completely use its allocated frame. Memory access can be slightly slower due to the time taken to look up the page table.</li>
+</ul>
+<h3><strong>Segmentation</strong></h3>
+<p>Segmentation is a memory management scheme that divides a process into logical <strong>segments</strong> based on the program's structure, such as code, data, and stack segments. Unlike pages, segments can vary in size, reflecting the logical divisions of the program's memory. Each segment has its own number and offset. A <strong>segment table</strong> is used to map the segments to physical memory.</p>
+<h4><strong>How it works</strong></h4>
+<ol>
+<li><strong>Division into Segments:</strong> The program is divided into logical units (e.g., code, data, stack), with each unit becoming a segment of a specific size.</li>
+<li><strong>Segment Table Mapping:</strong> A segment table stores the base address (starting physical location) and limit (size) for each segment.</li>
+<li><strong>Address Translation:</strong> The CPU generates a logical address consisting of a segment number and an offset. The system uses the segment table to find the segment's base address and adds the offset to it, creating the final physical address after verifying the offset is within the segment's limit.</li>
+</ol>
+<ul>
+<li><strong>Advantages:</strong> Segmentation provides a logical view of memory that aligns with the programmer's perspective. It simplifies the protection and sharing of code or data segments between different processes.</li>
+<li><strong>Disadvantages:</strong> It can lead to <strong>external fragmentation</strong> over time as variable-sized segments are loaded and unloaded, similar to contiguous allocation.</li>
+</ul>
+<hr>
+<p> Thank you for reading.</p>
+
+            </div>
+
+            <a href="blog.html" class="back-to-blog">
+                <i class="fas fa-arrow-left"></i> Back to Blog
+            </a>
+        </article>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 Sudharshan Hegde. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-cpp.min.js"></script>
+</body>
+
+</html>
