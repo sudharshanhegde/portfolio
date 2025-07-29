@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head><script type="text/javascript" src="/___vscode_livepreview_injected_script"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual memory - Sudharshan Hegde's Blog</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css">
+    <style>
+         :root {
+            --primary: #2A5C82;
+            --secondary: #3B8AC4;
+            --dark: #1A2B3C;
+            --light: #F5F9FC;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        /* Header */
+        
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 6rem 0 3rem;
+            text-align: center;
+            clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            width: 100%;
+        }
+        
+        .header-excerpt {
+            max-width: 700px;
+            margin: 1rem auto 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+        /* Navigation */
+        
+        .nav-links {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .nav-link {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            color: white;
+            text-decoration: none;
+            backdrop-filter: blur(10px);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        /* Post content */
+        
+        .post-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 3rem;
+            margin-top: -50px;
+            margin-bottom: 3rem;
+        }
+        
+        .post-date {
+            color: var(--secondary);
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+        
+        .post-title {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.3;
+        }
+        
+        .post-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .tag {
+            background: rgba(59, 138, 196, 0.1);
+            color: var(--primary);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .post-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+        
+        .post-content p {
+            margin-bottom: 1.5rem;
+        }
+        
+        .post-content h2,
+        .post-content h3,
+        .post-content h4 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .post-content ul,
+        .post-content ol {
+            margin-bottom: 1.5rem;
+            padding-left: 2rem;
+        }
+        
+        .post-content pre {
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+            overflow: auto;
+        }
+        
+        .post-content code {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+        }
+        
+        .post-content blockquote {
+            border-left: 4px solid var(--primary);
+            padding-left: 1.5rem;
+            margin-left: 0;
+            margin-right: 0;
+            margin-bottom: 1.5rem;
+            font-style: italic;
+            color: #555;
+        }
+        
+        .post-content img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        /* Footer */
+        
+        footer {
+            text-align: center;
+            padding: 2rem 0;
+            color: #777;
+            font-size: 0.9rem;
+        }
+        
+        .back-to-blog {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--primary);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            transition: var(--transition);
+        }
+        
+        .back-to-blog:hover {
+            background: var(--secondary);
+            transform: translateY(-3px);
+        }
+        /* Mobile Responsive Styles */
+        
+        @media (max-width: 768px) {
+            header {
+                padding: 5rem 0 2.5rem;
+            }
+            .container {
+                padding: 0 1.5rem;
+            }
+            .post-container {
+                padding: 2rem;
+                margin-top: -30px;
+            }
+            .post-title {
+                font-size: 2rem;
+            }
+            .post-content {
+                font-size: 1rem;
+            }
+            .nav-link {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            header {
+                padding: 4rem 0 2rem;
+                clip-path: polygon(0 0, 100% 0, 100% 95%, 0 100%);
+            }
+            .container {
+                padding: 0 1rem;
+            }
+            .post-container {
+                padding: 1.5rem;
+                margin-top: -20px;
+                border-radius: 12px;
+            }
+            .post-title {
+                font-size: 1.75rem;
+                margin-bottom: 1rem;
+            }
+            .header-excerpt {
+                font-size: 0.9rem;
+            }
+            .post-content {
+                font-size: 0.95rem;
+                line-height: 1.7;
+            }
+            .nav-links {
+                top: 10px;
+                right: 10px;
+                flex-direction: column;
+                gap: 8px;
+            }
+            .nav-link {
+                padding: 0.5rem 1rem;
+                font-size: 0.8rem;
+            }
+            .nav-link i {
+                font-size: 1rem;
+                margin-right: 5px;
+            }
+            .post-content pre {
+                font-size: 0.8rem;
+            }
+            .post-content code {
+                font-size: 0.8rem;
+            }
+            .back-to-blog {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link"><i class="fas fa-home"></i> Home</a>
+            <a href="blog.html" class="nav-link"><i class="fas fa-blog"></i> Blog</a>
+        </div>
+        <div class="container">
+            <h1>Virtual memory</h1>
+            <p class="header-excerpt">Understanding virtual memory and page faults</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <article class="post-container">
+            <span class="post-date">July 29, 2025</span>
+            <h1 class="post-title">Virtual memory</h1>
+
+            <div class="post-tags">
+                <span class="tag">Virtual memory</span><span class="tag">page faults</span><span class="tag">Operating system</span><span class="tag">thrashing</span>
+            </div>
+
+            <div class="post-content">
+                <h1>Understanding Virtual Memory and Page Faults</h1>
+<p>Virtual memory is a memory management technique used by an operating system to provide the illusion that a system has more main memory (RAM) than it actually does. This is achieved by using secondary storage, like a hard disk or SSD, as an extension of the main memory. This allows programs to execute even if they don't fully fit into the physical RAM, leading to efficient memory usage and enabling the system to run multiple large applications simultaneously.</p>
+<hr>
+<h2>How Does Virtual Memory Work?</h2>
+<p>Virtual memory operates on a few key principles:</p>
+<ul>
+<li><strong>Address Separation</strong>: It maintains a clear separation between a <strong>logical address</strong> (the address a program uses) and a <strong>physical address</strong> (the actual address in RAM). The operating system (OS) translates the logical address into a physical address whenever needed.</li>
+<li><strong>Paging</strong>: Memory is divided into fixed-sized blocks. These blocks are called <strong>pages</strong> in logical memory and <strong>frames</strong> in physical memory. The OS keeps track of which pages are currently in RAM. Pages not in RAM are stored on the disk.</li>
+<li><strong>Page Table</strong>: Each process has a <strong>page table</strong> that maps its logical pages to physical frame numbers. When the process needs to access data, the OS checks the page table to find if the required page is in RAM.</li>
+</ul>
+<hr>
+<h2>Advantages of Virtual Memory</h2>
+<ul>
+<li><strong>Efficient Memory Utilization</strong>: Allows for running programs larger than the physical RAM.</li>
+<li><strong>Isolation and Security</strong>: Each process gets its own virtual address space, preventing it from interfering with others.</li>
+<li><strong>Flexibility</strong>: Simplifies memory management for programmers.</li>
+<li><strong>Multitasking Support</strong>: Enables more applications to run concurrently than would be possible otherwise.</li>
+</ul>
+<hr>
+<h2>Disadvantages of Virtual memory</h2>
+<ul>
+<li><strong>Performance Overhead</strong>: Accessing data from a disk is significantly slower than accessing it from RAM. Frequent swapping between disk and RAM can slow down performance.</li>
+<li><strong>Thrashing</strong>: If there isn't enough RAM, the system can get stuck in a state of excessive paging, where it spends more time swapping pages than executing code. This leads to constant disk activity and very poor performance.</li>
+<li><strong>Resource Usage</strong>: It requires additional resources, as data structures like page tables consume both memory and processing power.</li>
+</ul>
+<hr>
+<h2>What is a Page Fault?</h2>
+<p>A <strong>page fault</strong> occurs when a program tries to access a page that is not currently loaded into physical memory (RAM). This means the requested data is on the disk, and the OS must fetch it before the program can continue. While page faults are a normal part of how virtual memory works, frequent page faults can severely degrade system performance.</p>
+<h3>Causes of a Page Fault</h3>
+<ul>
+<li><strong>First Access</strong>: The process is trying to access a page for the first time, and it has not been loaded into RAM yet.</li>
+<li><strong>Swapped-Out Pages</strong>: The required page was previously in RAM but was swapped out to the disk to make space for other pages due to memory constraints.</li>
+<li><strong>Invalid Access</strong>: The process attempts to access a memory address that it is not allowed to, which results in a segmentation fault.</li>
+</ul>
+<h3>Handling a Page Fault</h3>
+<ol>
+<li><strong>Detection</strong>: The hardware detects the page fault and triggers a trap, passing control to the operating system. The running process is paused.</li>
+<li><strong>Page Fetch</strong>: The OS locates the required page on the disk.</li>
+<li><strong>Load into RAM</strong>: The OS loads the page into a free frame in RAM. If no frames are free, a page replacement algorithm is used to select a victim page to swap out.</li>
+<li><strong>Update Page Table</strong>: The page table is updated to reflect the new mapping from the logical page to the physical frame.</li>
+<li><strong>Resume Execution</strong>: The process resumes execution from the instruction that caused the fault, as if the data had always been in RAM.</li>
+</ol>
+<hr>
+<h2>Minimizing Page Faults and Their Impact</h2>
+<ul>
+<li><strong>Page Replacement Algorithms</strong>: Using smart algorithms like <strong>Least Recently Used (LRU)</strong> helps the OS make better decisions about which pages to swap out, reducing unnecessary page faults.</li>
+<li><strong>Increase RAM</strong>: Adding more physical RAM allows more pages to be kept in memory, reducing the need to fetch data from the disk frequently.</li>
+</ul>
+<p>Excessive page faults can lead to significant slowdowns and even <strong>thrashing</strong>, a state where the OS spends more time swapping pages than executing tasks. Properly managing memory and having sufficient RAM are key to keeping the system running smoothly.</p>
+
+            </div>
+
+            <a href="blog.html" class="back-to-blog">
+                <i class="fas fa-arrow-left"></i> Back to Blog
+            </a>
+        </article>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 Sudharshan Hegde. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-cpp.min.js"></script>
+</body>
+
+</html>

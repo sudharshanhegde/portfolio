@@ -1,5 +1,17 @@
 [
   {
+    "title": "Virtual memory",
+    "date": "2025-07-29",
+    "excerpt": "Understanding virtual memory and page faults",
+    "filename": "virtual-memory.html",
+    "tags": [
+      "Virtual memory",
+      "page faults",
+      "Operating system",
+      "thrashing"
+    ]
+  },
+  {
     "title": "Memory allocation strategies",
     "date": "2025-07-23",
     "excerpt": "Memory allocation strategies in Operating system",
