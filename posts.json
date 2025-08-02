@@ -1,5 +1,17 @@
 [
   {
+    "title": "Ethernet and virtual local area network",
+    "date": "2025-08-02",
+    "excerpt": "Ethernet and wifi",
+    "filename": "ethernet-and-virtual-local-area-network.html",
+    "tags": [
+      "ethernet",
+      "VLAN",
+      "wifi",
+      "switches"
+    ]
+  },
+  {
     "title": "Virtual memory",
     "date": "2025-07-29",
     "excerpt": "Understanding virtual memory and page faults",

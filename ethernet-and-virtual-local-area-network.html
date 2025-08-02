@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head><script type="text/javascript" src="/___vscode_livepreview_injected_script"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ethernet and virtual local area network - Sudharshan Hegde's Blog</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css">
+    <style>
+         :root {
+            --primary: #2A5C82;
+            --secondary: #3B8AC4;
+            --dark: #1A2B3C;
+            --light: #F5F9FC;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        /* Header */
+        
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 6rem 0 3rem;
+            text-align: center;
+            clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            width: 100%;
+        }
+        
+        .header-excerpt {
+            max-width: 700px;
+            margin: 1rem auto 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+        /* Navigation */
+        
+        .nav-links {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .nav-link {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            color: white;
+            text-decoration: none;
+            backdrop-filter: blur(10px);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        /* Post content */
+        
+        .post-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 3rem;
+            margin-top: -50px;
+            margin-bottom: 3rem;
+        }
+        
+        .post-date {
+            color: var(--secondary);
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+        
+        .post-title {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.3;
+        }
+        
+        .post-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .tag {
+            background: rgba(59, 138, 196, 0.1);
+            color: var(--primary);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .post-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+        
+        .post-content p {
+            margin-bottom: 1.5rem;
+        }
+        
+        .post-content h2,
+        .post-content h3,
+        .post-content h4 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .post-content ul,
+        .post-content ol {
+            margin-bottom: 1.5rem;
+            padding-left: 2rem;
+        }
+        
+        .post-content pre {
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+            overflow: auto;
+        }
+        
+        .post-content code {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+        }
+        
+        .post-content blockquote {
+            border-left: 4px solid var(--primary);
+            padding-left: 1.5rem;
+            margin-left: 0;
+            margin-right: 0;
+            margin-bottom: 1.5rem;
+            font-style: italic;
+            color: #555;
+        }
+        
+        .post-content img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        /* Footer */
+        
+        footer {
+            text-align: center;
+            padding: 2rem 0;
+            color: #777;
+            font-size: 0.9rem;
+        }
+        
+        .back-to-blog {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--primary);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            transition: var(--transition);
+        }
+        
+        .back-to-blog:hover {
+            background: var(--secondary);
+            transform: translateY(-3px);
+        }
+        /* Mobile Responsive Styles */
+        
+        @media (max-width: 768px) {
+            header {
+                padding: 5rem 0 2.5rem;
+            }
+            .container {
+                padding: 0 1.5rem;
+            }
+            .post-container {
+                padding: 2rem;
+                margin-top: -30px;
+            }
+            .post-title {
+                font-size: 2rem;
+            }
+            .post-content {
+                font-size: 1rem;
+            }
+            .nav-link {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            header {
+                padding: 4rem 0 2rem;
+                clip-path: polygon(0 0, 100% 0, 100% 95%, 0 100%);
+            }
+            .container {
+                padding: 0 1rem;
+            }
+            .post-container {
+                padding: 1.5rem;
+                margin-top: -20px;
+                border-radius: 12px;
+            }
+            .post-title {
+                font-size: 1.75rem;
+                margin-bottom: 1rem;
+            }
+            .header-excerpt {
+                font-size: 0.9rem;
+            }
+            .post-content {
+                font-size: 0.95rem;
+                line-height: 1.7;
+            }
+            .nav-links {
+                top: 10px;
+                right: 10px;
+                flex-direction: column;
+                gap: 8px;
+            }
+            .nav-link {
+                padding: 0.5rem 1rem;
+                font-size: 0.8rem;
+            }
+            .nav-link i {
+                font-size: 1rem;
+                margin-right: 5px;
+            }
+            .post-content pre {
+                font-size: 0.8rem;
+            }
+            .post-content code {
+                font-size: 0.8rem;
+            }
+            .back-to-blog {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link"><i class="fas fa-home"></i> Home</a>
+            <a href="blog.html" class="nav-link"><i class="fas fa-blog"></i> Blog</a>
+        </div>
+        <div class="container">
+            <h1>Ethernet and virtual local area network</h1>
+            <p class="header-excerpt">Ethernet and wifi</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <article class="post-container">
+            <span class="post-date">August 2, 2025</span>
+            <h1 class="post-title">Ethernet and virtual local area network</h1>
+
+            <div class="post-tags">
+                <span class="tag">ethernet</span><span class="tag">VLAN</span><span class="tag">wifi</span><span class="tag">switches</span>
+            </div>
+
+            <div class="post-content">
+                <h3><strong>802.3 Ethernet</strong></h3>
+<p>It is a popular wired networking technology used in LANs. It provides a framework for data communication and ensures seamless interoperability across devices from various manufacturers.</p>
+<h4><strong>Features:</strong></h4>
+<ul>
+<li>Operates at the data link and physical layers of the OSI model</li>
+<li>Delivers high-speed and reliable communication</li>
+<li>Utilizes unique MAC addresses to identify devices within a LAN</li>
+</ul>
+<h4><strong>How It Works:</strong></h4>
+<ol>
+<li>Data is encapsulated in Ethernet frames which include:<ul>
+<li>Source and destination addresses</li>
+<li>Payload</li>
+<li>CRC for error detection</li>
+</ul>
+</li>
+<li>Uses Carrier Sense Multiple Access with Collision Detection (CSMA/CD) to:<ul>
+<li>Manage data transmission in shared networks</li>
+<li>Prevent collisions</li>
+</ul>
+</li>
+<li>Data is transmitted using electrical signals over various media types:<ul>
+<li>Twisted pair cables</li>
+<li>Coaxial cables</li>
+<li>Fiber optics</li>
+</ul>
+</li>
+</ol>
+<h4><strong>Advantages:</strong></h4>
+<ul>
+<li>Highly reliable</li>
+<li>Provides consistent, low-latency communication for critical applications</li>
+<li>Accommodates a wide range of speeds to meet modern network needs</li>
+<li>Cost-effective</li>
+</ul>
+<h4><strong>Applications:</strong></h4>
+<ul>
+<li>Enterprise LANs</li>
+<li>Data centers</li>
+<li>Home networks</li>
+</ul>
+<h3><strong>802.11 (Wireless Networking Standards)</strong></h3>
+<p>Commonly known as Wi-Fi, it eliminates the need for physical cables and enables devices to connect using radio waves.</p>
+<h4><strong>Key Features:</strong></h4>
+<ul>
+<li>Functions at the data link and physical layers</li>
+<li>Manages MAC addresses and wireless signal transmission</li>
+<li>Uses electromagnetic frequencies:<ul>
+<li>Primarily 2.4 GHz and 5 GHz bands</li>
+</ul>
+</li>
+<li>Allows devices to connect and move within network coverage areas without losing connectivity</li>
+</ul>
+<h4><strong>How It Works:</strong></h4>
+<ul>
+<li>Access points act as intermediaries, bridging wireless and wired networks</li>
+<li>Uses radio waves (2.4 GHz, 5GHz, and 6 GHz) for transmission</li>
+<li>Ensures secure communication using encryption protocols:<ul>
+<li>WPA2</li>
+<li>WPA3</li>
+</ul>
+</li>
+</ul>
+<h3><strong>Ethernet Switching</strong></h3>
+<p>A networking technology that connects multiple devices within a LAN. It operates at the second layer of the OSI model. Ethernet switches facilitate efficient communication by directing data frames to their intended destinations using MAC addresses.</p>
+<p>Unlike hubs that broadcast data to all devices, switches forward data only to the appropriate device, optimizing network performance and reducing congestion.</p>
+<h4><strong>How It Works:</strong></h4>
+<ul>
+<li><p><strong>MAC Address Table:</strong></p>
+<ul>
+<li>Switches maintain a table that maps MAC addresses to specific ports</li>
+<li>The table is dynamically populated by observing source MAC addresses of incoming frames</li>
+<li>When a frame arrives, the switch looks up the destination MAC address and forwards the frame to the corresponding port</li>
+</ul>
+</li>
+<li><p><strong>Frame Forwarding Methods:</strong></p>
+<ul>
+<li>Unicasting: Sent to a specific device based on MAC address</li>
+<li>Broadcasting: Sent to all devices (e.g., ARP requests)</li>
+<li>Multicasting: Sent to a specific group of devices</li>
+</ul>
+</li>
+<li><p><strong>Learning Mechanism:</strong></p>
+<ul>
+<li>Switches learn MAC addresses of connected devices by analyzing source MAC addresses of incoming frames</li>
+<li>Eliminates the need for manual configuration</li>
+</ul>
+</li>
+<li><p><strong>Loop Prevention:</strong></p>
+<ul>
+<li>Uses Spanning Tree Protocol (STP) to:<ul>
+<li>Prevent broadcast storms</li>
+<li>Identify and disable redundant network paths</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4><strong>Types of Switches:</strong></h4>
+<ul>
+<li><strong>Unmanaged Switches:</strong><ul>
+<li>Basic plug-and-play operation</li>
+<li>No configuration options</li>
+</ul>
+</li>
+<li><strong>Managed Switches:</strong><ul>
+<li>Offer advanced features:<ul>
+<li>VLAN configuration</li>
+<li>Quality of Service (QoS)</li>
+<li>Network monitoring</li>
+</ul>
+</li>
+<li>Suitable for enterprise environments requiring precise traffic control</li>
+</ul>
+</li>
+</ul>
+<h3><strong>Virtual Local Area Networks (VLANs)</strong></h3>
+<p>A method of grouping devices within a LAN to allow communication as if they were on the same physical network, even when connected to different switches. VLANs segment networks into smaller, isolated broadcast domains to improve efficiency, security, and manageability.</p>
+<h4><strong>How They Work:</strong></h4>
+<ul>
+<li><p><strong>Segmentation:</strong></p>
+<ul>
+<li>Devices within a VLAN share the same broadcast domain</li>
+<li>Confines broadcast traffic to the VLAN</li>
+<li>Reduces unnecessary traffic and enhances performance</li>
+</ul>
+</li>
+<li><p><strong>Tagging:</strong></p>
+<ul>
+<li>Uses IEEE 802.1Q standard to identify VLAN-specific traffic</li>
+<li>Tags are added to Ethernet frames by switches</li>
+<li>Tags are removed before frames reach end devices</li>
+</ul>
+</li>
+<li><p><strong>Inter-VLAN Routing:</strong></p>
+<ul>
+<li>Requires a Layer 3 device (typically a router)</li>
+<li>Routes traffic between VLANs based on IP addresses</li>
+</ul>
+</li>
+</ul>
+<h4><strong>Types of VLANs:</strong></h4>
+<ul>
+<li><strong>Default VLAN:</strong><ul>
+<li>Includes all devices by default</li>
+</ul>
+</li>
+<li><strong>Data VLAN:</strong><ul>
+<li>Carries standard user data traffic</li>
+</ul>
+</li>
+<li><strong>Voice VLAN:</strong><ul>
+<li>Dedicated to voice traffic</li>
+<li>Ensures high-quality communication by prioritizing voice packets</li>
+</ul>
+</li>
+<li><strong>Management VLAN:</strong><ul>
+<li>Reserved for managing network devices</li>
+<li>Provides secure access for administrative tasks</li>
+</ul>
+</li>
+</ul>
+<hr>
+<p>thank you for reading</p>
+
+            </div>
+
+            <a href="blog.html" class="back-to-blog">
+                <i class="fas fa-arrow-left"></i> Back to Blog
+            </a>
+        </article>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 Sudharshan Hegde. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-cpp.min.js"></script>
+</body>
+
+</html>
