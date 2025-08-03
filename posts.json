@@ -1,5 +1,17 @@
 [
   {
+    "title": "Data link protocols",
+    "date": "2025-08-03",
+    "excerpt": "data link protocols explained",
+    "filename": "data-link-protocols.html",
+    "tags": [
+      "data link layer",
+      "spanning tree protocol",
+      "point to point protocol",
+      "high level data link protocol"
+    ]
+  },
+  {
     "title": "Ethernet and virtual local area network",
     "date": "2025-08-02",
     "excerpt": "Ethernet and wifi",

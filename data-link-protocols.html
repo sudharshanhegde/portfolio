@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head><script type="text/javascript" src="/___vscode_livepreview_injected_script"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data link protocols - Sudharshan Hegde's Blog</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css">
+    <style>
+         :root {
+            --primary: #2A5C82;
+            --secondary: #3B8AC4;
+            --dark: #1A2B3C;
+            --light: #F5F9FC;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        /* Header */
+        
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 6rem 0 3rem;
+            text-align: center;
+            clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            width: 100%;
+        }
+        
+        .header-excerpt {
+            max-width: 700px;
+            margin: 1rem auto 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+        /* Navigation */
+        
+        .nav-links {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .nav-link {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            color: white;
+            text-decoration: none;
+            backdrop-filter: blur(10px);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        /* Post content */
+        
+        .post-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 3rem;
+            margin-top: -50px;
+            margin-bottom: 3rem;
+        }
+        
+        .post-date {
+            color: var(--secondary);
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+        
+        .post-title {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.3;
+        }
+        
+        .post-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .tag {
+            background: rgba(59, 138, 196, 0.1);
+            color: var(--primary);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .post-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+        
+        .post-content p {
+            margin-bottom: 1.5rem;
+        }
+        
+        .post-content h2,
+        .post-content h3,
+        .post-content h4 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .post-content ul,
+        .post-content ol {
+            margin-bottom: 1.5rem;
+            padding-left: 2rem;
+        }
+        
+        .post-content pre {
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+            overflow: auto;
+        }
+        
+        .post-content code {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+        }
+        
+        .post-content blockquote {
+            border-left: 4px solid var(--primary);
+            padding-left: 1.5rem;
+            margin-left: 0;
+            margin-right: 0;
+            margin-bottom: 1.5rem;
+            font-style: italic;
+            color: #555;
+        }
+        
+        .post-content img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        /* Footer */
+        
+        footer {
+            text-align: center;
+            padding: 2rem 0;
+            color: #777;
+            font-size: 0.9rem;
+        }
+        
+        .back-to-blog {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--primary);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            transition: var(--transition);
+        }
+        
+        .back-to-blog:hover {
+            background: var(--secondary);
+            transform: translateY(-3px);
+        }
+        /* Mobile Responsive Styles */
+        
+        @media (max-width: 768px) {
+            header {
+                padding: 5rem 0 2.5rem;
+            }
+            .container {
+                padding: 0 1.5rem;
+            }
+            .post-container {
+                padding: 2rem;
+                margin-top: -30px;
+            }
+            .post-title {
+                font-size: 2rem;
+            }
+            .post-content {
+                font-size: 1rem;
+            }
+            .nav-link {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            header {
+                padding: 4rem 0 2rem;
+                clip-path: polygon(0 0, 100% 0, 100% 95%, 0 100%);
+            }
+            .container {
+                padding: 0 1rem;
+            }
+            .post-container {
+                padding: 1.5rem;
+                margin-top: -20px;
+                border-radius: 12px;
+            }
+            .post-title {
+                font-size: 1.75rem;
+                margin-bottom: 1rem;
+            }
+            .header-excerpt {
+                font-size: 0.9rem;
+            }
+            .post-content {
+                font-size: 0.95rem;
+                line-height: 1.7;
+            }
+            .nav-links {
+                top: 10px;
+                right: 10px;
+                flex-direction: column;
+                gap: 8px;
+            }
+            .nav-link {
+                padding: 0.5rem 1rem;
+                font-size: 0.8rem;
+            }
+            .nav-link i {
+                font-size: 1rem;
+                margin-right: 5px;
+            }
+            .post-content pre {
+                font-size: 0.8rem;
+            }
+            .post-content code {
+                font-size: 0.8rem;
+            }
+            .back-to-blog {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link"><i class="fas fa-home"></i> Home</a>
+            <a href="blog.html" class="nav-link"><i class="fas fa-blog"></i> Blog</a>
+        </div>
+        <div class="container">
+            <h1>Data link protocols</h1>
+            <p class="header-excerpt">data link protocols explained</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <article class="post-container">
+            <span class="post-date">August 3, 2025</span>
+            <h1 class="post-title">Data link protocols</h1>
+
+            <div class="post-tags">
+                <span class="tag">data link layer</span><span class="tag">spanning tree protocol</span><span class="tag">point to point protocol</span><span class="tag">high level data link protocol</span>
+            </div>
+
+            <div class="post-content">
+                <h3><strong>Data Link Layer</strong></h3>
+<p>The data link layer is responsible for ensuring reliable communication between directly connected devices. It handles:</p>
+<ul>
+<li>Framing</li>
+<li>Error detection</li>
+<li>Flow control</li>
+<li>Media access management</li>
+</ul>
+<h2><strong>Point-to-Point Protocol (PPP)</strong></h2>
+<p>A protocol used to establish and maintain direct connections between two nodes, primarily for serial communications like dial-up and DSL connections.</p>
+<h3><strong>Features:</strong></h3>
+<ul>
+<li><p><strong>Encapsulation:</strong></p>
+<ul>
+<li>Encapsulates network layer data for serial link transmission</li>
+<li>Supports multiple network layer protocols (IPv4, IPv6)</li>
+</ul>
+</li>
+<li><p><strong>Authentication:</strong></p>
+<ul>
+<li>Supports PAP (Password Authentication Protocol)</li>
+<li>Supports CHAP (Challenge Handshake Authentication Protocol)</li>
+</ul>
+</li>
+<li><p><strong>Error Detection:</strong></p>
+<ul>
+<li>Uses CRC (Cyclic Redundancy Check)</li>
+<li>Ensures data integrity</li>
+</ul>
+</li>
+<li><p><strong>Multilink Support:</strong></p>
+<ul>
+<li>Combines multiple physical links into one logical connection</li>
+<li>Increases throughput (Multilink PPP)</li>
+</ul>
+</li>
+</ul>
+<h3><strong>Advantages:</strong></h3>
+<ul>
+<li>Compatible with various network protocols (IP, IPX, AppleTalk)</li>
+<li>Enhanced security through built-in authentication</li>
+<li>Optional compression improves efficiency</li>
+<li>Simple configuration for point-to-point links</li>
+</ul>
+<h3><strong>Applications:</strong></h3>
+<ul>
+<li>Establishing home computer-to-ISP connections</li>
+<li>DSL connections between users and ISPs</li>
+</ul>
+<h2><strong>High-Level Data Link Control (HDLC)</strong></h2>
+<p>A bit-oriented protocol for both point-to-point and multipoint communication that ensures error-free data transmission over synchronous links.</p>
+<h3><strong>HDLC Frame Structure:</strong></h3>
+<ol>
+<li><strong>Flag Field:</strong> Marks frame start/end (ensures synchronization)</li>
+<li><strong>Address Field:</strong> Identifies recipient/station</li>
+<li><strong>Control Field:</strong> Manages flow/error control</li>
+<li><strong>Payload:</strong> Contains transmitted data</li>
+<li><strong>CRC:</strong> Provides error detection</li>
+</ol>
+<h3><strong>Communication Modes:</strong></h3>
+<ol>
+<li><p><strong>Normal Response Mode (NRM):</strong></p>
+<ul>
+<li>Secondary nodes transmit only when requested</li>
+<li>Used in master-slave configurations</li>
+</ul>
+</li>
+<li><p><strong>Asynchronous Balanced Mode (ABM):</strong></p>
+<ul>
+<li>Both nodes can initiate communication</li>
+<li>Enables peer-to-peer communication</li>
+</ul>
+</li>
+</ol>
+<h3><strong>Advantages:</strong></h3>
+<ul>
+<li>Error detection via CRC</li>
+<li>Effective flow control prevents congestion</li>
+<li>Optimized for synchronous links (low overhead)</li>
+</ul>
+<h3><strong>Applications:</strong></h3>
+<ul>
+<li>Reliable data transfer over leased lines</li>
+<li>Industrial control/automation networks</li>
+</ul>
+<h2><strong>Spanning Tree Protocol (STP)</strong></h2>
+<p>A network protocol that prevents loops in Ethernet networks by creating loop-free topologies while maintaining redundancy.</p>
+<h3><strong>How STP Works:</strong></h3>
+<ol>
+<li><p><strong>Root Bridge Election:</strong></p>
+<ul>
+<li>Switches exchange BPDUs (Bridge Protocol Data Units)</li>
+<li>Switch with lowest Bridge ID becomes root bridge</li>
+</ul>
+</li>
+<li><p><strong>Path Cost Calculation:</strong></p>
+<ul>
+<li>Each switch calculates shortest path to root bridge</li>
+<li>Based on assigned link costs</li>
+</ul>
+</li>
+<li><p><strong>Port Roles:</strong></p>
+<ul>
+<li><strong>Root Port:</strong> Provides shortest path to root bridge</li>
+<li><strong>Designated Port:</strong> Forwards traffic to network segments</li>
+<li><strong>Blocked Port:</strong> Prevents loops (standby state)</li>
+</ul>
+</li>
+<li><p><strong>Topology Updates:</strong></p>
+<ul>
+<li>Switches continuously exchange BPDUs</li>
+<li>Adapts dynamically to network changes</li>
+</ul>
+</li>
+</ol>
+<h3><strong>Features:</strong></h3>
+<ul>
+<li>Enables backup links for failover</li>
+<li>Prevents broadcast storms and packet loops</li>
+</ul>
+<h3><strong>Advantages:</strong></h3>
+<ul>
+<li>Maintains loop-free topology</li>
+<li>Reduces network disruptions</li>
+<li>Automatically adapts to topology changes</li>
+</ul>
+<h3><strong>Applications:</strong></h3>
+<ul>
+<li>Enterprise networks with redundant paths</li>
+<li>Mission-critical high-availability configurations</li>
+</ul>
+<hr>
+<p>Thank you for reading..</p>
+
+            </div>
+
+            <a href="blog.html" class="back-to-blog">
+                <i class="fas fa-arrow-left"></i> Back to Blog
+            </a>
+        </article>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 Sudharshan Hegde. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-cpp.min.js"></script>
+</body>
+
+</html>
