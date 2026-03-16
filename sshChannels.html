@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><script type="text/javascript" src="/___vscode_livepreview_injected_script"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSH channels and its implementation gaps — Sudharshan Hegde</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="blog-post.css">
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="index.html" class="navbar-brand">sudharshan.dev</a>
+        <ul class="nav-links">
+            <li><a href="index.html"><i class="fas fa-home"></i><span> Home</span></a></li>
+            <li><a href="blog.html"><i class="fas fa-book-open"></i><span> Blog</span></a></li>
+        </ul>
+    </nav>
+
+    <div class="post-hero">
+        <div class="container">
+            <div class="post-meta-top">
+                <span class="post-date-badge">March 16, 2026</span>
+                <span class="tag">SSH</span><span class="tag">Operating system</span><span class="tag">Computer networks</span><span class="tag">Computer security</span>
+            </div>
+            <h1 class="post-title">SSH channels and its implementation gaps</h1>
+            <p class="post-excerpt-lead">SSH channels and its implementation gaps</p>
+        </div>
+    </div>
+
+    <div class="post-wrapper">
+        <div class="container">
+            <article class="post-container">
+                <div class="post-content">
+                    <h1>SSH Channels</h1>
+<p>You now have one TCP socket connected to the SSH server. One socket, one stream of bytes.</p>
+<p>But you want to do multiple things simultaneously over that one connection:</p>
+<ul>
+<li>Run a shell</li>
+<li>Forward local port 8080 to a remote server</li>
+<li>Forward your SSH agent so the server can use your keys</li>
+<li>Forward your X11 display</li>
+</ul>
+<p>These are four independent data streams, but TCP only gives one pipe, we can't mix all of this. SSH solves this through <strong>channels</strong>.</p>
+<p>A channel is a logical, independent data stream multiplexed inside one SSH connection. You can have dozens of channels open at the same time, all flowing over the same single TCP socket.</p>
+<hr>
+<h2>How SSH Packets Work</h2>
+<p>Every TCP packet has this structure:</p>
+<pre><code>Packet length  → 4 bytes
+Pad_length     → 1 byte
+Payload        → variable length
+Padding
+</code></pre>
+<p>The first byte of the payload is the <strong>message type</strong> — a number that tells you what the packet means:</p>
+<pre><code>20   SSH_MSG_KEXINIT                   — start key exchange
+21   SSH_MSG_NEWKEYS                   — switch to encrypted keys
+50   SSH_MSG_USERAUTH_REQUEST          — authentication attempt
+90   SSH_MSG_CHANNEL_OPEN              — "I want to open a channel"
+91   SSH_MSG_CHANNEL_OPEN_CONFIRMATION — "yes, channel is open"
+92   SSH_MSG_CHANNEL_OPEN_FAILURE      — "no, refused"
+94   SSH_MSG_CHANNEL_DATA              — "here is data for channel N"
+96   SSH_MSG_CHANNEL_EOF               — "I'm done sending on channel N"
+97   SSH_MSG_CHANNEL_CLOSE             — "channel N is closed"
+</code></pre>
+<p>Every packet that carries channel data includes a <strong>channel number</strong> — a 4-byte integer that says which channel this data belongs to. That's how the receiver separates the streams.</p>
+<p>libssh reads raw bytes off the TCP socket, decrypts them, then looks at the message type and dispatches to the right handler. We never see any of this — but it explains why <code>ssh_event_dopoll()</code> can feed data to the right channel callback.</p>
+<hr>
+<h2>Channel Numbers Get Tracked on Both Sides</h2>
+<p>Each side keeps a table of open channels. The client picks a number starting from 0 and sends it in <code>SSH_MSG_CHANNEL_OPEN</code>. The server picks its own number for the same channel and sends it back in <code>SSH_MSG_CHANNEL_OPEN_CONFIRMATION</code> with both numbers.</p>
+<ul>
+<li>When the client sends data, it uses the <strong>server's</strong> channel number as the recipient</li>
+<li>When the server sends data, it uses the <strong>client's</strong> channel number as the recipient</li>
+</ul>
+<p>This is like two people using different names for the same conversation — both sides know which channel is which because they agreed during the open handshake.</p>
+<p>libssh handles all of this internally. We never deal with channel numbers directly. When you call <code>ssh_channel_new()</code>, libssh assigns a number. When data arrives for that channel, libssh routes it to the right <code>ssh_channel</code> object.</p>
+<hr>
+<h2>Channel Types</h2>
+<pre><code>"session"                — a shell, command execution, or subsystem (sftp)
+"direct-tcpip"           — local port forward: "connect to host:port for me"
+"forwarded-tcpip"        — remote port forward: server initiated, going to client
+"auth-agent@openssh.com" — agent forwarding
+"x11"                    — X11 forwarding
+</code></pre>
+<hr>
+<h2>libssh Channel API</h2>
+<h3>Creating and Opening a Session Channel</h3>
+<pre><code class="language-c">ssh_channel channel = ssh_channel_new(session);
+</code></pre>
+<p>This allocates an <code>ssh_channel</code> object. The channel is not open yet — nothing has been sent to the server.</p>
+<pre><code class="language-c">int rc = ssh_channel_open_session(channel);
+</code></pre>
+<p>This sends <code>SSH_MSG_CHANNEL_OPEN</code> with type <code>"session"</code> and waits for confirmation. After this returns <code>SSH_OK</code>, there is an active channel between you and the server.</p>
+<h3>Requesting a Shell or Command</h3>
+<p>After a session channel is open, you request what you want to happen on the server side:</p>
+<pre><code class="language-c">/* request a PTY (terminal) */
+ssh_channel_request_pty(channel);
+
+/* then request a shell */
+ssh_channel_request_shell(channel);
+
+/* execute a specific command instead of a shell */
+ssh_channel_request_exec(channel, "ls -la /etc");
+</code></pre>
+<p><code>request_pty</code> tells the server to allocate a pseudoterminal.
+<code>request_shell</code> tells the server to start <code>/bin/bash</code> (or whatever the user's default shell is) attached to that PTY.</p>
+<h3>Reading and Writing Channel Data</h3>
+<pre><code class="language-c">/* write to the channel (stdin of the remote process) */
+ssh_channel_write(channel, "hello\n", 6);
+
+/* read from the channel (stdout of the remote process) */
+char buf[256];
+int nbytes = ssh_channel_read(channel, buf, sizeof(buf), 0);
+/* last arg: 0 = stdout, 1 = stderr */
+</code></pre>
+<h3>Callbacks — How Data Arrives in the Event Loop</h3>
+<pre><code class="language-c">struct ssh_channel_callbacks_struct cb = {
+    .channel_data_function  = on_channel_data,
+    .channel_eof_function   = on_channel_eof,
+    .channel_close_function = on_channel_close,
+};
+
+ssh_callbacks_init(&cb);
+ssh_set_channel_callbacks(channel, &cb);
+</code></pre>
+<p><code>on_channel_data</code> is the function we write:</p>
+<pre><code class="language-c">int on_channel_data(ssh_session session, ssh_channel channel,
+                    void *data, uint32_t len, int is_stderr,
+                    void *userdata) {
+    write(STDOUT_FILENO, data, len);
+    return len;  /* tell libssh how many bytes you consumed */
+}
+</code></pre>
+<p>Every time <code>ssh_event_dopoll()</code> reads an <code>SSH_MSG_CHANNEL_DATA</code> packet for this channel, it calls <code>on_channel_data</code> with the payload. We write it to stdout. No blocking, no manual reads.</p>
+<hr>
+<h2>Opening a <code>direct-tcpip</code> Channel (Local Port Forwarding)</h2>
+<p>When you run <code>ssh -L 8080:google.com:80</code>, what happens is: a local client connects to your port 8080, you accept them and get a <code>client_fd</code>, and now you need the server to connect to <code>google.com:80</code> on your behalf and bridge between the two.</p>
+<pre><code class="language-c">ssh_channel channel = ssh_channel_new(session);
+
+int rc = ssh_channel_open_forward(
+    channel,
+    "google.com", 80,    /* destination the server should connect to */
+    "127.0.0.1", 8080    /* where the originating connection came from
+                            (for logging on the server side, not routing) */
+);
+</code></pre>
+<p>Internally this sends:</p>
+<pre><code>SSH_MSG_CHANNEL_OPEN
+  channel_type: "direct-tcpip"
+  recipient:    google.com port 80
+  originator:   127.0.0.1 port 8080
+</code></pre>
+<p>The server connects to <code>google.com:80</code> and sends back <code>SSH_MSG_CHANNEL_OPEN_CONFIRMATION</code>. Now the channel is an open pipe to <code>google.com:80</code>.</p>
+<p>Bytes from <code>client_fd</code> go into the channel; bytes from the channel go back to <code>client_fd</code>. The client thinks it's talking to <code>google.com:80</code> directly; the server thinks it's proxying on behalf of <code>127.0.0.1:8080</code>.</p>
+<hr>
+<h2>Remote Port Forwarding</h2>
+<p>When you run <code>ssh -R 9090:localhost:22</code>, you want the server to listen on port 9090 and, when someone connects, forward that connection back to your machine at <code>localhost:22</code>. This is the reverse direction — the server initiates the channel, not us.</p>
+<pre><code class="language-c">int actual_port = 0;
+ssh_channel_listen_forward(session, NULL, 9090, &actual_port);
+</code></pre>
+<p>This sends a global request asking the server to bind port 9090. <code>actual_port</code> gets filled with the port the server actually bound.</p>
+<h3>Handling the Server-Initiated Channel Open</h3>
+<p>When someone connects to the server's port 9090, the server sends <code>SSH_MSG_CHANNEL_OPEN</code> with type <code>"forwarded-tcpip"</code>. We receive this as a callback:</p>
+<pre><code class="language-c">struct ssh_callbacks_struct session_cb = {
+    .channel_open_request_forwarded_tcpip_function = on_remote_forward,
+};
+
+ssh_channel on_remote_forward(ssh_session session,
+                               const char *dest_addr, int dest_port,
+                               const char *orig_addr, int orig_port,
+                               void *userdata) {
+    /* connect to the actual destination */
+    int local_fd = connect_to("localhost", 22);
+
+    ssh_channel channel = ssh_channel_new(session);
+    /* accept the channel */
+    ssh_channel_accept_forward(session, 0, &dest_port);
+
+    /* bridge channel ↔ local_fd */
+    /* ... add local_fd and channel to event loop ... */
+
+    return channel;
+}
+</code></pre>
+<hr>
+<h2>How Multiple Channels Share One Event Loop</h2>
+<p><code>ssh_event_dopoll()</code> calls <code>poll()</code> on the session socket:</p>
+<pre><code>Packet arrives: SSH_MSG_CHANNEL_DATA  channel_number=0  payload="hello"
+  → libssh looks up channel 0 → calls on_channel_data for channel 0
+
+Packet arrives: SSH_MSG_CHANNEL_DATA  channel_number=1  payload="GET /"
+  → libssh looks up channel 1 → calls on_channel_data for channel 1
+
+Packet arrives: SSH_MSG_CHANNEL_OPEN  type="auth-agent@openssh.com"
+  → libssh calls on_agent_request callback
+</code></pre>
+<p>We set different callbacks on each channel. libssh routes incoming packets to the right callback using the channel number. The event loop doesn't know or care how many channels are open.</p>
+<hr>
+<h2>SSH Flag → Channel Type Reference</h2>
+<table>
+<thead>
+<tr>
+<th>SSH Flag</th>
+<th>Channel Type</th>
+<th>Direction</th>
+<th>libssh API Call</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(shell)</em></td>
+<td><code>session</code></td>
+<td>client → server</td>
+<td><code>ssh_channel_open_session()</code></td>
+</tr>
+<tr>
+<td><code>-L</code></td>
+<td><code>direct-tcpip</code></td>
+<td>client → server</td>
+<td><code>ssh_channel_open_forward()</code></td>
+</tr>
+<tr>
+<td><code>-R</code></td>
+<td><code>forwarded-tcpip</code></td>
+<td>server → client</td>
+<td><code>ssh_channel_listen_forward()</code> + callback</td>
+</tr>
+<tr>
+<td><code>-D</code></td>
+<td><code>direct-tcpip</code></td>
+<td>client → server</td>
+<td><code>ssh_channel_open_forward()</code> (dest from SOCKS5)</td>
+</tr>
+<tr>
+<td><code>-A</code></td>
+<td><code>auth-agent</code></td>
+<td>server → client</td>
+<td><code>ssh_channel_open_auth_agent()</code> via callback</td>
+</tr>
+<tr>
+<td><code>-X</code> / <code>-Y</code></td>
+<td><code>x11</code></td>
+<td>server → client</td>
+<td><code>ssh_channel_request_x11()</code> + callback</td>
+</tr>
+<tr>
+<td><code>-W</code></td>
+<td><code>direct-tcpip</code></td>
+<td>client → server</td>
+<td><code>ssh_channel_open_forward()</code> (stdio connected directly)</td>
+</tr>
+</tbody></table>
+
+                </div>
+                <a href="blog.html" class="back-link">
+                    <i class="fas fa-arrow-left"></i> Back to Blog
+                </a>
+            </article>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 Sudharshan Hegde  ·  <a href="index.html">Portfolio</a>  ·  <a href="blog.html">Blog</a></p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-cpp.min.js"></script>
+</body>
+</html>
