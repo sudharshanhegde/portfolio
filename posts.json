@@ -1,4 +1,16 @@
 [
+    {
+    "title": "psuedoTerminals",
+    "date": "2025-08-03",
+    "excerpt": "psuedoTerminals -> missing implementation in libssh",
+    "filename": "psuedoTerminals.html",
+    "tags": [
+      "SSH",
+      "libSSH",
+      "Operating System",
+      "Computer Security"
+    ]
+  },
   {
     "title": "Data link protocols",
     "date": "2025-08-03",

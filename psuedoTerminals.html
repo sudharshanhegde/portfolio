@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><script type="text/javascript" src="/___vscode_livepreview_injected_script"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Psuedoterminals - Missing Implementation in libssh — Sudharshan Hegde</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="blog-post.css">
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="index.html" class="navbar-brand">sudharshan.dev</a>
+        <ul class="nav-links">
+            <li><a href="index.html"><i class="fas fa-home"></i><span> Home</span></a></li>
+            <li><a href="blog.html"><i class="fas fa-book-open"></i><span> Blog</span></a></li>
+        </ul>
+    </nav>
+
+    <div class="post-hero">
+        <div class="container">
+            <div class="post-meta-top">
+                <span class="post-date-badge">March 16, 2026</span>
+                <span class="tag">SSH</span><span class="tag">Computer security</span><span class="tag">Operating system</span>
+            </div>
+            <h1 class="post-title">Psuedoterminals - Missing Implementation in libssh</h1>
+            <p class="post-excerpt-lead">PsuedoTerminals - Plan for implementation and how the coverage is been done.</p>
+        </div>
+    </div>
+
+    <div class="post-wrapper">
+        <div class="container">
+            <article class="post-container">
+                <div class="post-content">
+                    <h1>Psuedoterminals</h1>
+<p>When we run program in terminal like vim or htop it not only print lines. It takes over whole screen, moves cursor around and responds to arrow keys and also knows window size.
+This is done by talking to terminal. Terminal is not just output pipe. It has special capabilities such as :</p>
+<ul>
+<li>It has size (rows * columns)</li>
+<li>It handles signals : ctrl + c (sends SIGINT),ctrl + z (sends SIGSTP)</li>
+<li>It has modes : Raw mode -> (every keypress will be sent immediately)
+           cooked mode -> (wait for enter, Handle backspace)</li>
+<li>It has escape sequences such as : \033[2J (clears the screen)
+                              \033[1;32m (sets text green)</li>
+</ul>
+<p>When we SSH into remote machine and run vim, vim will be running on the server.
+We will be at terminal on our client, server needs to give vim property such that it behaves as a real terminal, even though actual display is on another machine, this functionality is handled by psuedoterminal(PTY).</p>
+<h2>PTY at OS level</h2>
+<p>PTY is pair of file descriptors created by kernel :</p>
+<p>master fd  <------------- bytes flow both ways ------------>  slave fd
+(your SSH client / server side that controls it)           (given to the remote program as its stdin/stdout/stderr)</p>
+<ul>
+<li><p>Slave side looks like real terminal to any program which opens it.
+Program will check isatty(fd) ? -> this will return true.
+vim running on slave side thinks it has real terminal.</p>
+</li>
+<li><p>master side is what us or SSH server read from and write to. What we write to master will appear as input on slave. What program writes to slave comes out on master.</p>
+</li>
+</ul>
+<h2>Creating a PTY</h2>
+<pre><code class="language-c">#include <pty.h>  /* or <util.h> on some systems */
+
+int master_fd, slave_fd;
+char slave_name[64];  /* example :  "/dev/pts/7" */
+
+openpty(&master_fd, &slave_fd, slave_name, NULL, NULL);
+</code></pre>
+<p>openpty() does total of three things:</p>
+<ol>
+<li>It create a master/slave pair.</li>
+<li>It returns both file descriptor.</li>
+<li>It tells the name of slave.</li>
+</ol>
+<p>After this :</p>
+<ul>
+<li>Give slave_fd to child process (as stdin/stdout/stderr)</li>
+<li>keep master_fd for ourselves to read/write.</li>
+</ul>
+<p>on SSH server side, server calls openpty() forks a child process gives that child slave_fd and bridge master_fd to SSH channel. Data from client travels through channel,arrives at master and passes through PTY kernel logic and appears on slave as if typed on real keyboard.</p>
+<h3>termios -> controlling terminal behaviour.</h3>
+<p>PTY has configurable behaviour, configuration will be stored in struct termios and changed with two system calls:</p>
+<pre><code class="language-c">#include <termios.h>
+
+struct termios t;
+
+tcgetattr(fd, &t);  /* read current settings from the terminal fd */
+tcsetattr(fd, TCSANOW, &t);  /* write new settings, apply immediately */
+</code></pre>
+<p>TCSANOW -> apply right now.
+TCSADRAIN -> apply after all pending output is written.</p>
+<h3>Cooked Mode :</h3>
+<p>This is default and terminal will be in cooked mode(also called canonical mode).</p>
+<p>In this mode :</p>
+<ul>
+<li>kernel buffers input we press enter.</li>
+<li>backspace erases previous character in buffer.</li>
+<li>ctrl + c sends SIGINT to foreground process.</li>
+<li>ctrl + z sends SIGSTP (suspend)</li>
+<li>terminal echoes keypresses back to screen.</li>
+</ul>
+<p>Kernel handles editing so our program does not need to handle it.</p>
+<h3>Raw mode :</h3>
+<p>SSH will need raw mode, because in cooked mode : when user presses arrow key, it sends 3 byte escape sequence \033[A. In cooked mode kernel will buffer those butes, remote vim will never see it until enter is pressed. This is broken.</p>
+<p>In raw mode :</p>
+<ul>
+<li>Every keypress will be sent immediately, one byte at a time.</li>
+<li>No line buffering.</li>
+<li>backspace will not be handled by kernel -> it will be sent as raw byte 0x7f to program.</li>
+<li>ctrl + c is also not converted to SIGINT -> it is sent as raw byte 0x03 to channel.</li>
+</ul>
+<p>Remote program(running through SSH) gets every byte exactly as we type it and handles it itself. cfmakeraw() is helper which applies all necessary flag at once :</p>
+<pre><code class="language-c">struct termios t;
+tcgetattr(STDIN_FILENO, &t);  /* read current settings */
+
+/* save a copy BEFORE modifying, so you can restore later */
+struct termios saved = t;
+
+cfmakeraw(&t);  /* modify: turn off all buffering, echo, signal processing */
+
+tcsetattr(STDIN_FILENO, TCSANOW, &t);  /* apply raw mode */
+
+/* ... run SSH session ... */
+
+/* restore when done */
+tcsetattr(STDIN_FILENO, TCSANOW, &saved);
+</code></pre>
+<p>If we forget to restore and the program crashes, terminal will stay in raw mode. Shell prompt works but looks completely broken, no echo, backspace will not wor. We need to type reset blindly and press enter to recover.</p>
+<p>ssh_client.c is doing same : as we can see here</p>
+<pre><code class="language-c">static void shell(ssh_session session)
+{
+    ssh_channel channel = NULL;
+    struct termios terminal_local;
+    int interactive = isatty(0);
+
+    channel = ssh_channel_new(session);
+    if (channel == NULL) {
+        return;
+    }
+
+    if (interactive) {
+        tcgetattr(0, &terminal_local);
+        memcpy(&terminal, &terminal_local, sizeof(struct termios));
+    }
+
+    if (ssh_channel_open_session(channel)) {
+        printf("Error opening channel : %s\n", ssh_get_error(session));
+        ssh_channel_free(channel);
+        return;
+    }
+    if (interactive) {
+        ssh_channel_request_pty(channel);
+        sizechanged(channel);
+    }
+
+    if (ssh_channel_request_shell(channel)) {
+        printf("Requesting shell : %s\n", ssh_get_error(session));
+        ssh_channel_free(channel);
+        return;
+    }
+
+    if (interactive) {
+        cfmakeraw(&terminal_local);
+        tcsetattr(0, TCSANOW, &terminal_local);
+        setsignal();
+    }
+    signal(SIGTERM, do_cleanup);
+    select_loop(session, channel);
+    if (interactive) {
+        do_cleanup(0);
+    }
+    ssh_channel_free(channel);
+}
+</code></pre>
+<h3>SIGWINCH -> window resize signal</h3>
+<p>When we resize terminal window, OS needs SIGWINCH (window change) to foreground process.
+Our SSH client recieves it. When client recieves SIGWINCH, it needs to tell server new window size, server will pass that to PTY on server side, and running program (vim,htop etc) will get notified and redraws itself to fit to new size.</p>
+<pre><code class="language-c">static volatile int window_changed = 0;
+
+static void sigwinch_handler(int sig) {
+    (void)sig;
+    window_changed = 1;  /* can't do much in a signal handler safely */
+}
+
+signal(SIGWINCH, sigwinch_handler);
+</code></pre>
+<p>In the event loop :</p>
+<pre><code class="language-c">if (window_changed) {
+    window_changed = 0;
+    struct winsize ws;
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws);  /* gets new terminal size */
+    ssh_channel_change_pty_size(channel, ws.ws_col, ws.ws_row);
+}
+</code></pre>
+<p>ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) -> is a system call which doesn't fit read/write model, so it uses ioctl ("I/O control").</p>
+<ul>
+<li>TIOCGWINSZ -> get window size. It fills ws.ws_col and ws.ws_row.</li>
+</ul>
+<p>ssh_channel_change_pty_size() sends SSH_MSG_CHANNEL_REQUEST with type of "window change" and new dimensions. Server will update PTY and will send SIGWINCH to running process.</p>
+<p>We cannot call ssh_channel_change_pty_size() directly inside signal handler. Signal handlers run asynchronously and calling non-async-signal-safe function inside can corrupt the state. So the pattern is : set flag in handler, check flag in event loop. It is done in ssh_client.c for signal_delayed.</p>
+<p>Example :</p>
+<pre><code class="language-c">#ifdef SIGWINCH
+static void sigwindowchanged(int i)
+{
+    (void)i;
+    signal_delayed = 1;
+}
+#endif
+
+static void setsignal(void)
+{
+#ifdef SIGWINCH
+    signal(SIGWINCH, sigwindowchanged);
+#endif
+    signal_delayed = 0;
+}
+
+static void sizechanged(ssh_channel chan)
+{
+    struct winsize win = {
+        .ws_row = 0,
+    };
+
+    ioctl(1, TIOCGWINSZ, &win);
+    ssh_channel_change_pty_size(chan,win.ws_col, win.ws_row);
+    setsignal();
+}
+</code></pre>
+<h3>isatty() -> when not to request PTY</h3>
+<pre><code class="language-c">int interactive = isatty(STDIN_FILENO);
+</code></pre>
+<p>isatty() returns 1 if given fd is connected to real terminal 0 for pipe or file.</p>
+<p>If we run</p>
+<pre><code class="language-sh">echo "ls" | ssh server
+</code></pre>
+<p>stdin is pipe and not a terminal. isatty(0) returns 0. Here we should not request PTY, as there is no user sitting there, it is just a script. Requesting PTY in non - interactive mode will waste the resource and can break the output formatting (PTYs add carriage returns, converts newlines).</p>
+<p>openSSH's -t flag forces PTY allocation while -T prevents it. RequestTTY has four values:</p>
+<ul>
+<li>no -> never allocate a PTY</li>
+<li>yes -> always try to allocate (It fails if the server refuses)</li>
+<li>force -> allocates even if it is not connected to terminal locally.</li>
+<li>auto -> allocates only if local stdin is terminal (it is default,it is the isatty())</li>
+</ul>
+<p>We have to implement this in our CLI which is SOC_NA config, check will look like this :</p>
+<pre><code class="language-c">int should_request_pty(struct cli_opts *opts) {
+    switch (opts->request_tty) {
+        case TTY_NO:    return 0;
+        case TTY_YES:   return 1;
+        case TTY_FORCE: return 1;
+        case TTY_AUTO:  return isatty(STDIN_FILENO);
+    }
+}
+</code></pre>
+<h3>How client side PTY works</h3>
+<p>On client side -> there is no PTY creation, Client will be attached to actual terminal, real /dev/pts/N terminal emulator gave the shell.
+Client puts that terminal in to raw mode and connects event loop via ssh_connector.</p>
+<p>PTY is created on server side, by SSH server, for remote process.</p>
+<p>Client only :</p>
+<ol>
+<li>Sends pty-req channel request telling server the terminal type ($term),dimensions and terminal modes.</li>
+<li>Puts the local stdin to raw mode.</li>
+<li>Pipes stdin-> channel,channel->stdout.</li>
+<li>Handles SIGWINCH by notifying server or size changes.</li>
+<li>Restores terminal on exit.</li>
+</ol>
+<h2>What Changes for CLI we need here</h2>
+<p>Current ssh_client.c already handles basic PTY setup,we will add :</p>
+<ol>
+<li><p>RequestTTY option -> isatty() check is hardcoded in ssh_client.c, we will replace it with should_request_pty() logic above, reading from parsed config/CLI flags.</p>
+</li>
+<li><p>Escape Sequences -> currently ssh_client.c uses ssh_connector to pipe stdin directly to channel, connectors are simple pass-through, they do not inspect bytes, To handle escape charecters like ~.(disconnect) or ~^Z(suspend), we replace stdin connector with custom fd callback which runs an escape sequence state machine on each byte before forwarding it.</p>
+</li>
+</ol>
+<p>State machine will have three states:</p>
+<p>STATE_NEWLINE  — we just saw a newline (or it's the start)
+               if next byte is '~': → STATE_ESCAPE
+               otherwise: forward byte, → STATE_MIDLINE</p>
+<p>STATE_MIDLINE  — middle of a line
+               if byte is '\n' or '\r': forward byte, → STATE_NEWLINE
+               otherwise: forward byte, stay in STATE_MIDLINE</p>
+<p>STATE_ESCAPE   — we saw newline + ~, waiting for command
+               '.' → disconnect
+               '~' → send literal '~', → STATE_MIDLINE
+               '^Z' → suspend (SIGTSTP to self)
+               '?' → print help
+               otherwise → send '~' + byte, → STATE_MIDLINE</p>
+<ol start="3">
+<li>SendEnv -> after PTY is requested but before shell is started we need to send SSH_MSG_CHANNEL_REQUEST with type "env" for each environment variable which matches SendEnv patterns, It lets us propogate variables like LANG or COLORTERM to remote session. API call will be ssh_channel_request_env(channel,"LANG,getenv("LANG)).</li>
+</ol>
+
+                </div>
+                <a href="blog.html" class="back-link">
+                    <i class="fas fa-arrow-left"></i> Back to Blog
+                </a>
+            </article>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 Sudharshan Hegde  ·  <a href="index.html">Portfolio</a>  ·  <a href="blog.html">Blog</a></p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-cpp.min.js"></script>
+</body>
+</html>
