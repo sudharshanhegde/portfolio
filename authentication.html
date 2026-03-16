@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><script type="text/javascript" src="/___vscode_livepreview_injected_script"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication and its gaps in libssh — Sudharshan Hegde</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="blog-post.css">
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="index.html" class="navbar-brand">sudharshan.dev</a>
+        <ul class="nav-links">
+            <li><a href="index.html"><i class="fas fa-home"></i><span> Home</span></a></li>
+            <li><a href="blog.html"><i class="fas fa-book-open"></i><span> Blog</span></a></li>
+        </ul>
+    </nav>
+
+    <div class="post-hero">
+        <div class="container">
+            <div class="post-meta-top">
+                <span class="post-date-badge">March 16, 2026</span>
+                <span class="tag">SSH</span><span class="tag">Authentication</span><span class="tag">Security</span>
+            </div>
+            <h1 class="post-title">Authentication and its gaps in libssh</h1>
+            <p class="post-excerpt-lead">How authentication works in libssh and the gaps</p>
+        </div>
+    </div>
+
+    <div class="post-wrapper">
+        <div class="container">
+            <article class="post-container">
+                <div class="post-content">
+                    <h1>Authentication in SSH</h1>
+<p>When we type <code>ssh user@server</code>, the server does not directly ask for a password. SSH has a full negotiation protocol for authentication. The server advertises which methods it will accept, and the client tries them in preferred order. Some methods require multiple rounds; some can partially succeed requiring a second method after the first. The client can try and fail multiple times before getting rejected.</p>
+<h2>What Happens on the Wire</h2>
+<p>After TCP connection, key exchange, and encryption are established, the client enters the authentication phase. The session is encrypted but not yet authenticated — the server does not know who the client is yet.</p>
+<h3><code>ssh_userauth_none()</code></h3>
+<p>The client sends an authentication request with method <code>"none"</code>. The server responds with <code>SSH_MSG_USERAUTH_FAILURE</code> and includes a list of authentication methods it accepts.</p>
+<pre><code>Client → SSH_MSG_USERAUTH_REQUEST  method="none"
+Server → SSH_MSG_USERAUTH_FAILURE  methods="publickey,keyboard-interactive,password"
+</code></pre>
+<p>We get a comma-separated list; libssh reads it and returns a bitmask:</p>
+<pre><code class="language-c">int methods = ssh_userauth_list(session, NULL);
+
+if (methods & SSH_AUTH_METHOD_PUBLICKEY)   { /* server accepts pubkey */ }
+if (methods & SSH_AUTH_METHOD_INTERACTIVE) { /* keyboard-interactive */ }
+if (methods & SSH_AUTH_METHOD_PASSWORD)    { /* password */ }
+if (methods & SSH_AUTH_METHOD_GSSAPI_MIC)  { /* Kerberos/GSSAPI */ }
+if (methods & SSH_AUTH_METHOD_HOSTBASED)   { /* host-based auth */ }
+</code></pre>
+<p>Some old servers skip this and return <code>SSH_AUTH_SUCCESS</code> for <code>none</code>, meaning no authentication is required at all. So <code>ssh_userauth_none()</code> is called first and its return value is checked before trying anything else.</p>
+<h3>Trying Methods in Order</h3>
+<p>The client tries each method the server advertised, stopping when one succeeds. Order matters — public key is preferred because it is non-interactive; password is last because it requires user input.</p>
+<pre><code>Client → SSH_MSG_USERAUTH_REQUEST  method="publickey"  key=<public key>
+Server → SSH_MSG_USERAUTH_SUCCESS
+</code></pre>
+<pre><code>Client → SSH_MSG_USERAUTH_REQUEST  method="publickey"  key=<public key>
+Server → SSH_MSG_USERAUTH_FAILURE  methods="password"  partial=false
+</code></pre>
+<p><code>partial=false</code> means this was not even a partial success — the method was rejected outright.</p>
+<h3>Partial Authentication (Multi-Factor)</h3>
+<p>Some servers require two methods. After the first succeeds, the server sends:</p>
+<pre><code>Server → SSH_MSG_USERAUTH_FAILURE  methods="keyboard-interactive"  partial=true
+</code></pre>
+<p><code>partial=true</code> means "that method worked, and I need one more." The client must now also succeed at <code>keyboard-interactive</code>.</p>
+<p>This is how SSH implements two-factor auth:</p>
+<ul>
+<li><code>publickey</code> + OTP</li>
+<li><code>GSSAPI</code> + password</li>
+</ul>
+<p>libssh returns <code>SSH_AUTH_PARTIAL</code> from any auth call when this happens:</p>
+<pre><code class="language-c">int rc = ssh_userauth_publickey_auto(session, NULL, NULL);
+
+if (rc == SSH_AUTH_PARTIAL) {
+    /* first factor done, server wants more */
+    rc = authenticate_kbdint(session, NULL);
+}
+</code></pre>
+<p>If we only check for <code>SSH_AUTH_SUCCESS</code> and return on anything else, multi-factor will silently fail.</p>
+<hr>
+<h2>Authentication Methods</h2>
+<h3>Public Key</h3>
+<p>The client says "I have this public key, will you accept it?" The server checks its <code>authorized_keys</code> file. If the public key is there, the server says "prove you have the corresponding private key." The client signs a challenge with the private key and sends the signature. The server verifies.</p>
+<pre><code>Client → USERAUTH_REQUEST  method="publickey"  has_sig=false  pubkey=<key>
+Server → SSH_MSG_USERAUTH_PK_OK       ← "yes, I'd accept that key"
+
+Client → USERAUTH_REQUEST  method="publickey"  has_sig=true  pubkey=<key>  sig=<signature>
+Server → SSH_MSG_USERAUTH_SUCCESS
+</code></pre>
+<pre><code class="language-c">/* try all keys in ~/.ssh/ automatically */
+int rc = ssh_userauth_publickey_auto(session, NULL, NULL);
+
+/* or try a specific key */
+ssh_key key;
+ssh_pki_import_privkey_file("~/.ssh/id_ed25519", passphrase, NULL, NULL, &key);
+int rc = ssh_userauth_publickey(session, NULL, key);
+ssh_key_free(key);
+</code></pre>
+<p><code>ssh_userauth_publickey_auto()</code> tries every key in <code>~/.ssh/</code> — <code>id_ed25519</code>, <code>id_rsa</code>, <code>id_ecdsa</code>, etc. — against the server. This is what OpenSSH does by default.</p>
+<p><strong>PKCS#11:</strong> A PKCS#11 provider is a shared library (<code>.so</code> file) that lets us use hardware tokens (smart cards, YubiKeys) as if they were key files. The private key never leaves the hardware. We load the provider, ask it for a list of keys, and use those keys for authentication. libssh has partial support for this via <code>SSH_OPTIONS_PROXYCOMMAND</code> workarounds; adding proper PKCS#11 support via the <code>-I</code> flag is one of the things this project will be implementing.</p>
+<h3>Keyboard-Interactive</h3>
+<p>This is <strong>not</strong> the same as password auth. It is a flexible challenge-response protocol. The server sends a list of prompts (any number of them). The client displays each prompt, collects an answer, and sends all answers back. The server decides if they are correct.</p>
+<p>Why not just use password auth for passwords? Because keyboard-interactive can be used for OTPs, Duo push, TOTP codes, or any arbitrary challenge. The server controls the prompts entirely.</p>
+<pre><code>Server → SSH_MSG_USERAUTH_INFO_REQUEST
+    name="Password"
+    instruction=""
+    prompts=["Password: " (echo=false), "Verification code: " (echo=true)]
+
+Client → SSH_MSG_USERAUTH_INFO_RESPONSE
+    answers=["hunter2", "123456"]
+
+Server → SSH_MSG_USERAUTH_SUCCESS
+</code></pre>
+<p>The libssh API:</p>
+<pre><code class="language-c">int rc = ssh_userauth_kbdint(session, NULL, NULL);  /* starts the exchange */
+
+while (rc == SSH_AUTH_INFO) {
+    int n = ssh_userauth_kbdint_getnprompts(session);
+    for (int i = 0; i < n; i++) {
+        char echo;
+        const char *prompt = ssh_userauth_kbdint_getprompt(session, i, &echo);
+        char answer[128];
+        /* display prompt, collect answer from user */
+        ssh_userauth_kbdint_setanswer(session, i, answer);
+    }
+    rc = ssh_userauth_kbdint(session, NULL, NULL);  /* send answers, get next round */
+}
+/* rc is now SSH_AUTH_SUCCESS, SSH_AUTH_DENIED, or SSH_AUTH_PARTIAL */
+</code></pre>
+<h3>Password</h3>
+<p>The client sends the password in plaintext — but inside the encrypted SSH channel, so it is safe on the wire.</p>
+<pre><code class="language-c">int rc = ssh_userauth_password(session, NULL, "my_password");
+</code></pre>
+<p>This is tried last because:</p>
+<ol>
+<li>If the server has your public key, no password is needed.</li>
+<li>Keyboard-interactive is more flexible and should be preferred.</li>
+<li>Password is the fallback.</li>
+</ol>
+<h3>GSSAPI (Kerberos)</h3>
+<p>No passwords, no keys — a Kerberos ticket proves identity. Transparent to the user if properly configured.</p>
+<pre><code class="language-c">int rc = ssh_userauth_gssapi(session);
+</code></pre>
+<hr>
+<h2><code>PreferredAuthentications</code></h2>
+<p>OpenSSH's default order is:</p>
+<pre><code>gssapi-with-mic,hostbased,publickey,keyboard-interactive,password
+</code></pre>
+<p>The <code>PreferredAuthentications</code> config option lets users change this order. This is currently <code>SSH_OPTIONS_UNSUPPORTED</code> in libssh — it is silently ignored and the order is always hardcoded.</p>
+<p><strong>Plan for implementation:</strong> Parse the comma-separated string, build an ordered list, and iterate through it during authentication.</p>
+<pre><code class="language-c">char *methods[] = {"publickey", "keyboard-interactive", "password", NULL};
+
+for (int i = 0; methods[i] != NULL; i++) {
+    if (strcmp(methods[i], "publickey") == 0) {
+        rc = ssh_userauth_publickey_auto(session, NULL, NULL);
+    } else if (strcmp(methods[i], "keyboard-interactive") == 0) {
+        rc = authenticate_kbdint(session);
+    } else if (strcmp(methods[i], "password") == 0) {
+        rc = ssh_userauth_password(session, NULL, password);
+    }
+    if (rc == SSH_AUTH_SUCCESS) break;
+    if (rc == SSH_AUTH_PARTIAL) continue;  /* need another method */
+}
+</code></pre>
+<h3><code>BatchMode</code> — Disabling Interactive Prompts</h3>
+<p>When running SSH in a script:</p>
+<pre><code class="language-sh">ssh server "backup.sh" < /dev/null
+</code></pre>
+<p>There is no user at a terminal. If the server asks for a password, nobody can type it — the script hangs forever.</p>
+<p><code>BatchMode yes</code> tells SSH: if any authentication method would require user input, skip it entirely. Only try methods that can succeed without a prompt — <code>publickey</code> and <code>GSSAPI</code>. If all non-interactive methods fail, return an error immediately instead of prompting.</p>
+<p><strong>Plan for implementation:</strong></p>
+<pre><code class="language-c">bool batch_mode = session->opts.batch_mode;
+
+for (int i = 0; methods[i] != NULL; i++) {
+    if (strcmp(methods[i], "password") == 0 && batch_mode) {
+        continue;  /* skip password in batch mode */
+    }
+    if (strcmp(methods[i], "keyboard-interactive") == 0 && batch_mode) {
+        continue;  /* skip kbdint in batch mode */
+    }
+    /* ... try the method ... */
+}
+</code></pre>
+<p>This is also <code>SSH_OPTIONS_UNSUPPORTED</code> — this project will implement it.</p>
+<h3><code>NumberOfPasswordPrompts</code></h3>
+<p>By default, OpenSSH asks for a password up to 3 times before giving up. <code>NumberOfPasswordPrompts 0</code> disables password auth entirely. <code>NumberOfPasswordPrompts 1</code> asks once and gives up immediately on failure.</p>
+<p><strong>Plan for implementation:</strong></p>
+<pre><code class="language-c">int max_prompts = session->opts.num_password_prompts;  /* default: 3 */
+int attempts = 0;
+
+while (attempts < max_prompts) {
+    char password[128];
+    ssh_getpass("Password: ", password, sizeof(password), 0, 0);
+    rc = ssh_userauth_password(session, NULL, password);
+    memset(password, 0, sizeof(password));  /* zero it immediately */
+
+    if (rc == SSH_AUTH_SUCCESS) break;
+    if (rc == SSH_AUTH_DENIED) {
+        attempts++;
+        continue;
+    }
+    break;  /* error or partial */
+}
+</code></pre>
+<p>This is also <code>SSH_OPTIONS_UNSUPPORTED</code> — this project will implement it.</p>
+<hr>
+<h2>Putting It All Together</h2>
+<pre><code class="language-c">int authenticate(ssh_session session, struct cli_opts *opts) {
+    int rc;
+
+    /* Step 1: none auth — get list of accepted methods */
+    rc = ssh_userauth_none(session, NULL);
+    if (rc == SSH_AUTH_SUCCESS) return SSH_AUTH_SUCCESS;  /* server accepts anyone */
+    if (rc == SSH_AUTH_ERROR)   return SSH_AUTH_ERROR;
+
+    int server_methods = ssh_userauth_list(session, NULL);
+
+    /* Step 2: get preferred order from config, default if not set */
+    char **order = parse_preferred_auths(opts->preferred_auths);
+
+    /* Step 3: iterate */
+    for (int i = 0; order[i] != NULL; i++) {
+        /* skip if server doesn't support this method */
+        if (!server_supports(server_methods, order[i])) continue;
+
+        /* skip interactive methods in batch mode */
+        if (opts->batch_mode && is_interactive(order[i])) continue;
+
+        rc = try_method(session, opts, order[i]);
+
+        if (rc == SSH_AUTH_SUCCESS) return SSH_AUTH_SUCCESS;
+        if (rc == SSH_AUTH_PARTIAL) continue;  /* need second factor */
+        /* SSH_AUTH_DENIED: try next method */
+    }
+
+    fprintf(stderr, "ssh: all authentication methods failed\n");
+    return SSH_AUTH_ERROR;
+}
+</code></pre>
+<p>This is what <code>example/authentication.c</code> approximates but does not fully implement — it has no <code>PreferredAuthentications</code> ordering, no <code>BatchMode</code>, no <code>NumberOfPasswordPrompts</code>, and does not handle <code>SSH_AUTH_PARTIAL</code> properly in all paths. This project will address all of these gaps.</p>
+
+                </div>
+                <a href="blog.html" class="back-link">
+                    <i class="fas fa-arrow-left"></i> Back to Blog
+                </a>
+            </article>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 Sudharshan Hegde  ·  <a href="index.html">Portfolio</a>  ·  <a href="blog.html">Blog</a></p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-cpp.min.js"></script>
+</body>
+</html>

@@ -1,12 +1,28 @@
 [
-  { "title": "SSH channels and its implementation gaps",
-   "date": "2026-03-16",
+  {
+    "title": "Authentication and its gaps in libssh",
+    "date": "2026-03-16",
+    "excerpt": "How authentication works in libssh and the gaps",
+    "filename": "authentication.html",
+    "tags": [
+      "SSH",
+      "Authentication",
+      "Security"
+    ]
+  },
+  {
+    "title": "SSH channels and its implementation gaps",
+    "date": "2026-03-16",
     "excerpt": "SSH channels and its implementation gaps",
-     "filename": "sshChannels.html",
-      "tags": [ "SSH", "Operating system", "Computer networks", "Computer security" 
-      ] 
-    },
-    {
+    "filename": "sshChannels.html",
+    "tags": [
+      "SSH",
+      "Operating system",
+      "Computer networks",
+      "Computer security"
+    ]
+  },
+  {
     "title": "psuedoTerminals",
     "date": "2025-08-03",
     "excerpt": "psuedoTerminals -> missing implementation in libssh",
