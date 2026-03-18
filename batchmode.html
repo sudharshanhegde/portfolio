@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><script type="text/javascript" src="/___vscode_livepreview_injected_script"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BatchMode — Sudharshan Hegde</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="blog-post.css">
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="index.html" class="navbar-brand">sudharshan.dev</a>
+        <ul class="nav-links">
+            <li><a href="index.html"><i class="fas fa-home"></i><span> Home</span></a></li>
+            <li><a href="blog.html"><i class="fas fa-book-open"></i><span> Blog</span></a></li>
+        </ul>
+    </nav>
+
+    <div class="post-hero">
+        <div class="container">
+            <div class="post-meta-top">
+                <span class="post-date-badge">March 18, 2026</span>
+                <span class="tag">libssh</span><span class="tag">security</span><span class="tag">operating system</span>
+            </div>
+            <h1 class="post-title">BatchMode</h1>
+            <p class="post-excerpt-lead">BatchMode in libssh and its implementation gaps</p>
+        </div>
+    </div>
+
+    <div class="post-wrapper">
+        <div class="container">
+            <article class="post-container">
+                <div class="post-content">
+                    <h1>BatchMode</h1>
+<h2>The Problem It Solves</h2>
+<p>Not every SSH connection has a human sitting at a keyboard. Scripts, cron jobs, deployment pipelines, and monitoring systems all use SSH to run commands on remote servers. They cannot respond to prompts — there is nobody there to type a password.</p>
+<p>The danger is: if you write a script that uses SSH, and for some reason public key authentication fails, SSH falls back to asking for a password. The script hangs. The job hangs. The deployment pipeline hangs. Nobody notices for hours.</p>
+<p><code>BatchMode yes</code> tells SSH: "you are running non-interactively, never ask the user anything, and if you cannot authenticate without prompting — fail immediately with an error."</p>
+<p>It turns a hang into a fast, clear failure. That is always better in automated systems.</p>
+<h2>What "Interactive" Means in SSH Auth</h2>
+<p>SSH has several authentication methods and each has a different relationship with the user:</p>
+<p><strong>Public key authentication</strong> — the client signs a challenge with the private key from <code>~/.ssh/id_rsa</code> (or similar). If the key has no passphrase, this is fully non-interactive — no user input needed. If the key has a passphrase, SSH must prompt for it. In batch mode, a passphrase-protected key cannot be used (no one to enter the passphrase) so SSH should skip it or fail.</p>
+<p><strong>Agent authentication</strong> — the client asks the ssh-agent to sign. The agent holds decrypted keys in memory, so no prompt is needed. This is safe in batch mode.</p>
+<p><strong>Password authentication</strong> — SSH must ask the user for their password. Completely interactive. Must be disabled in batch mode.</p>
+<p><strong>Keyboard-interactive authentication</strong> — the server sends arbitrary text prompts (questions like "Enter OTP:", "Security question:", etc.) and the client answers them. Completely interactive. Must be disabled in batch mode.</p>
+<p>So when <code>BatchMode yes</code> is set, the rule is: if an authentication method requires user input to proceed, skip it. If all non-interactive methods fail and the only remaining options require prompting — exit with an error instead of asking.</p>
+<h2>How OpenSSH Implements It</h2>
+<p>OpenSSH's <code>BatchMode yes</code> does three things:</p>
+<ol>
+<li><p><strong>Disables password authentication</strong> — <code>PasswordAuthentication</code> is forced to no. Even if the server offers it and even if <code>PasswordAuthentication yes</code> is set in config, the client refuses to use it.</p>
+</li>
+<li><p><strong>Disables keyboard-interactive authentication</strong> — <code>KbdInteractiveAuthentication</code> is forced to no for the same reason.</p>
+</li>
+<li><p><strong>Suppresses passphrase prompts</strong> — if the private key file is encrypted with a passphrase and no agent has the key loaded, OpenSSH skips that key instead of prompting. The <code>auth_function</code> callback is not called; the key is simply not tried.</p>
+</li>
+</ol>
+<p>Host key checking prompts are also suppressed — if an unknown host key is encountered and <code>StrictHostKeyChecking</code> is set to ask, it behaves as <code>StrictHostKeyChecking yes</code> (refuse instead of ask).</p>
+<h2>Current State in libssh</h2>
+<p>In <a href="../src/config.c">src/config.c</a> at line 95:</p>
+<pre><code class="language-c">{"batchmode", SOC_UNSUPPORTED, true},
+</code></pre>
+<p><code>SOC_UNSUPPORTED</code> means: the keyword is recognized from <code>~/.ssh/config</code>, no warning is printed, but the value is silently thrown away. A developer running a script that has <code>BatchMode yes</code> in their SSH config gets no batch behavior at all — libssh will still try password auth, still call passphrase callbacks, and potentially hang.</p>
+<p>There is no <code>SSH_OPTIONS_BATCH_MODE</code> constant anywhere in the codebase. There is no <code>batch_mode</code> field in <code>session->opts</code>.</p>
+<h2>What Needs to Change</h2>
+<h3>Step 1 — Add the option constant</h3>
+<p>In <a href="../include/libssh/libssh.h">include/libssh/libssh.h</a> in <code>enum ssh_options_e</code>, add at the end before the closing brace:</p>
+<pre><code class="language-c">SSH_OPTIONS_BATCH_MODE,  /* bool: if true, never prompt user interactively */
+</code></pre>
+<h3>Step 2 — Add the field to the session options struct</h3>
+<p>In <a href="../include/libssh/session.h">include/libssh/session.h</a> inside <code>struct ssh_options_struct</code>:</p>
+<pre><code class="language-c">bool batch_mode;
+</code></pre>
+<p>The existing flags bitmask (<code>SSH_OPT_FLAG_PASSWORD_AUTH</code>, <code>SSH_OPT_FLAG_KBDINT_AUTH</code> etc.) controls which methods are allowed. <code>batch_mode</code> is a separate concept: it does not disable the methods at the library level, it is a signal to the application and CLI to skip any step that would require a user prompt.</p>
+<h3>Step 3 — Handle it in ssh_options_set()</h3>
+<p>In <a href="../src/options.c">src/options.c</a>, following the existing pattern for boolean options:</p>
+<pre><code class="language-c">case SSH_OPTIONS_BATCH_MODE:
+    if (value == NULL) {
+        ssh_set_error_invalid(session);
+        return -1;
+    } else {
+        bool *x = (bool *)value;
+        session->opts.batch_mode = *x;
+    }
+    break;
+</code></pre>
+<p><code>ssh_set_error_invalid(session)</code> is libssh's way of reporting that a required argument was NULL. Every option case starts with this null-check pattern — do not skip it.</p>
+<h3>Step 4 — Promote in config.c</h3>
+<p>In <a href="../src/config.c">src/config.c</a>, change <code>SOC_UNSUPPORTED</code> to <code>SOC_BATCHMODE</code> (a new constant, or reuse a pattern like <code>SOC_SESSION</code> with a dedicated sub-handler). Add the parsing case to <code>ssh_config_parse_global()</code>:</p>
+<pre><code class="language-c">case SOC_BATCHMODE:
+    p = ssh_config_get_str_tok(&s, NULL);
+    CHECK_COND_OR_FAIL(p == NULL, "Missing argument");
+    if (*parsing) {
+        bool val = (strcasecmp(p, "yes") == 0);
+        ssh_options_set(session, SSH_OPTIONS_BATCH_MODE, &val);
+    }
+    break;
+</code></pre>
+<p><code>ssh_config_get_str_tok()</code> reads the next whitespace-separated token from the config line — the value after the keyword. <code>strcasecmp</code> compares case-insensitively so <code>yes</code>, <code>YES</code>, <code>Yes</code> all work. <code>CHECK_COND_OR_FAIL</code> is a macro that logs an error and skips the line if the condition is true — used for malformed config entries.</p>
+<h2>How the CLI Uses batch_mode</h2>
+<p>In our <code>tools/ssh/</code> binary, after connecting and before starting the auth loop, we read <code>session->opts.batch_mode</code>. It drives two things:</p>
+<h3>Disabling interactive auth methods</h3>
+<p>When building the authentication chain:</p>
+<pre><code class="language-c">if (opts->batch_mode) {
+    /* force-disable methods that require user input */
+    int disabled = 0;
+    ssh_options_set(session, SSH_OPTIONS_PASSWORD_AUTH, &disabled);
+    ssh_options_set(session, SSH_OPTIONS_KBDINT_AUTH,   &disabled);
+}
+</code></pre>
+<p><code>ssh_options_set(session, SSH_OPTIONS_PASSWORD_AUTH, &(int){0})</code> clears the <code>SSH_OPT_FLAG_PASSWORD_AUTH</code> bit from <code>session->opts.flags</code>. When libssh's internal auth negotiation runs, it checks this flag — if cleared, password auth is not offered as a method.</p>
+<h3>Suppressing passphrase prompts</h3>
+<p><code>ssh_userauth_publickey_auto()</code> calls the <code>auth_function</code> callback when it needs a passphrase for an encrypted private key. The callback is set via <code>session->common.callbacks->auth_function</code>. In our CLI's callback:</p>
+<pre><code class="language-c">static int auth_callback(const char *prompt, char *buf, size_t len,
+                         int echo, int verify, void *userdata)
+{
+    struct cli_state *st = userdata;
+
+    if (st->session_opts->batch_mode) {
+        /* cannot prompt in batch mode — fail this key */
+        return -1;  /* returning -1 tells libssh to skip this key */
+    }
+
+    /* interactive: prompt the user */
+    return ssh_getpass(prompt, buf, len, echo, verify);
+}
+</code></pre>
+<p>Returning <code>-1</code> from the callback tells <code>ssh_userauth_publickey_auto()</code> it cannot decrypt this key and should move to the next one. If all keys fail, <code>ssh_userauth_publickey_auto()</code> returns <code>SSH_AUTH_DENIED</code>.</p>
+<p><code>ssh_getpass()</code> (<a href="../src/getpass.c">src/getpass.c</a>) is libssh's cross-platform function for reading a password from the terminal. It disables echo if <code>echo=0</code>, re-prompts for verification if <code>verify=1</code>, and reads from <code>/dev/tty</code> directly (so it works even if stdin is a pipe). In batch mode we never reach this call.</p>
+<h3>Failing fast on unknown host keys</h3>
+<p>In batch mode, if a host key is unknown or changed, we should not prompt "Do you want to continue connecting?" — we should reject immediately. In the host key verification callback:</p>
+<pre><code class="language-c">if (st->batch_mode && verification_result == SSH_KNOWN_HOSTS_UNKNOWN) {
+    fprintf(stderr, "Host key verification failed.\n");
+    return -1;
+}
+</code></pre>
+<h3>The Full Auth Loop in Batch Mode</h3>
+<pre><code>ssh_userauth_none()             → check if server allows none auth (unlikely but fast)
+↓ denied
+ssh_userauth_publickey_auto()   → tries agent keys first (non-interactive)
+                                   then key files without passphrase
+                                   auth_callback returns -1 for encrypted keys → skipped
+↓ denied
+[password auth]                 → SKIPPED because batch_mode disabled it
+[keyboard-interactive]          → SKIPPED because batch_mode disabled it
+↓
+all methods exhausted → exit(1) with "Permission denied (publickey)"
+</code></pre>
+<p>This matches OpenSSH's batch mode behavior exactly.</p>
+<h2>What We Are Solving at the Project Level</h2>
+<p>Currently any libssh application that reads SSH config (scripts, deployment tools, anything calling <code>ssh_options_parse_config()</code>) ignores <code>BatchMode yes</code> entirely. Those applications will hang indefinitely when password auth is offered, even though the user explicitly told them not to ask for passwords. Promoting <code>BatchMode</code> to a first-class library option fixes this for all libssh applications, not just our CLI.</p>
+<h2>Changes Summary</h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Change</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="../include/libssh/libssh.h">include/libssh/libssh.h</a></td>
+<td>Add <code>SSH_OPTIONS_BATCH_MODE</code> to <code>enum ssh_options_e</code></td>
+</tr>
+<tr>
+<td><a href="../include/libssh/session.h">include/libssh/session.h</a></td>
+<td>Add <code>bool batch_mode</code> to <code>struct ssh_options_struct</code></td>
+</tr>
+<tr>
+<td><a href="../src/options.c">src/options.c</a></td>
+<td>Add <code>case SSH_OPTIONS_BATCH_MODE:</code> in <code>ssh_options_set()</code></td>
+</tr>
+<tr>
+<td><a href="../src/config.c">src/config.c</a></td>
+<td><code>SOC_UNSUPPORTED</code> → <code>SOC_BATCHMODE</code>, add parsing case</td>
+</tr>
+<tr>
+<td><a href="../tests/unittests/torture_options.c">tests/unittests/torture_options.c</a></td>
+<td>Unit test: set option, verify stored</td>
+</tr>
+<tr>
+<td><a href="../tests/unittests/torture_config.c">tests/unittests/torture_config.c</a></td>
+<td>Config test: parse <code>BatchMode yes/no</code>, verify stored</td>
+</tr>
+</tbody></table>
+
+                </div>
+                <a href="blog.html" class="back-link">
+                    <i class="fas fa-arrow-left"></i> Back to Blog
+                </a>
+            </article>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 Sudharshan Hegde  ·  <a href="index.html">Portfolio</a>  ·  <a href="blog.html">Blog</a></p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-cpp.min.js"></script>
+</body>
+</html>

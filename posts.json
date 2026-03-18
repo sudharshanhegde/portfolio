@@ -1,5 +1,16 @@
 [
   {
+    "title": "BatchMode",
+    "date": "2026-03-18",
+    "excerpt": "BatchMode in libssh and its implementation gaps",
+    "filename": "batchmode.html",
+    "tags": [
+      "libssh",
+      "security",
+      "operating system"
+    ]
+  },
+  {
     "title": "Authentication and its gaps in libssh",
     "date": "2026-03-16",
     "excerpt": "How authentication works in libssh and the gaps",
