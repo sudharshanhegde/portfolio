@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><script type="text/javascript" src="/___vscode_livepreview_injected_script"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>keepalive — Sudharshan Hegde</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="blog-post.css">
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="index.html" class="navbar-brand">sudharshan.dev</a>
+        <ul class="nav-links">
+            <li><a href="index.html"><i class="fas fa-home"></i><span> Home</span></a></li>
+            <li><a href="blog.html"><i class="fas fa-book-open"></i><span> Blog</span></a></li>
+        </ul>
+    </nav>
+
+    <div class="post-hero">
+        <div class="container">
+            <div class="post-meta-top">
+                <span class="post-date-badge">March 18, 2026</span>
+                
+            </div>
+            <h1 class="post-title">keepalive</h1>
+            <p class="post-excerpt-lead">Keepalive and its implementation gaps</p>
+        </div>
+    </div>
+
+    <div class="post-wrapper">
+        <div class="container">
+            <article class="post-container">
+                <div class="post-content">
+                    <h1>Keepalive</h1>
+<h2>Why Connections Go Silent and Die</h2>
+<p>Imagine you SSH into a server and then walk away from your computer for 30 minutes. You come back and try to type something — nothing happens. The connection is dead.</p>
+<p>What killed it? Usually one of three things:</p>
+<p><strong>NAT timeout.</strong> Most home routers and corporate firewalls track active TCP connections in a table. When your SSH connection has been idle for a while — no bytes flowing in either direction — the router silently removes that entry from its table. When you try to type, the TCP packet goes through the router, the router has no record of this connection, and it drops the packet. Your TCP stack keeps retrying and eventually gives up. From your perspective it just looks frozen.</p>
+<p><strong>Firewall idle timeout.</strong> Same idea but at the office or cloud firewall level. AWS security groups, corporate proxies, and load balancers all do this. Even 5 minutes of silence can be enough on some networks.</p>
+<p><strong>The server went away.</strong> The server rebooted, crashed, or the network link dropped. Your client's TCP stack has no idea yet — TCP does not have a built-in "tell me if the other side is gone" mechanism beyond the 3-way handshake. Your client is sitting there waiting to hear something, and it could wait for 2 hours before the OS TCP timeout fires.</p>
+<p>Keepalive solves all three: it sends small probe packets during silence to keep the connection alive and to detect failures early.</p>
+<h2>Two Levels of Keepalive</h2>
+<p>There are actually two separate keepalive systems that can both be active at the same time, working at different levels:</p>
+<p><strong>TCP keepalive (SO_KEEPALIVE socket option)</strong> — This is done by the OS kernel, not your application. When enabled on a socket, the kernel automatically sends TCP-level probes if the connection has been completely silent for a while (typically 2 hours by default on Linux, configurable via <code>/proc/sys/net/ipv4</code>). The problem with this is the 2-hour default is far too long for interactive sessions, and the interval is set system-wide, not per-connection.</p>
+<p><strong>SSH-level keepalive</strong> — This is done by the SSH application itself, sending real SSH protocol messages during silence. You control the interval and failure count precisely. This is what <code>ServerAliveInterval</code> and <code>ServerAliveCountMax</code> control.</p>
+<p>SSH-level keepalive is more useful for interactive use because you can set it to 15 or 30 seconds and detect a dead connection quickly, rather than waiting hours.</p>
+<h2>What ServerAliveInterval and ServerAliveCountMax Do</h2>
+<p><code>ServerAliveInterval 30</code> — if no data has come from the server for 30 seconds, send a keepalive probe.</p>
+<p><code>ServerAliveCountMax 3</code> — if 3 consecutive keepalive probes get no response, close the connection.</p>
+<p>So with the above settings: after 30 seconds of silence the first probe is sent. If no response, another at 60 seconds. Another at 90 seconds. If still no response — the connection is declared dead and the session exits. Total wait before giving up: 90 seconds.</p>
+<p>This is the "I'd rather fail fast and reconnect than sit frozen" tradeoff.</p>
+<h2>The <a href="mailto:keepalive@openssh.com">keepalive@openssh.com</a> Protocol</h2>
+<p>At the SSH protocol level, keepalive is implemented as a <strong>global request</strong> — a special SSH message that applies to the whole session, not just a specific channel.</p>
+<p>The client sends:</p>
+<pre><code>SSH2_MSG_GLOBAL_REQUEST (type 80)
+  request-name = "keepalive@openssh.com"
+  want-reply   = 1
+  (no additional payload)
+</code></pre>
+<p><code>want-reply = 1</code> means: the server must send back either <code>SSH2_MSG_REQUEST_SUCCESS</code> or <code>SSH2_MSG_REQUEST_FAILURE</code>. Most SSH servers (including OpenSSH) respond with <code>SSH2_MSG_REQUEST_FAILURE</code> because they do not implement <code>keepalive@openssh.com</code> as a meaningful operation — they just acknowledge it. That is fine. The client is not asking the server to <em>do</em> anything; it is just asking the server to <em>respond</em> to prove it is still alive.</p>
+<p>If the response never arrives within the timeout window — the server is gone, the NAT table dropped the connection, whatever — the client knows and can take action.</p>
+<p>This is defined in <a href="../include/libssh/libssh.h">include/libssh/libssh.h</a> as <code>SSH_GLOBAL_REQUEST_KEEPALIVE</code> in <code>enum ssh_global_requests_e</code>.</p>
+<h3>Client-side receiving (responding to server's keepalive)</h3>
+<p>When it is the <em>server</em> that sends a <code>keepalive@openssh.com</code> request to the client, libssh automatically responds. The code at <a href="../src/channels.c#L925">src/channels.c:925</a>:</p>
+<pre><code class="language-c">if (strcmp(request, "keepalive@openssh.com") == 0) {
+    SSH_LOG(SSH_LOG_DEBUG, "Responding to Openssh's keepalive");
+
+    rc = ssh_buffer_pack(session->out_buffer,
+                         "bd",
+                         SSH2_MSG_CHANNEL_FAILURE,
+                         channel->remote_channel);
+    ssh_packet_send(session);
+    return SSH_PACKET_USED;
+}
+</code></pre>
+<p>This responds automatically — libssh client handles it without any code from us.</p>
+<h3>Who sends what</h3>
+<p>In a typical interactive SSH session, it is the <strong>client</strong> that sends keepalive probes to the server (controlled by <code>ServerAliveInterval</code> and <code>ServerAliveCountMax</code>). This is because the client is the one waiting at the keyboard and cares about detecting a dead connection interactively.</p>
+<p>The server side is handled by <code>ssh_send_keepalive()</code> in <a href="../src/server.c#L1648">src/server.c:1648</a>:</p>
+<pre><code class="language-c">int ssh_send_keepalive(ssh_session session)
+{
+    /* Client denies the request, so the error code is not meaningful */
+    (void)ssh_global_request(session, "keepalive@openssh.com", NULL, 1);
+    return SSH_OK;
+}
+</code></pre>
+<p>This is exposed as a server-side API, but it just calls <code>ssh_global_request()</code> — which we can call directly from the client side too. There is no reason a client cannot use the same mechanism.</p>
+<h2>What ssh_global_request Does</h2>
+<p><code>ssh_global_request()</code> (<a href="../src/channels.c#L2511">src/channels.c:2511</a>) builds and sends <code>SSH2_MSG_GLOBAL_REQUEST</code>, then waits synchronously for the response. The format it packs is <code>"bsb"</code>:</p>
+<ul>
+<li><code>b</code> = message type byte (SSH2_MSG_GLOBAL_REQUEST = 80)</li>
+<li><code>s</code> = request name string ("<a href="mailto:keepalive@openssh.com">keepalive@openssh.com</a>")</li>
+<li><code>b</code> = want_reply byte (1 = yes, we want a response)</li>
+</ul>
+<p>After sending, it calls <code>ssh_handle_packets_termination()</code> which blocks processing incoming packets until either <code>SSH2_MSG_REQUEST_SUCCESS</code> or <code>SSH2_MSG_REQUEST_FAILURE</code> arrives. When it arrives, <code>session->global_req_state</code> is updated to <code>SSH_CHANNEL_REQ_STATE_ACCEPTED</code> or <code>SSH_CHANNEL_REQ_STATE_DENIED</code>, and the function returns.</p>
+<p>The "denied" case is not an error for keepalive — the server saying "no I don't support this" still proves it is alive. That is why <code>ssh_send_keepalive()</code> ignores the return value.</p>
+<h2>The Problem With Blocking in Our Event Loop</h2>
+<p><code>ssh_global_request()</code> with <code>reply=1</code> blocks until a response arrives. In a simple linear program that is fine. But our CLI has a single-threaded event loop running <code>ssh_event_dopoll()</code> — we cannot block inside the event loop.</p>
+<p>If we call <code>ssh_global_request(session, "keepalive@openssh.com", NULL, 1)</code> from inside the event loop, it will block the entire loop until the server responds. During that time no data from the shell, no forwarding, no escape sequence processing — the terminal will freeze for the duration of the round trip.</p>
+<p>The solution is to call <code>ssh_global_request()</code> with <code>reply=0</code> (fire and forget) and use a different mechanism to detect failure. We can do this because the keepalive goal has two parts:</p>
+<ol>
+<li>Keep the NAT alive → just sending any bytes achieves this, we do not need a response</li>
+<li>Detect a dead server → the TCP stack itself will tell us when the connection is dead, it just takes longer</li>
+</ol>
+<p>For most use cases, <code>reply=0</code> is sufficient. The NAT tables reset from our probe. If the server is truly dead, the TCP stack will eventually time out and <code>ssh_event_dopoll()</code> will return <code>SSH_ERROR</code>.</p>
+<p>If we want fast failure detection like OpenSSH provides, we need to track unanswered probes ourselves:</p>
+<pre><code class="language-c">struct keepalive_state {
+    time_t   last_activity;     /* last time any packet arrived from server */
+    int      unanswered;        /* consecutive keepalives with no response */
+    int      interval;          /* ServerAliveInterval seconds */
+    int      max_count;         /* ServerAliveCountMax */
+};
+</code></pre>
+<p>Whenever any packet arrives from the server (data, shell output, anything), reset <code>last_activity = time(NULL)</code> and <code>unanswered = 0</code>.</p>
+<p>When we send a keepalive and no response arrives before the next interval, increment <code>unanswered</code>. When <code>unanswered >= max_count</code>, close the session.</p>
+<h2>The Timer Pattern in the Event Loop</h2>
+<p>libssh has no built-in automatic keepalive. The application is responsible for the timing. The pattern is:</p>
+<pre><code class="language-c">struct keepalive_state ka = {
+    .last_activity = time(NULL),
+    .unanswered = 0,
+    .interval = 30,      /* from ServerAliveInterval */
+    .max_count = 3,      /* from ServerAliveCountMax */
+};
+
+while (!done) {
+    time_t now = time(NULL);
+    time_t next_due = ka.last_activity + ka.interval;
+    int timeout_ms;
+
+    if (next_due <= now) {
+        /* keepalive is due right now */
+        timeout_ms = 0;
+    } else {
+        /* wait until keepalive is due, but no longer */
+        timeout_ms = (int)((next_due - now) * 1000);
+    }
+
+    rc = ssh_event_dopoll(ev, timeout_ms);
+
+    if (rc == SSH_ERROR) {
+        /* connection lost */
+        break;
+    }
+
+    now = time(NULL);
+    if (now >= ka.last_activity + ka.interval) {
+        /* interval elapsed, no activity from server — send probe */
+        ka.unanswered++;
+        if (ka.unanswered > ka.max_count) {
+            fprintf(stderr, "Timeout, server not responding.\n");
+            break;
+        }
+        ssh_global_request(session, "keepalive@openssh.com", NULL, 0);
+    }
+}
+</code></pre>
+<p><code>time(NULL)</code> returns the current Unix timestamp (seconds since 1970). <code>next_due - now</code> gives how many seconds until the next keepalive is due, which we convert to milliseconds for <code>ssh_event_dopoll</code>. This way <code>ssh_event_dopoll</code> wakes up at exactly the right time — it does not spin and burn CPU, it sleeps precisely until either an event or the keepalive deadline.</p>
+<p><code>ssh_event_dopoll</code> returning <code>SSH_ERROR</code> means the socket itself errored — TCP reported the connection as broken. This is the fast path: if the server reboots and properly sends a TCP FIN or RST, we detect it immediately regardless of keepalive settings.</p>
+<p>The keepalive mechanism catches the slow path: NAT drop, server kernel panic (no TCP FIN sent), network cable pulled.</p>
+<h2>TCPKeepAlive vs ServerAlive</h2>
+<p><code>TCPKeepAlive yes</code> in SSH config enables <code>SO_KEEPALIVE</code> on the socket. This asks the OS kernel to send TCP-level probes. The problem: the kernel's keepalive parameters (<code>tcp_keepalive_time</code>, <code>tcp_keepalive_intvl</code>, <code>tcp_keepalive_probes</code>) are system-wide. You cannot set them per-connection from userspace. Default <code>tcp_keepalive_time</code> is 7200 seconds (2 hours) on Linux. That is useless for interactive sessions.</p>
+<p><code>ServerAliveInterval</code> is SSH-level keepalive, fully controlled by the application, per-session. This is what actually helps users.</p>
+<p>For our CLI: implement <code>ServerAliveInterval</code> and <code>ServerAliveCountMax</code> properly with the timer-based pattern above. For <code>TCPKeepAlive</code>, we set <code>SO_KEEPALIVE</code> on the session socket using <code>setsockopt()</code>:</p>
+<pre><code class="language-c">int optval = 1;
+setsockopt(ssh_get_fd(session), SOL_SOCKET, SO_KEEPALIVE, &optval, sizeof(optval));
+</code></pre>
+<p><code>ssh_get_fd(session)</code> returns the underlying file descriptor of the SSH socket. <code>SOL_SOCKET</code> means we are setting a socket-level option. <code>SO_KEEPALIVE</code> enables the OS TCP keepalive. This is a single call, no timer needed from our side.</p>
+<p><code>setsockopt()</code> is a system call for configuring socket behavior. The <code>SOL_SOCKET</code> level means the option applies to the socket generically (not to TCP specifically). <code>SO_KEEPALIVE</code> at this level just switches on the kernel's built-in TCP keepalive prober.</p>
+<h2>Config Directives — Current State</h2>
+<p>All three keepalive directives are <code>SOC_UNSUPPORTED</code> in <a href="../src/config.c">src/config.c</a> — they are parsed from <code>~/.ssh/config</code> but thrown away:</p>
+<table>
+<thead>
+<tr>
+<th>Directive</th>
+<th>Status</th>
+<th>Controls</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>ServerAliveInterval</code></td>
+<td>SOC_UNSUPPORTED</td>
+<td>Seconds between SSH keepalive probes</td>
+</tr>
+<tr>
+<td><code>ServerAliveCountMax</code></td>
+<td>SOC_UNSUPPORTED</td>
+<td>Max unanswered probes before closing</td>
+</tr>
+<tr>
+<td><code>TCPKeepAlive</code></td>
+<td>SOC_UNSUPPORTED</td>
+<td>Enable OS-level SO_KEEPALIVE on the socket</td>
+</tr>
+</tbody></table>
+<p><code>SOC_UNSUPPORTED</code> means the keyword is recognized (no "unknown option" warning) but the value is not acted on. Promoting these requires:</p>
+<ul>
+<li>Add <code>SSH_OPTIONS_SERVER_ALIVE_INTERVAL</code>, <code>SSH_OPTIONS_SERVER_ALIVE_COUNT_MAX</code>, <code>SSH_OPTIONS_TCP_KEEPALIVE</code> to <code>enum ssh_options_e</code> in <a href="../include/libssh/libssh.h">include/libssh/libssh.h</a></li>
+<li>Add <code>int server_alive_interval</code>, <code>int server_alive_count_max</code>, <code>int tcp_keepalive</code> to <code>struct ssh_options_struct</code> in <a href="../include/libssh/session.h">include/libssh/session.h</a></li>
+<li>Change <code>SOC_UNSUPPORTED</code> → <code>SOC_SESSION</code>, add parsing cases in <a href="../src/config.c">src/config.c</a></li>
+<li>Add cases in <a href="../src/options.c">src/options.c</a> <code>ssh_options_set()</code></li>
+</ul>
+<h2>What We Are Solving at the Project Level</h2>
+<p>A developer using libssh who writes <code>ServerAliveInterval 30</code> in <code>~/.ssh/config</code> currently gets no effect and no warning. Their application will hang forever when a NAT drops the connection, just like having no config at all. This is a real usability gap — it is the kind of thing that makes users think libssh-based tools are unreliable compared to OpenSSH.</p>
+<p>Promoting these options means any libssh application — not just our CLI — gets keepalive for free once the library options are set. Our <code>tools/ssh/</code> binary is where we exercise this end-to-end and prove the implementation works, but the benefit is library-wide.</p>
+<h2>Key Files</h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>What's Relevant</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="../src/server.c">src/server.c</a></td>
+<td><code>ssh_send_keepalive()</code> at line 1648 — thin wrapper around <code>ssh_global_request</code></td>
+</tr>
+<tr>
+<td><a href="../src/channels.c">src/channels.c</a></td>
+<td>Client-side keepalive response handler (line 925), <code>ssh_global_request</code> implementation (line 2511)</td>
+</tr>
+<tr>
+<td><a href="../src/messages.c">src/messages.c</a></td>
+<td>Server-side <a href="mailto:keepalive@openssh.com">keepalive@openssh.com</a> parsing (line 1870)</td>
+</tr>
+<tr>
+<td><a href="../src/poll.c">src/poll.c</a></td>
+<td><code>ssh_event_dopoll</code> (line 1047) — the timer-based event loop we use</td>
+</tr>
+<tr>
+<td><a href="../src/config.c">src/config.c</a></td>
+<td><code>serveraliveinterval</code>, <code>serveralivecountmax</code>, <code>tcpkeepalive</code> all at SOC_UNSUPPORTED</td>
+</tr>
+<tr>
+<td><a href="../include/libssh/libssh.h">include/libssh/libssh.h</a></td>
+<td><code>SSH_GLOBAL_REQUEST_KEEPALIVE</code> in <code>enum ssh_global_requests_e</code></td>
+</tr>
+</tbody></table>
+
+                </div>
+                <a href="blog.html" class="back-link">
+                    <i class="fas fa-arrow-left"></i> Back to Blog
+                </a>
+            </article>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 Sudharshan Hegde  ·  <a href="index.html">Portfolio</a>  ·  <a href="blog.html">Blog</a></p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-cpp.min.js"></script>
+</body>
+</html>
