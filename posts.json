@@ -1,5 +1,18 @@
 [
   {
+    "title": "Number of Password prompts",
+    "date": "2026-03-18",
+    "excerpt": "Number of passwords implementation gap in libssh",
+    "filename": "numberOfPasswordPrompts.html",
+    "tags": [
+      "libssh",
+      "C",
+      "operating system",
+      "computer networks",
+      "cryptography"
+    ]
+  },
+  {
     "title": "BatchMode",
     "date": "2026-03-18",
     "excerpt": "BatchMode in libssh and its implementation gaps",
