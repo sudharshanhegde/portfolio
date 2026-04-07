@@ -1,5 +1,17 @@
 [
   {
+    "title": "SSH Forwarding and the Internals of a Functional SSH CLI",
+    "date": "2026-04-07",
+    "excerpt": "SSH Forwarding and the Internals of a Functional SSH CLI",
+    "filename": "ssh_complete.html",
+    "tags": [
+      "cli",
+      "computer networks",
+      "network security",
+      "operating system"
+    ]
+  },
+  {
     "title": "keepAlive",
     "date": "2026-03-18",
     "excerpt": "Keep Alive and its implementation gaps in libssh\n",

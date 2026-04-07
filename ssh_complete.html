@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSH Forwarding and the Internals of a Functional SSH CLI — Sudharshan Hegde</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="blog-post.css">
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="index.html" class="navbar-brand">sudharshan.dev</a>
+        <ul class="nav-links">
+            <li><a href="index.html"><i class="fas fa-home"></i><span> Home</span></a></li>
+            <li><a href="blog.html"><i class="fas fa-book-open"></i><span> Blog</span></a></li>
+        </ul>
+    </nav>
+
+    <div class="post-hero">
+        <div class="container">
+            <div class="post-meta-top">
+                <span class="post-date-badge">April 7, 2026</span>
+                <span class="tag">cli</span><span class="tag">computer networks</span><span class="tag">network security</span><span class="tag">operating system</span>
+            </div>
+            <h1 class="post-title">SSH Forwarding and the Internals of a Functional SSH CLI</h1>
+            <p class="post-excerpt-lead">SSH Forwarding and the Internals of a Functional SSH CLI</p>
+        </div>
+    </div>
+
+    <div class="post-wrapper">
+        <div class="container">
+            <article class="post-container">
+                <div class="post-content">
+                    <h1>SSH Forwarding and the Internals of a Functional SSH CLI: A Complete Explanation From First Principles</h1>
+<hr>
+<h2>A Note Before We Start</h2>
+<p>This document explains local port forwarding, remote port forwarding, dynamic forwarding, agent forwarding, PTY allocation, escape sequences, keepalive, SendEnv, and RequestTTY from absolute first principles. Every word that could be unfamiliar is explained the moment it appears. Nothing is assumed. The explanations do not skip steps. If something feels like it is going slowly, that is intentional. The goal is that by the end you understand not just what each feature does, but why it works the way it does, what is actually happening inside the computer when it runs, and how you would write the code to implement it.</p>
+<hr>
+<h2>Part One: The Ground You Need to Stand On</h2>
+<p>Before we can talk about SSH forwarding or terminals or agents, we need to build up a mental model of how computers actually communicate over a network, because everything in SSH is built on top of that.</p>
+<h3>What a Network Actually Is</h3>
+<p>When two computers are connected to a network, what that means physically is that there is some medium between them -- copper wire, fiber optic cable, radio waves for Wi-Fi -- over which electrical or optical signals can travel. These signals represent data as sequences of 0s and 1s. A 0 might be represented by a low voltage, a 1 by a high voltage. The receiver measures the voltage and reconstructs the original sequence of bits.</p>
+<p>But raw electrical signals are not enough. Two computers that want to communicate need to agree on a language: what does a sequence of bits mean? How long is one message? How do you know where one message ends and the next begins? How does the receiver tell the sender "I got that, send more?" These agreements are called protocols. A protocol is simply a set of rules that both sides follow.</p>
+<p>The internet uses a layered stack of protocols. Each layer builds on the one below it. You do not need to understand all of them deeply right now, but you need to know two.</p>
+<h3>IP: The Internet Protocol</h3>
+<p>IP stands for Internet Protocol. Its job is addressing and routing. Every device on the internet has an IP address. An IP address is a number that uniquely identifies a machine on the network. In IPv4 (the older version, still dominant), an IP address is 32 bits long, written as four groups of up to three decimal digits separated by dots: 192.168.1.100. In IPv6 (the newer version), it is 128 bits, written as eight groups of four hexadecimal digits separated by colons: 2001:0db8:85a3:0000:0000:8a2e:0370:7334.</p>
+<p>When computer A wants to send data to computer B, it wraps the data in an IP packet. An IP packet has a header and a payload. The header contains the source IP address (A's address) and the destination IP address (B's address). Routers in the network read the destination address and figure out where to forward the packet next, like how a postal sorting machine reads a zip code and routes an envelope to the right truck.</p>
+<p>IP is unreliable on its own. Packets can be lost, can arrive out of order, can be duplicated. IP does not fix these problems. That is what the next layer is for.</p>
+<h3>TCP: The Transmission Control Protocol</h3>
+<p>TCP stands for Transmission Control Protocol. It is built on top of IP. While IP handles getting individual packets from A to B, TCP handles establishing a reliable connection between two programs.</p>
+<p>The key properties of TCP:</p>
+<p>Reliability: if a packet is lost in transit, TCP detects this (because the receiver sends acknowledgement messages back to the sender, and if the acknowledgement does not arrive in time, the sender retransmits the packet). You are guaranteed that every byte you send arrives.</p>
+<p>Ordering: even if packets arrive in the wrong order (which can happen because they take different paths through the network), TCP reassembles them into the correct order before handing the data to your program.</p>
+<p>Bidirectionality: both sides can send and receive simultaneously. It is a two-way street.</p>
+<p>A byte stream: TCP does not have a concept of message boundaries. If you send 100 bytes and then 200 bytes, the receiver might read all 300 at once, or read 150 and then 150, or any other way. It is a continuous stream of bytes. The application is responsible for knowing where one message ends and the next begins (usually by defining a message format with a length field).</p>
+<h3>Ports: How the OS Knows Which Program Gets Which Data</h3>
+<p>Now here is a problem. A computer might have hundreds of programs running simultaneously, and any of them might be expecting data from the network. When a packet arrives at the machine, how does the operating system know which program should receive it?</p>
+<p>The answer is port numbers. A port is a 16-bit number, meaning it ranges from 0 to 65535. When a program wants to receive network connections, it claims a port number. When data arrives addressed to that port, the OS delivers it to the program that claimed that port.</p>
+<p>Think of the IP address as the street address of a building and the port number as the apartment number within that building. The postal service (the network) gets the package to the building (the machine). The doorman (the OS) delivers it to the right apartment (the program).</p>
+<p>Some port numbers are conventionally associated with specific services: port 80 is HTTP (unencrypted web traffic), port 443 is HTTPS (encrypted web traffic), port 22 is SSH, port 5432 is PostgreSQL (a database), port 25 is email (SMTP). These conventions are not enforced by the hardware; they are just widely agreed-upon.</p>
+<p>Ports below 1024 are called "privileged ports" on Unix systems. A program needs root (administrator) privileges to listen on them. This is a security measure: only trusted system services should be able to claim port 22 and impersonate an SSH server.</p>
+<h3>The TCP Three-Way Handshake: How a Connection Is Established</h3>
+<p>Before two programs can exchange data over TCP, they perform a handshake. It is called the three-way handshake because it involves three messages:</p>
+<p>Step 1: The client sends a SYN (synchronise) packet to the server. SYN is a flag in the TCP header. This says "I want to start a connection."</p>
+<p>Step 2: The server responds with a SYN-ACK (synchronise-acknowledge) packet. This says "I received your request and I am willing to connect."</p>
+<p>Step 3: The client sends an ACK (acknowledge) packet. This says "I received your willingness to connect. The connection is established."</p>
+<p>After this, both sides can send data. The connection remains open until one side explicitly closes it (by sending a FIN packet) or until an error occurs.</p>
+<h3>Sockets: How a Program Uses the Network</h3>
+<p>A socket is the programming interface between a program and the network. When a program in C (or any language) wants to use the network, it calls the <code>socket()</code> system call to create a socket object. A system call is a request from a program to the operating system to do something the program cannot do itself -- like access hardware (the network card) or manage resources (file descriptors).</p>
+<p>A socket is identified by a file descriptor (often abbreviated as fd). A file descriptor is just a small non-negative integer (0, 1, 2, 3, 4, ...) that the OS uses as a handle for resources that you can read from or write to. File descriptor 0 is always standard input (where a program reads keyboard input by default), 1 is standard output (where a program writes normal output), and 2 is standard error (where a program writes error messages). When you open a file or create a socket, the OS gives you the next available integer as the file descriptor for that resource.</p>
+<p>The sequence of system calls for a server that wants to accept incoming connections:</p>
+<p><code>socket()</code> creates the socket and returns a file descriptor. You specify you want a TCP socket with the parameters <code>AF_INET</code> (IPv4 addressing) and <code>SOCK_STREAM</code> (stream socket, which is TCP).</p>
+<p><code>bind()</code> associates the socket with a specific IP address and port number. For example, bind to 0.0.0.0:22 means "listen on all network interfaces on port 22."</p>
+<p><code>listen()</code> marks the socket as passive, meaning it is waiting for incoming connections rather than initiating them. You also specify a backlog: how many pending connections the OS should queue while your program is busy processing previous ones.</p>
+<p><code>accept()</code> blocks (pauses execution) until a client connects. When a client does connect, <code>accept()</code> returns a new file descriptor representing the connected socket to that specific client. The original listening socket is still there, waiting for the next client.</p>
+<p>The sequence for a client that wants to connect to a server:</p>
+<p><code>socket()</code> creates the socket.</p>
+<p><code>connect()</code> initiates the TCP three-way handshake with the server's IP address and port. If the server is listening and accepts the connection, <code>connect()</code> returns and the socket is now connected.</p>
+<p>After <code>connect()</code> on the client side, or after <code>accept()</code> on the server side, both programs have a connected socket. They can call <code>read()</code> to receive data and <code>write()</code> to send data, just like reading from or writing to a file.</p>
+<h3>What "Blocking" Means</h3>
+<p>The word "blocking" appears a lot in network programming. A function blocks when it pauses the program's execution and waits for something to happen. <code>accept()</code> blocks until a client connects. <code>read()</code> on a socket blocks until data arrives. This is a problem when a program needs to wait for multiple things simultaneously.</p>
+<p>Imagine an SSH client that needs to watch three things at once: the remote server (for data arriving from the SSH connection), the local keyboard (for keystrokes from the user), and a local port (for new connections that need to be forwarded). If the program calls <code>read()</code> on the SSH socket, it blocks waiting for SSH data. While it is blocked, it cannot notice that the user typed something or that a new forwarding connection arrived.</p>
+<p>The solution is a system call called <code>poll()</code> (or its older sibling <code>select()</code>, or the more modern <code>epoll()</code> on Linux). <code>poll()</code> takes a list of file descriptors and a timeout, and it blocks until at least one of those file descriptors is ready for I/O (or the timeout expires). Once it returns, your program checks which ones are ready and handles them. Then it calls <code>poll()</code> again to wait for the next event. This loop of "wait for events, handle events, wait again" is called an event loop. It is the foundation of most networked programs.</p>
+<hr>
+<h2>Part Two: What SSH Actually Is and How It Works</h2>
+<h3>The Problem SSH Solves</h3>
+<p>Before SSH existed, people used a program called Telnet to connect to remote computers. Telnet established a TCP connection and relayed keystrokes to the remote machine. The problem was that everything -- your username, your password, everything you typed, everything the remote machine sent back -- traveled over the network as raw, unencrypted bytes. Anyone with access to any router between you and the server could read your password. This was not a theoretical concern; it was a well-known attack.</p>
+<p>In 1995, Tatu Ylonen designed SSH (Secure Shell) specifically to replace Telnet with an encrypted alternative. SSH runs over TCP (specifically on port 22 by default), but everything inside the TCP connection is encrypted. An eavesdropper who intercepts the bytes sees gibberish.</p>
+<h3>Encryption: What It Means in Simple Terms</h3>
+<p>Encryption is the process of transforming data (called plaintext) into an unreadable form (called ciphertext) using a mathematical algorithm and a key. Only someone with the right key can reverse the process and recover the plaintext (this is called decryption).</p>
+<p>There are two broad categories of encryption relevant to SSH:</p>
+<p>Symmetric encryption: both sides use the same key. If Alice and Bob both know the key, Alice can encrypt data and Bob can decrypt it, and vice versa. The problem is: how do you get both sides to agree on the same key without an eavesdropper intercepting the key exchange? If you send the key over the network in plaintext before encrypting, the eavesdropper now has the key and can decrypt everything.</p>
+<p>Asymmetric encryption (public key cryptography): each side has a pair of mathematically related keys -- a public key and a private key. The public key can be shared with everyone. The private key is kept secret. Data encrypted with the public key can only be decrypted with the private key. Crucially, knowing the public key does not allow you to figure out the private key (this is guaranteed by the mathematical hardness of certain problems like integer factorisation for RSA or the discrete logarithm for elliptic curves).</p>
+<p>SSH uses asymmetric cryptography to solve the key exchange problem and to authenticate (prove identity), then uses symmetric cryptography for the bulk of data transfer (because it is much faster).</p>
+<h3>The SSH Handshake at a High Level</h3>
+<p>When you run <code>ssh user@server</code>, the following happens before you see a prompt:</p>
+<ol>
+<li>Your SSH client makes a TCP connection to the server on port 22.</li>
+<li>Both sides exchange version strings to confirm they are speaking SSH.</li>
+<li>Both sides negotiate which algorithms they will use for key exchange, encryption, message authentication, and compression.</li>
+<li>They perform a key exchange (using Diffie-Hellman or a related algorithm) to agree on a shared session key without an eavesdropper being able to determine it.</li>
+<li>From this point, everything is encrypted with that session key.</li>
+<li>The client verifies the server's identity using the server's host key (a public key that identifies the server). If you have connected to this server before, your SSH client has saved the host key in <code>~/.ssh/known_hosts</code> and checks that it has not changed. If it has changed, SSH warns you -- this might indicate a man-in-the-middle attack.</li>
+<li>The client authenticates to the server: proves it is who it claims to be. This might be done by typing a password, or by using a private key (public key authentication).</li>
+<li>After authentication, the server grants access and the SSH session begins.</li>
+</ol>
+<h3>The SSH Connection Protocol: Sessions and Channels</h3>
+<p>After the handshake and authentication, what you have is a single encrypted TCP connection. The SSH specification (defined in a series of documents called RFCs -- Request for Comments -- which are the internet's standards documents) defines a layer on top of the encrypted connection called the Connection Protocol.</p>
+<p>The central concept in the Connection Protocol is the channel. A channel is a logical, numbered stream inside the SSH connection. Multiple channels can exist simultaneously, all sharing the same underlying TCP connection. Each has a number assigned by the side that opened it.</p>
+<p>What lives in a channel? Almost everything:</p>
+<p>Your interactive shell session is a channel. Each port-forwarded TCP connection is a channel. Agent forwarding requests are channels. X11 forwarding (sending graphical application windows over SSH) happens in channels.</p>
+<p>The reason multiple channels can share one connection is multiplexing. Multiplexing means combining multiple streams of data into one. Each SSH data packet includes the channel number in its header, so the receiving side knows which channel it belongs to. The receiving side then routes the data to the right place based on that number.</p>
+<p>Here is how an SSH data packet looks in terms of fields: a field indicating the message type (SSH_MSG_CHANNEL_DATA, which is the number 94), four bytes for the recipient's channel number, four bytes for how many bytes of data follow, and then the actual data bytes. When the SSH library receives this packet off the TCP socket, it reads the channel number, finds the data structure it has for that channel, and delivers the data to whatever is handling that channel.</p>
+<p>A channel has a lifecycle: it is opened, data flows, one side signals end-of-data (EOF), and then both sides close it. The protocol has specific message types for each of these steps.</p>
+<h3>libssh and How It Models This</h3>
+<p>libssh is a C library that implements the SSH protocol. A library is a collection of pre-written functions that your program can use. Instead of writing all the low-level SSH protocol code yourself, you call libssh functions.</p>
+<p>In libssh, the central object is the ssh_session. It represents one SSH connection. You create it with <code>ssh_new()</code>, configure it, connect it, and authenticate through it. Inside that session, you can open one or more ssh_channel objects. A channel represents one logical stream inside the session.</p>
+<p>The event loop in libssh is accessed through ssh_event objects. You create an event loop with <code>ssh_event_new()</code>, add the session to it with <code>ssh_event_add_session()</code>, and add extra file descriptors (like forwarding sockets) with <code>ssh_event_add_fd()</code>. Then you call <code>ssh_event_dopoll()</code> in a loop, and libssh handles all the routing internally.</p>
+<hr>
+<h2>Part Three: Local Port Forwarding</h2>
+<h3>The Problem It Solves</h3>
+<p>Imagine you work at a company. The company has a database server running on an internal machine at the address <code>db.internal</code> on port 5432. This machine is not reachable from the internet -- it is only reachable from within the company network. But you have SSH access to a server called <code>jumpbox.company.com</code> that is reachable from the internet, and that server is inside the company network and can reach <code>db.internal</code>.</p>
+<p>You are at home. You want to use a graphical database tool on your laptop to connect to <code>db.internal:5432</code>. But you cannot reach it directly. How do you do this?</p>
+<p>Local port forwarding. You tell your SSH client: open a port on my local machine (say, port 9090). Whenever anything connects to that port, open a channel through the SSH connection to the jumpbox, and ask the jumpbox to connect to <code>db.internal:5432</code>. Whatever my database tool sends to port 9090, forward it through the channel to the database. Whatever the database sends back, forward it back through the channel to my tool.</p>
+<p>Your database tool thinks it is connecting to a local port. It has no idea there is an SSH tunnel involved. From its perspective, it opened a TCP connection to <code>localhost:9090</code> and got database responses. The entire SSH tunnel is transparent.</p>
+<p>The command line syntax is:</p>
+<pre><code>ssh -L 9090:db.internal:5432 user@jumpbox.company.com
+</code></pre>
+<p>Or in the <code>~/.ssh/config</code> file:</p>
+<pre><code>LocalForward 9090 db.internal:5432
+</code></pre>
+<h3>Parsing the Spec: What the Code Reads</h3>
+<p>The text <code>9090:db.internal:5432</code> is called the forwarding spec. The SSH client needs to parse it into three pieces: the local port (9090), the remote host (db.internal), and the remote port (5432).</p>
+<p>But there is also an optional fourth piece: the local bind address. By default, the local port is bound to <code>127.0.0.1</code>, which is the loopback address -- a special address that means "this machine itself." Binding to <code>127.0.0.1</code> means only programs on your own machine can connect to the forwarded port. If you write <code>0.0.0.0:9090:db.internal:5432</code>, you are binding to all network interfaces, meaning other machines on your local network can also use the tunnel.</p>
+<p>The complication in parsing is IPv6 addresses. An IPv6 address like <code>::1</code> (the IPv6 loopback address) contains colons, just like the separator character in the spec. So <code>::1:9090:db.internal:5432</code> is ambiguous: is <code>::1</code> the bind address and <code>9090</code> the local port, or is <code>::</code> the bind address and <code>1</code> something else? The convention borrowed from OpenSSH is to put IPv6 addresses in square brackets: <code>[::1]:9090:db.internal:5432</code>. The brackets make the IPv6 address unambiguous.</p>
+<p>The parser logic in plain English:</p>
+<p>Look at the start of the string. If it begins with <code>[</code>, the bind address is enclosed in brackets. Find the matching <code>]</code> and extract everything between them as the bind address. Then expect a <code>:</code> after <code>]</code>. The next part is the local port.</p>
+<p>If the string does not begin with <code>[</code>, count the colons. If there are two colons, there is no bind address; the format is <code>local_port:remote_host:remote_port</code>. If there are three or more colons, the first colon separates the bind address from the rest (unless the first part contains only digits, in which case it is just the local port).</p>
+<p>The result is stored in a struct (a struct is a composite data type in C that groups multiple named values together):</p>
+<pre><code class="language-c">struct forward_spec {
+    char *bind_addr;   /* the local address to listen on, or NULL for 127.0.0.1 */
+    int   local_port;  /* the local port to listen on */
+    char *remote_host; /* the remote host to connect to */
+    int   remote_port; /* the remote port to connect to */
+};
+</code></pre>
+<p>In C, <code>char *</code> means a pointer to a character, which is how strings are represented. A <code>NULL</code> pointer means "no value."</p>
+<h3>Creating the Listening Socket</h3>
+<p>Once the spec is parsed, the SSH client creates a listening socket on the local machine. Let us walk through each step carefully.</p>
+<pre><code class="language-c">int fd = socket(AF_INET, SOCK_STREAM, 0);
+</code></pre>
+<p><code>socket()</code> creates a new socket. <code>AF_INET</code> means "IPv4 addressing." <code>SOCK_STREAM</code> means "stream socket," which is TCP (as opposed to <code>SOCK_DGRAM</code> for UDP, a different protocol that is connectionless and unreliable but faster). The function returns a file descriptor -- a small integer that you use to refer to this socket later. Let us say it returns 5. Now file descriptor 5 is your socket.</p>
+<pre><code class="language-c">int reuse = 1;
+setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
+</code></pre>
+<p><code>setsockopt()</code> sets options on the socket. <code>SOL_SOCKET</code> means the option is at the socket level (as opposed to options at the TCP level or IP level). <code>SO_REUSEADDR</code> is the option being set, and we are setting it to 1 (meaning "yes, enable this option"). <code>&reuse</code> is a pointer to the integer 1 (the <code>&</code> operator in C takes the address of a variable, turning it into a pointer).</p>
+<p>What does <code>SO_REUSEADDR</code> do? When a TCP connection closes, the OS keeps the port in a limbo state called TIME_WAIT for up to a few minutes. This is because old packets from the closed connection might still be floating around the network, and the OS wants to make sure they do not accidentally confuse a new connection using the same port. Without <code>SO_REUSEADDR</code>, trying to bind to a port in TIME_WAIT gives you an error: "Address already in use." With <code>SO_REUSEADDR</code>, you can reuse the port immediately. For a local forward listener that you might restart frequently, this is essential.</p>
+<pre><code class="language-c">struct sockaddr_in addr;
+memset(&addr, 0, sizeof(addr));  /* zero out the struct */
+addr.sin_family = AF_INET;
+addr.sin_port = htons(spec->local_port);
+inet_pton(AF_INET, "127.0.0.1", &addr.sin_addr);
+</code></pre>
+<p><code>struct sockaddr_in</code> is a data structure that holds an IPv4 address and port. <code>sin_family</code> is the address family (IPv4). <code>sin_port</code> is the port in network byte order.</p>
+<p>Network byte order is big-endian: the most significant byte comes first. For example, port 9090 in decimal is 0x2382 in hexadecimal. Big-endian stores this as the byte 0x23 followed by 0x82. Little-endian (which is what x86 and most modern ARM processors use) stores it reversed: 0x82 followed by 0x23. <code>htons()</code> stands for "host to network short" -- it converts a 16-bit integer from whatever byte order the host uses to network byte order. If the host is already big-endian, <code>htons()</code> does nothing. On little-endian hosts, it reverses the bytes.</p>
+<p><code>inet_pton()</code> converts a human-readable IP address string (like <code>"127.0.0.1"</code>) into the binary representation used inside the <code>sockaddr_in</code> struct. The "pton" stands for "presentation to network."</p>
+<pre><code class="language-c">bind(fd, (struct sockaddr*)&addr, sizeof(addr));
+</code></pre>
+<p><code>bind()</code> associates the socket with the address and port. After this call, the OS knows that this socket owns port 9090 on the 127.0.0.1 interface.</p>
+<pre><code class="language-c">listen(fd, 128);
+</code></pre>
+<p><code>listen()</code> marks the socket as passive -- it is now waiting for incoming connections. The second argument (128) is the backlog: how many connections can be waiting in the queue while the program is busy processing other things. If 130 clients connect simultaneously and the program only has time to <code>accept()</code> one, the remaining 129 have to wait in the kernel's queue. The first 128 wait successfully; the 131st gets a "connection refused" error.</p>
+<h3>Adding the Listening Socket to the Event Loop</h3>
+<p>The listening socket is now waiting, but the program needs to know when a new connection arrives without blocking. We add it to the event loop:</p>
+<pre><code class="language-c">ssh_event_add_fd(event, fd, POLLIN, forward_accept_callback, &spec);
+</code></pre>
+<p><code>POLLIN</code> is a flag meaning "notify me when there is data to read." For a listening socket, "data to read" means "a new connection is waiting to be accepted." <code>forward_accept_callback</code> is the function to call when a connection arrives. <code>&spec</code> is a pointer to the forwarding spec, passed as user data to the callback so it knows where to forward to.</p>
+<h3>What Happens When a Connection Arrives</h3>
+<p>When your database tool connects to <code>localhost:9090</code>, the kernel wakes up the event loop. The <code>forward_accept_callback</code> function is called. Inside it:</p>
+<pre><code class="language-c">int client_fd = accept(fd, NULL, NULL);
+</code></pre>
+<p><code>accept()</code> takes the pending connection off the queue and returns a new file descriptor for that specific connection. The original listening socket (file descriptor 5 in our example) is unchanged and will accept the next connection independently. The new file descriptor (say, file descriptor 6) is the connected socket to the database tool.</p>
+<p>Now we need to tell the SSH server to open a connection to <code>db.internal:5432</code>. We do this by opening a new SSH channel:</p>
+<pre><code class="language-c">ssh_channel channel = ssh_channel_new(session);
+int rc = ssh_channel_open_forward(channel,
+                                  "db.internal",  /* remote host */
+                                  5432,            /* remote port */
+                                  "127.0.0.1",    /* originator address (our machine) */
+                                  9090);           /* originator port (our listening port) */
+</code></pre>
+<p><code>ssh_channel_open_forward()</code> sends a specific SSH protocol message to the server. Let us look at what that message actually contains, because understanding the wire format is important.</p>
+<p>The message is called SSH_MSG_CHANNEL_OPEN. It has the message type number 90. Its contents are:</p>
+<p>Field 1: the string "direct-tcpip" -- this tells the server what kind of channel this is. "direct-tcpip" means "I am directly requesting you connect to a TCP endpoint."</p>
+<p>Field 2: the sender's channel number -- a number the client picks to identify this channel. The client picks its own numbers; the server picks its own numbers. They are independent. Both sides tell each other their numbers in the open message.</p>
+<p>Field 3: the initial window size -- SSH channels have their own flow control separate from TCP. The window size is how many bytes the other side can send before needing to wait for the receiver to say "you can send more." The client advertises how much buffer space it has available.</p>
+<p>Field 4: the maximum packet size -- the maximum number of bytes in a single data packet for this channel.</p>
+<p>Field 5: the destination host -- "db.internal"</p>
+<p>Field 6: the destination port -- 5432</p>
+<p>Field 7: the originator address -- where the connection is coming from on the client side (127.0.0.1 in our case)</p>
+<p>Field 8: the originator port -- the local port (9090)</p>
+<p>The server receives this, opens a TCP connection from itself to <code>db.internal:5432</code>, and sends back an SSH_MSG_CHANNEL_OPEN_CONFIRMATION message with its own channel number and window size. If the connection to <code>db.internal:5432</code> fails, the server sends SSH_MSG_CHANNEL_OPEN_FAILURE with a reason code.</p>
+<h3>Bridging the Local Socket and the SSH Channel</h3>
+<p>Now we have two things: a local TCP socket connected to the database tool (file descriptor 6), and an SSH channel connected through the SSH server to the database. We need to copy data between them in both directions.</p>
+<p>When the database tool writes a SQL query to port 9090, we need to read it from file descriptor 6 and write it to the SSH channel. When the database server sends back results through the SSH channel, we need to read from the channel and write to file descriptor 6.</p>
+<p>libssh provides a mechanism called ssh_connector for this bridging. A connector watches a source for incoming data and writes that data to a destination. You create two connectors: one going from the local socket to the channel (for the client-to-server direction) and one going from the channel to the local socket (for the server-to-client direction).</p>
+<pre><code class="language-c">ssh_connector c_in  = ssh_connector_new(session);
+ssh_connector c_out = ssh_connector_new(session);
+
+/* c_in: read from local socket, write to channel */
+ssh_connector_set_in_fd(c_in, client_fd);
+ssh_connector_set_out_channel(c_in, channel, SSH_CONNECTOR_STDINOUT);
+
+/* c_out: read from channel, write to local socket */
+ssh_connector_set_in_channel(c_out, channel, SSH_CONNECTOR_STDINOUT);
+ssh_connector_set_out_fd(c_out, client_fd);
+
+ssh_event_add_connector(event, c_in);
+ssh_event_add_connector(event, c_out);
+</code></pre>
+<p>Once these connectors are added to the event loop, data flows automatically. The event loop fires when either the local socket or the channel has data, and the connectors handle the copying.</p>
+<h3>What Happens on the Wire</h3>
+<p>To make this concrete, let us trace what happens when your database tool sends a query.</p>
+<ol>
+<li><p>The database tool calls <code>write()</code> on its socket connected to <code>localhost:9090</code>. The OS sends the bytes over TCP to your SSH client's listening socket.</p>
+</li>
+<li><p>The event loop in your SSH client notices file descriptor 6 is readable (data arrived). The connector for the client-to-server direction wakes up, calls <code>read()</code> on file descriptor 6, gets the query bytes.</p>
+</li>
+<li><p>The connector calls <code>ssh_channel_write()</code> to send those bytes on the SSH channel. libssh wraps them in an SSH_MSG_CHANNEL_DATA packet:</p>
+<ul>
+<li>Byte 94 (the message type)</li>
+<li>4 bytes: the server's channel number for this channel</li>
+<li>4 bytes: the length of the data</li>
+<li>The query bytes</li>
+</ul>
+</li>
+<li><p>This packet is encrypted using the session key and sent over the TCP connection to the SSH server (jumpbox).</p>
+</li>
+<li><p>The SSH server decrypts the packet, extracts the data, finds the TCP socket it opened to <code>db.internal:5432</code>, and calls <code>write()</code> on that socket to send the query to the database.</p>
+</li>
+<li><p>The database processes the query, sends back results. The SSH server reads those results from the socket to <code>db.internal:5432</code>, wraps them in an SSH_MSG_CHANNEL_DATA packet addressed to your client's channel number, encrypts, and sends.</p>
+</li>
+<li><p>Your SSH client decrypts the packet, gets the results, and the connector for the server-to-client direction writes them to file descriptor 6 (the socket connected to the database tool).</p>
+</li>
+<li><p>The database tool's <code>read()</code> call returns with the results.</p>
+</li>
+</ol>
+<p>From the database tool's perspective, it is just talking to a local port. The entire SSH tunnel is invisible.</p>
+<h3>ExitOnForwardFailure</h3>
+<p>If the SSH server cannot open a connection to <code>db.internal:5432</code> -- maybe <code>db.internal</code> is down or the port is closed -- the server sends SSH_MSG_CHANNEL_OPEN_FAILURE. Our SSH client's <code>ssh_channel_open_forward()</code> call returns an error code.</p>
+<p>If the user configured <code>ExitOnForwardFailure yes</code>, the CLI should at this point close all channels, disconnect from the SSH server, and exit with a failure status code. Without this option, the SSH session would continue (you would get a shell on jumpbox, for example), but the forwarding silently failed. If you only started the SSH session in order to use the tunnel, that is not useful. <code>ExitOnForwardFailure yes</code> makes the failure loud and immediate.</p>
+<hr>
+<h2>Part Four: Remote Port Forwarding</h2>
+<h3>The Problem It Solves</h3>
+<p>Remote forwarding is the mirror image of local forwarding. Instead of making a remote service appear locally, you make a local service appear remotely.</p>
+<p>Example: you are building a web application on your laptop that runs on port 3000. A colleague wants to test it, but they are not on your local network. They cannot reach your laptop. However, both you and your colleague can reach <code>jumpbox.company.com</code>. </p>
+<p>With remote forwarding, you tell the SSH server to listen on a port (say, 9000) on <code>jumpbox.company.com</code>. When your colleague connects to <code>jumpbox.company.com:9000</code>, the SSH server opens a channel back to your SSH client, and your SSH client connects to <code>localhost:3000</code> on your laptop. Your colleague's browser sees a web server. It has no idea that the actual server is on your laptop, tunneled through SSH.</p>
+<pre><code>ssh -R 9000:localhost:3000 user@jumpbox.company.com
+</code></pre>
+<h3>How This Differs From Local Forwarding at the Protocol Level</h3>
+<p>In local forwarding, your SSH client creates the listening socket. The SSH server does not know about the port until a connection arrives and the client opens a channel.</p>
+<p>In remote forwarding, the SSH server needs to create the listening socket. The SSH client must ask the server to do this. This is fundamentally different: you are not the one who can create the socket; it is the server that needs to create it, because the port is on the server's machine.</p>
+<p>The mechanism for asking the server to do something on your behalf is called a global request. A global request is an SSH protocol message that is not associated with any channel. It is a session-level request.</p>
+<p>The specific global request for remote forwarding is named "tcpip-forward." The SSH client sends:</p>
+<p>Message type: SSH_MSG_GLOBAL_REQUEST (which is the number 80)</p>
+<p>The contents:</p>
+<ul>
+<li>The string "tcpip-forward" -- the name of the request</li>
+<li>A flag "want-reply" set to true -- we want the server to confirm whether it succeeded</li>
+<li>The address to bind: "0.0.0.0" means all interfaces (anyone can connect), "127.0.0.1" means only processes on the server itself can connect</li>
+<li>The port number: 9000</li>
+</ul>
+<p>In libssh, you call:</p>
+<pre><code class="language-c">int bound_port = 0;
+int rc = ssh_channel_listen_forward(session, "0.0.0.0", 9000, &bound_port);
+</code></pre>
+<p>The <code>&bound_port</code> parameter is interesting. If you pass port number 0, you are telling the OS "pick any available port." The server binds to whatever port is free. The SSH_MSG_REQUEST_SUCCESS reply from the server includes the actual port that was bound, and libssh fills <code>bound_port</code> with that value. This is how you get a dynamically assigned port: pass 0, get back whatever was assigned.</p>
+<h3>What Happens When Someone Connects to the Remote Port</h3>
+<p>Your colleague opens their browser and goes to <code>http://jumpbox.company.com:9000</code>. Their browser makes a TCP connection to port 9000 on the jumpbox. The SSH server's listening socket accepts this connection.</p>
+<p>Now the SSH server needs to notify your SSH client. But here is the twist: in remote forwarding, the server opens a channel to the client. This is the reverse of the normal flow (where clients open channels to servers). The server sends SSH_MSG_CHANNEL_OPEN to your SSH client with channel type "forwarded-tcpip."</p>
+<p>The contents of this channel open message:</p>
+<ul>
+<li>The string "forwarded-tcpip"</li>
+<li>The server's channel number for this connection</li>
+<li>The initial window size</li>
+<li>The maximum packet size</li>
+<li>The address that was connected on the server (the address the remote port was bound to)</li>
+<li>The port that was connected (9000)</li>
+<li>The originator IP address (your colleague's IP address -- the machine that connected to port 9000)</li>
+<li>The originator port (your colleague's ephemeral source port)</li>
+</ul>
+<p>Your SSH client receives this channel open request. But your client did not initiate this -- the server did. So your client needs a callback function that is called whenever the server tries to open a "forwarded-tcpip" channel. In libssh, you register this callback by filling in a function pointer in the callbacks struct:</p>
+<pre><code class="language-c">struct ssh_callbacks_struct cb;
+memset(&cb, 0, sizeof(cb));
+cb.channel_open_request_forwarded_tcpip_function = my_forwarded_tcpip_callback;
+ssh_callbacks_init(&cb);
+ssh_set_callbacks(session, &cb);
+</code></pre>
+<p><code>memset(&cb, 0, sizeof(cb))</code> fills the struct with zero bytes, initializing all fields to zero/NULL. This is important in C because uninitialized memory contains unpredictable garbage values. <code>ssh_callbacks_init(&cb)</code> sets the <code>size</code> field of the struct (libssh uses the size to know which version of the callbacks struct you are using).</p>
+<p>The callback function:</p>
+<pre><code class="language-c">ssh_channel my_forwarded_tcpip_callback(ssh_session session,
+                                        const char *bound_addr,
+                                        int bound_port,
+                                        const char *originator_addr,
+                                        int originator_port,
+                                        void *userdata) {
+    /* Find which remote forward spec this belongs to */
+    struct forward_spec *spec = find_spec_by_port(bound_port);
+    if (!spec) {
+        return NULL; /* reject unexpected channels */
+    }
+
+    /* Connect to the local target (e.g., localhost:3000) */
+    int local_fd = connect_tcp(spec->local_host, spec->local_port);
+    if (local_fd < 0) {
+        return NULL; /* connection to local target failed */
+    }
+
+    /* Create a channel and set up bridging */
+    ssh_channel channel = ssh_channel_new(session);
+    /* ... set up connectors for bidirectional data flow ... */
+    return channel;
+}
+</code></pre>
+<p>Returning NULL from this callback causes libssh to send SSH_MSG_CHANNEL_OPEN_FAILURE to the server. The server then closes the connection from your colleague's browser with a connection refused response. Returning a valid channel causes libssh to send SSH_MSG_CHANNEL_OPEN_CONFIRMATION, and data starts flowing.</p>
+<p><code>connect_tcp()</code> is a helper function that creates a socket and calls <code>connect()</code> to establish a TCP connection to the local target (your app at <code>localhost:3000</code>). Once this succeeds, data flows: your colleague's browser to the SSH server to the channel to your SSH client to <code>localhost:3000</code> to your web app and back.</p>
+<h3>Cancelling a Remote Forward</h3>
+<p>When the SSH session ends (or when you want to stop the forwarding earlier), the client sends a "cancel-tcpip-forward" global request with the same address and port. The server unbinds the port -- your colleague can no longer connect to port 9000 on the jumpbox. Any channels that were already open for existing connections continue until they are closed normally by the data flow completing.</p>
+<hr>
+<h2>Part Five: Dynamic Forwarding and SOCKS5</h2>
+<h3>What a Proxy Is</h3>
+<p>Before we can understand dynamic forwarding, we need to understand what a proxy is. A proxy is an intermediary. When you use a proxy to access a website, instead of your computer connecting directly to the website's server, your computer connects to the proxy. You tell the proxy "I want to reach website.com." The proxy then makes the connection to website.com on your behalf, gets the response, and sends it back to you.</p>
+<p>From website.com's perspective, the connection came from the proxy's IP address, not yours. This is useful for privacy, for getting around geographic restrictions, for bypassing firewalls, and many other purposes.</p>
+<p>A SOCKS proxy is a particular type of proxy that works at the TCP level. Unlike HTTP proxies that only work for web traffic, a SOCKS proxy can proxy any TCP connection. You tell the SOCKS proxy the destination address and port, and it connects there for you.</p>
+<h3>What Dynamic Forwarding Does</h3>
+<p>Dynamic forwarding (<code>-D local_port</code>) makes your SSH client act as a SOCKS proxy. When you connect to the proxy port, you tell it where you want to go using the SOCKS protocol. The SSH client then opens an SSH channel to the SSH server and asks the server to connect to your requested destination. The server connects and bridges the channel to the destination.</p>
+<p>The difference from local forwarding: local forwarding has a fixed destination (<code>db.internal:5432</code>). Dynamic forwarding has a variable destination: whatever the SOCKS client requests. This makes it more general. With local forwarding you get one tunnel to one destination. With dynamic forwarding you get a proxy that can tunnel to any destination.</p>
+<pre><code>ssh -D 1080 user@jumpbox.company.com
+</code></pre>
+<p>Now configure your browser to use a SOCKS5 proxy at <code>127.0.0.1:1080</code>. Every website your browser visits will be fetched by <code>jumpbox.company.com</code> and tunneled to you.</p>
+<h3>The SOCKS5 Protocol: Step by Step</h3>
+<p>SOCKS5 is defined in RFC 1928. The entire protocol happens over the TCP connection between the browser and your SSH client (the SOCKS proxy). Let us trace through it byte by byte.</p>
+<p>When the browser wants to connect through the SOCKS proxy, it connects to <code>127.0.0.1:1080</code>. Your SSH client's event loop accepts this connection (the same way it accepts connections for local forwarding). Now the SOCKS5 negotiation begins.</p>
+<p><strong>Phase 1: Authentication Method Negotiation</strong></p>
+<p>The browser (SOCKS client) sends a greeting:</p>
+<p>Byte 1: 0x05 -- SOCKS version 5. This is the version number. If the proxy receives version 4, it is SOCKS4 (older, simpler protocol). We are implementing SOCKS5.</p>
+<p>Byte 2: the number of authentication methods the client supports. Let us say 1.</p>
+<p>Bytes 3 onwards: the method codes. Method 0x00 means "no authentication required." Method 0x02 means "username/password authentication."</p>
+<p>For SSH dynamic forwarding, since the SOCKS proxy is on localhost and only the local user is using it, no authentication is needed. A typical browser sends:</p>
+<pre><code>05 01 00
+</code></pre>
+<p>Meaning: SOCKS5, one method, method 0x00 (no authentication).</p>
+<p>Your SSH client reads these three bytes. It sees version 5, sees one method offered, sees method 0x00. It responds:</p>
+<pre><code>05 00
+</code></pre>
+<p>Meaning: SOCKS5, selected method 0x00 (no authentication). The method negotiation is complete.</p>
+<p><strong>Phase 2: The Connection Request</strong></p>
+<p>Now the browser sends the actual request:</p>
+<p>Byte 1: 0x05 -- SOCKS version again.</p>
+<p>Byte 2: the command. 0x01 means CONNECT: establish a TCP connection to the destination. (There are also BIND and UDP ASSOCIATE commands, but those are not needed for basic SSH dynamic forwarding.)</p>
+<p>Byte 3: 0x00 -- reserved byte. Must be zero. It is there for future use.</p>
+<p>Byte 4: the address type (called ATYP). This tells you what format the destination address is in:</p>
+<ul>
+<li>0x01: IPv4 address. The next 4 bytes are the IP address, then 2 bytes for the port.</li>
+<li>0x03: domain name. The next byte is the length of the name, followed by that many bytes of the name, then 2 bytes for the port.</li>
+<li>0x04: IPv6 address. The next 16 bytes are the IPv6 address, then 2 bytes for the port.</li>
+</ul>
+<p>Let us say the browser wants to connect to <code>example.com:443</code> (HTTPS). It would send ATYP 0x03 (domain name), then the byte 11 (the length of "example.com"), then the bytes of "example.com", then 0x01 0xBB (443 in big-endian: 443 = 0x01BB).</p>
+<p>The full request for <code>example.com:443</code>:</p>
+<pre><code>05 01 00 03 0B 65 78 61 6D 70 6C 65 2E 63 6F 6D 01 BB
+</code></pre>
+<p>Let us decode this: 05 (version 5), 01 (CONNECT command), 00 (reserved), 03 (domain name type), 0B (11 bytes of name), 65 78 61 6D 70 6C 65 2E 63 6F 6D ("example.com" in ASCII bytes), 01 BB (port 443).</p>
+<p>Your SSH client reads this message. It knows: the browser wants a TCP connection to <code>example.com:443</code>.</p>
+<p><strong>Opening the SSH Channel</strong></p>
+<p>Now your SSH client opens a channel to the SSH server using the exact same mechanism as local forwarding -- <code>ssh_channel_open_forward()</code> with <code>"direct-tcpip"</code> as the channel type. But instead of a fixed destination from a config spec, the destination comes from the SOCKS5 request: <code>example.com</code> and 443.</p>
+<pre><code class="language-c">ssh_channel channel = ssh_channel_new(session);
+ssh_channel_open_forward(channel,
+                         "example.com",  /* from SOCKS5 request */
+                         443,            /* from SOCKS5 request */
+                         "127.0.0.1",
+                         1080);
+</code></pre>
+<p>The SSH server resolves <code>example.com</code> to an IP address and connects to it on port 443. Why does the server resolve the name? Because ATYP 0x03 means the proxy should resolve the name on behalf of the client. If your SSH client resolved <code>example.com</code> locally and passed an IP to the server, the result might be different -- the server might have different DNS access, might see different internal names. Passing the hostname to the server preserves the server's DNS context, which is more useful.</p>
+<p><strong>Phase 3: The Response to the Browser</strong></p>
+<p>Once <code>ssh_channel_open_forward()</code> succeeds (the server has connected to <code>example.com:443</code>), your SSH client sends the SOCKS5 response to the browser:</p>
+<p>Byte 1: 0x05 -- version.</p>
+<p>Byte 2: the reply code. 0x00 means success. Other codes indicate specific failures: 0x01 is general failure, 0x03 is network unreachable, 0x04 is host unreachable, 0x05 is connection refused. These let the browser give more useful error messages.</p>
+<p>Byte 3: 0x00 -- reserved.</p>
+<p>Byte 4: the address type of the bound address. 0x01 for IPv4.</p>
+<p>Bytes 5-8: the bound address. For a CONNECT reply, this is the address of the proxy server that made the outgoing connection. We can put 0x00 0x00 0x00 0x00 here since the browser does not need it.</p>
+<p>Bytes 9-10: the bound port. We can put 0x00 0x00.</p>
+<p>So the success response is: <code>05 00 00 01 00 00 00 00 00 00</code></p>
+<p>After this, the browser starts sending HTTPS data. Your SSH client forwards it to the channel, the server forwards it to <code>example.com:443</code>, the response comes back the same way.</p>
+<h3>Handling This Without Blocking: The State Machine</h3>
+<p>The SOCKS5 handshake involves multiple reads and writes. The event loop approach means you cannot block waiting for the next bytes -- you have to handle each step when the bytes arrive.</p>
+<p>A state machine is a programming pattern where a data structure has a "state" field, and each time an event occurs (like new bytes arriving), the code looks at the current state to decide what to do, does it, and updates the state.</p>
+<p>For a SOCKS5 connection, the states are:</p>
+<pre><code class="language-c">enum socks_state {
+    SOCKS_WAITING_FOR_GREETING,    /* we just accepted the connection */
+    SOCKS_WAITING_FOR_REQUEST,     /* we sent the method selection, waiting for the request */
+    SOCKS_OPENING_CHANNEL,         /* we sent the channel open request, waiting for confirmation */
+    SOCKS_CONNECTED,               /* the channel is open, we are bridging data */
+    SOCKS_FAILED                   /* something went wrong */
+};
+</code></pre>
+<p>Each SOCKS connection has its own instance of this state along with a buffer for bytes received and the destination extracted from the request. When the event loop fires for the SOCKS connection's file descriptor, the callback reads bytes, advances the state machine, and either reads more bytes on the next event or transitions to bridging mode.</p>
+<hr>
+<h2>Part Six: Agent Forwarding</h2>
+<h3>What a Private Key and a Public Key Are</h3>
+<p>To understand agent forwarding, you first need to understand asymmetric cryptography, sometimes called public key cryptography. This is the mathematics at the heart of SSH authentication.</p>
+<p>The idea: you generate a pair of numbers that are mathematically related in a very specific way. One is your public key. One is your private key. The public key can be freely shared with anyone. The private key must never be shared.</p>
+<p>The mathematical relationship between them has this property: data encrypted with the public key can only be decrypted with the private key. And -- critically for SSH authentication -- data signed with the private key can be verified with the public key, but you cannot forge a signature without the private key.</p>
+<p>SSH key-based authentication uses this property. The server knows your public key (you put it in <code>~/.ssh/authorized_keys</code> on the server). When you connect, the server generates a random challenge (a number). It sends the challenge to you encrypted with your public key. Only you -- with your private key -- can decrypt it. You also sign the challenge with your private key and send the signature back. The server verifies the signature using your public key. If the signature is valid, you have proven you have the private key. You are authenticated.</p>
+<p>The private key is typically stored in a file like <code>~/.ssh/id_ed25519</code>. It is encrypted with a passphrase that you provide. When you want to use the key, you decrypt it from the file by typing your passphrase.</p>
+<h3>The Problem: Passphrase Fatigue</h3>
+<p>If you SSH to multiple servers throughout your day, typing your passphrase every single time is annoying. Worse, if you have a script that SSHs to servers automatically, it cannot type a passphrase at all.</p>
+<p>The solution is the SSH agent.</p>
+<h3>What the SSH Agent Is</h3>
+<p>The SSH agent is a separate program (on Linux it is typically called <code>ssh-agent</code>) that runs in the background. When you start your session, you run <code>ssh-add ~/.ssh/id_ed25519</code>. This asks for your passphrase once. The agent decrypts the key and stores it in memory in its decrypted form. The private key file on disk remains encrypted.</p>
+<p>When your SSH client needs to authenticate, instead of asking you for your passphrase, it asks the agent: "please sign this challenge for me." The agent does so using the key it holds in memory and sends back the signature. Your passphrase is never typed again.</p>
+<p>Communication between the SSH client and the agent happens over a Unix domain socket. A Unix domain socket is like a TCP socket but instead of using IP addresses and port numbers, it is identified by a path in the filesystem -- like a filename. For example: <code>/tmp/ssh-XXXXXXXX/agent.1234</code>. The agent creates this socket when it starts. The environment variable <code>SSH_AUTH_SOCK</code> is set to this path so that any program that needs the agent can find it.</p>
+<p>A Unix domain socket is a type of IPC mechanism. IPC stands for Inter-Process Communication: how two processes on the same machine talk to each other. Other IPC mechanisms include pipes, shared memory, and signals.</p>
+<h3>The Agent Protocol</h3>
+<p>The protocol spoken over the agent socket is defined in a document called <code>draft-miller-ssh-agent</code>. The SSH client sends request messages to the agent and the agent sends response messages back.</p>
+<p>The two most important requests:</p>
+<p>SSH_AGENTC_REQUEST_IDENTITIES (message code 11): "list all keys you hold." The agent responds with SSH_AGENT_IDENTITIES_ANSWER (12), which contains a list of public keys and their comment strings (a human-readable label for each key, often the email address of the key's owner).</p>
+<p>SSH_AGENTC_SIGN_REQUEST (message code 13): "sign this data using the key matching this public key." The request contains the public key (to identify which key to use), the data to sign, and flags. The agent finds the corresponding private key, performs the signing operation, and responds with SSH_AGENT_SIGN_RESPONSE (14) containing the signature.</p>
+<p>The SSH client uses SIGN_REQUEST during authentication: it receives a challenge from the server, asks the agent to sign it, and sends the signature to the server.</p>
+<h3>The Problem With Multiple Hops</h3>
+<p>You have your keys in the agent on your laptop. You SSH to jumpbox. Now you want to SSH from jumpbox to appserver. But the SSH client on jumpbox does not have your keys. It does not have access to your laptop's agent socket. It cannot authenticate to appserver using your keys.</p>
+<p>Without agent forwarding, your options are: type a password (if appserver accepts passwords), copy your private key to jumpbox (bad idea -- if jumpbox is compromised, your key is compromised), or keep typing your passphrase (which is what <code>ssh-add</code> was supposed to avoid).</p>
+<p>Agent forwarding solves this. With agent forwarding, when you SSH from your laptop to jumpbox, your SSH client creates a "virtual agent" on jumpbox. When the SSH client on jumpbox asks this virtual agent to sign a challenge (for connecting to appserver), the virtual agent forwards the request over the existing SSH connection back to your laptop, where your real agent handles it. The private key never leaves your laptop.</p>
+<h3>How Agent Forwarding Works at the Protocol Level</h3>
+<p>Step 1: Your SSH client requests agent forwarding from the server by sending a channel request of type "<a href="mailto:auth-agent-forwarding@openssh.com">auth-agent-forwarding@openssh.com</a>" on the main session channel.</p>
+<p>In libssh terms, after opening the session channel, you call:</p>
+<pre><code class="language-c">ssh_channel_request_auth_agent(channel);
+</code></pre>
+<p>This sends:</p>
+<pre><code>SSH_MSG_CHANNEL_REQUEST
+string "auth-agent-forwarding@openssh.com"
+boolean FALSE (no reply needed)
+</code></pre>
+<p>The SSH server on jumpbox sees this and knows: when anything on jumpbox tries to use the SSH agent, it should be routed back to the client.</p>
+<p>Step 2: The server creates a socket on jumpbox. This is the "virtual agent socket." It picks a path like <code>/tmp/ssh-XXXXXXXX/agent.5678</code> and sets <code>SSH_AUTH_SOCK</code> to this path in the shell environment it is about to start.</p>
+<p>Step 3: You have a shell on jumpbox. You run <code>ssh user@appserver</code>. The SSH client on jumpbox reads <code>SSH_AUTH_SOCK</code>, finds the path to the virtual agent socket, and connects to it.</p>
+<p>Step 4: The SSH server on jumpbox, which is managing the virtual agent socket, receives this connection. It opens a new SSH channel back to your SSH client on the laptop. The channel type is "<a href="mailto:auth-agent@openssh.com">auth-agent@openssh.com</a>":</p>
+<pre><code>SSH_MSG_CHANNEL_OPEN
+string "auth-agent@openssh.com"
+uint32 sender channel number
+uint32 initial window size
+uint32 maximum packet size
+</code></pre>
+<p>This is the server opening a channel to the client -- again the reverse of normal. Your SSH client needs a callback to handle these incoming channel opens:</p>
+<pre><code class="language-c">struct ssh_callbacks_struct cb;
+cb.channel_open_request_auth_agent_function = agent_channel_callback;
+</code></pre>
+<p>Step 5: The <code>agent_channel_callback</code> function on your laptop's SSH client runs. It:</p>
+<ol>
+<li>Reads <code>SSH_AUTH_SOCK</code> on your laptop to find your real agent's socket path</li>
+<li>Opens a Unix domain socket connection to your real agent</li>
+<li>Creates an ssh_channel for the incoming "<a href="mailto:auth-agent@openssh.com">auth-agent@openssh.com</a>" channel</li>
+<li>Sets up bidirectional bridging between the channel and the socket to your real agent</li>
+</ol>
+<pre><code class="language-c">ssh_channel agent_channel_callback(ssh_session session, void *userdata) {
+    const char *auth_sock = getenv("SSH_AUTH_SOCK");
+    if (!auth_sock) return NULL; /* no agent running locally */
+
+    /* Create a Unix domain socket */
+    int agent_fd = socket(AF_UNIX, SOCK_STREAM, 0);
+
+    /* Set up the address */
+    struct sockaddr_un addr;
+    memset(&addr, 0, sizeof(addr));
+    addr.sun_family = AF_UNIX;
+    strncpy(addr.sun_path, auth_sock, sizeof(addr.sun_path) - 1);
+    /* sun_path is a char array inside sockaddr_un that holds the socket path */
+
+    /* Connect to the local agent */
+    if (connect(agent_fd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
+        close(agent_fd);
+        return NULL;
+    }
+
+    /* Create the channel and set up bridging */
+    ssh_channel channel = ssh_channel_new(session);
+    /* ... set up connectors ... */
+    return channel;
+}
+</code></pre>
+<p><code>AF_UNIX</code> specifies a Unix domain socket (as opposed to <code>AF_INET</code> for TCP). <code>addr.sun_path</code> is the filesystem path of the socket.</p>
+<p>Step 6: With the bridge in place, agent protocol messages flow. The SSH client on jumpbox sends SSH_AGENTC_SIGN_REQUEST to the virtual agent socket. Those bytes travel: virtual agent socket on jumpbox to SSH server on jumpbox to SSH channel to your SSH client on laptop to your real agent's socket. The agent on your laptop signs the challenge and sends the response back the same path in reverse.</p>
+<p>The SSH client on jumpbox receives the signature, sends it to appserver, and is authenticated. Your private key never left your laptop. The SSH server on jumpbox never saw it.</p>
+<hr>
+<h2>Part Seven: PTY -- What It Is and Why SSH Needs It</h2>
+<h3>What a Terminal Actually Is</h3>
+<p>In the early days of computing, a terminal was a physical device: a keyboard and a display (originally a printer, later a screen). You sat at the terminal, typed commands, the mainframe executed them, and printed results to your terminal. The terminal and the computer were separate physical machines connected by a serial cable.</p>
+<p>In modern computing, we no longer have physical terminals. But programs written to work with terminals (text editors, interactive command-line programs, your shell) still expect to be connected to something that behaves like a terminal. That "something" is called a pseudo-terminal, abbreviated PTY.</p>
+<p>A PTY is entirely software. It consists of two file descriptors: the master side and the slave side. They are connected: bytes written to the master appear for reading on the slave, and bytes written to the slave appear for reading on the master. They are like a bidirectional pipe, but with extra properties that make them behave like a real terminal.</p>
+<p>The slave side looks to programs exactly like a hardware terminal. If a program calls <code>isatty(slave_fd)</code> (a function that checks "is this file descriptor a terminal?"), it gets back TRUE. The program can call <code>ioctl(slave_fd, TIOCGWINSZ, &ws)</code> to get the terminal's dimensions (TIOCGWINSZ is a control code that means "get window size"; ioctl is a system call for device-specific control operations). It can send control sequences like "move the cursor to row 5, column 10" and the PTY master side will see those exact bytes.</p>
+<p>On Linux, you create a PTY with these system calls: <code>posix_openpt(O_RDWR)</code> creates a new PTY master and returns a file descriptor. <code>grantpt(master_fd)</code> sets the correct permissions on the slave device. <code>unlockpt(master_fd)</code> removes an internal lock. <code>ptsname(master_fd)</code> returns the path of the slave device, something like <code>/dev/pts/5</code>. <code>open(slave_path, O_RDWR)</code> opens the slave.</p>
+<h3>How SSH Uses PTYs</h3>
+<p>On the server side: when you request an interactive shell over SSH, the SSH server creates a PTY pair. It takes the slave file descriptor and <code>dup2()</code>s it to file descriptors 0, 1, and 2 of the shell process it is about to start. <code>dup2()</code> is a system call that makes two file descriptor numbers refer to the same open file. After <code>dup2(slave_fd, 0)</code>, reading from file descriptor 0 reads from the PTY slave. The shell is then started as a child process. The shell's stdin, stdout, and stderr are all connected to the PTY slave.</p>
+<p>The SSH server keeps the master file descriptor. When data arrives from the SSH channel (bytes you typed), the server writes them to the master. The PTY passes them to the slave side, where the shell reads them as keyboard input. When the shell writes output (the command prompt, the output of commands), it goes to the slave, the master side sees it, the server reads it from the master, and sends it back through the SSH channel to you.</p>
+<p>The PTY layer in the kernel also handles things that a physical terminal would handle: it can echo input back (when you type, you see what you typed), it can process Backspace, it can generate a SIGINT signal when it sees Ctrl+C (the byte 0x03). These behaviors can be configured through the termios interface. A termios (terminal I/O settings) struct has fields for input flags, output flags, local flags, and special characters. For example, the <code>ISIG</code> local flag means "generate signals for special characters." When <code>ISIG</code> is set and the process reads the byte 0x03 (Ctrl+C), the PTY slave generates SIGINT for the foreground process group.</p>
+<h3>What Happens on the SSH Client Side</h3>
+<p>On the client side, you (the user) are interacting with your local terminal (likely a terminal emulator like GNOME Terminal or iTerm2). When you run the SSH client from your terminal, your stdin and stdout are connected to your terminal's PTY slave. Your SSH client is the program connected to the terminal.</p>
+<p>For the interactive session to work correctly, your SSH client needs to put your local terminal into "raw mode." Normally, your terminal is in "cooked mode": it buffers input until you press Enter, it echoes characters back to the screen, and it processes special characters locally (Ctrl+C sends SIGINT to the SSH client itself, not to the remote shell). In cooked mode, the terminal is doing some processing before the data reaches your SSH client.</p>
+<p>For interactive SSH, you want every keystroke sent immediately to the remote server. You want Ctrl+C to reach the remote shell (which is connected to a PTY on the server; the server's PTY kernel layer will generate SIGINT there). You do not want your local terminal to echo characters (the remote shell echos them back through the channel). You need raw mode.</p>
+<p>The way to configure terminal mode in C is through the termios interface. First you save the current settings:</p>
+<pre><code class="language-c">struct termios saved_termios;
+tcgetattr(STDIN_FILENO, &saved_termios);
+/* STDIN_FILENO is the constant 0, representing standard input */
+/* tcgetattr fills the saved_termios struct with the current terminal settings */
+</code></pre>
+<p>Then you create raw mode settings and apply them:</p>
+<pre><code class="language-c">struct termios raw = saved_termios; /* start with a copy of current settings */
+cfmakeraw(&raw);                    /* modify the copy to be raw mode */
+tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
+/* TCSAFLUSH means: wait for all pending output to be written, then flush pending input, then change the settings */
+</code></pre>
+<p><code>cfmakeraw()</code> modifies the termios struct to turn off all the processing. Specifically, it clears:</p>
+<p><code>ICANON</code> from the local flags: ICANON means "canonical mode," which is line buffering. Clearing it enables character-by-character input.</p>
+<p><code>ECHO</code> from the local flags: ECHO causes typed characters to be echoed back. Clearing it disables local echo (the remote server will echo through the channel).</p>
+<p><code>ISIG</code> from the local flags: clearing this means Ctrl+C does not generate SIGINT locally. The byte 0x03 passes through as data to the remote shell.</p>
+<p><code>IXON</code> from the input flags: IXON enables software flow control (Ctrl+S pauses output, Ctrl+Q resumes). Clearing it lets these bytes pass through as data.</p>
+<p><code>OPOST</code> from the output flags: OPOST enables output processing (like converting newlines). Clearing it sends output bytes unmodified.</p>
+<p>After these changes, every keystroke reaches your SSH client immediately, unprocessed, ready to be forwarded to the channel.</p>
+<p>When the SSH session ends, you must restore the saved settings:</p>
+<pre><code class="language-c">tcsetattr(STDIN_FILENO, TCSAFLUSH, &saved_termios);
+</code></pre>
+<p>If you forget to do this, the terminal stays in raw mode after the SSH client exits. Your local shell becomes unusable: you cannot see what you type, Ctrl+C does not work, Enter sends 0x0D instead of 0x0A. You have to blindly type <code>reset</code> and press Enter to fix it.</p>
+<h3>Requesting a PTY From the Server</h3>
+<p>When the SSH client wants an interactive shell, it requests a PTY from the server before starting the shell. In libssh:</p>
+<pre><code class="language-c">struct winsize ws;
+ioctl(STDIN_FILENO, TIOCGWINSZ, &ws);
+/* ws.ws_col: number of columns (width), ws.ws_row: number of rows (height) */
+
+ssh_channel_request_pty_size(channel, "xterm-256color", ws.ws_col, ws.ws_row);
+</code></pre>
+<p><code>ioctl(STDIN_FILENO, TIOCGWINSZ, &ws)</code> asks the kernel for the dimensions of the local terminal. The <code>winsize</code> struct has <code>ws_col</code> (columns, i.e., width) and <code>ws_row</code> (rows, i.e., height).</p>
+<p><code>"xterm-256color"</code> is the terminal type string. It tells the server what kind of terminal this is, so programs on the server know which control sequences work. This is the value of your <code>TERM</code> environment variable. <code>xterm-256color</code> indicates an xterm-compatible terminal that supports 256 colors. Programs like vim use this information to decide which color codes to emit.</p>
+<p>This sends an SSH_MSG_CHANNEL_REQUEST of type "pty-req" to the server. The server creates the PTY, stores the dimensions, and now uses the PTY for the shell it is about to start.</p>
+<h3>RequestTTY: The Logic for When to Request a PTY</h3>
+<p><code>RequestTTY</code> has four modes:</p>
+<p><code>no</code>: never request a PTY. The channel opens without a PTY. stdout and stderr of the remote command are pipes, not terminals. Programs like vim will refuse to start (they check <code>isatty()</code> and get false). The output of <code>ls</code> will not be colorized. This mode is appropriate for non-interactive commands where you just want the output: <code>ssh server "cat file.txt" > local_copy</code>.</p>
+<p><code>yes</code>: always request a PTY and enter raw mode locally. Even if you are in a pipeline (<code>echo "ls" | ssh server</code>), a PTY is requested. This might cause issues if the remote command's output contains terminal control sequences that corrupt your pipeline's data.</p>
+<p><code>force</code>: request PTY and treat failure as fatal. If the server refuses (some servers refuse PTY for security reasons), disconnect and fail.</p>
+<p><code>auto</code>: the most nuanced. Check <code>isatty(STDIN_FILENO)</code>. If your local stdin is a terminal (you ran SSH interactively from your shell), request a PTY. If stdin is a pipe or file (you are running SSH from a script), do not request a PTY. This gives correct behavior in both contexts without manual configuration.</p>
+<pre><code class="language-c">int interactive = isatty(STDIN_FILENO);
+
+if (requesttty_mode == REQUESTTTY_AUTO && interactive) {
+    request_pty = 1;
+} else if (requesttty_mode == REQUESTTTY_YES || requesttty_mode == REQUESTTTY_FORCE) {
+    request_pty = 1;
+} else {
+    request_pty = 0;
+}
+
+if (request_pty) {
+    struct winsize ws;
+    ioctl(STDIN_FILENO, TIOCGWINSZ, &ws);
+    rc = ssh_channel_request_pty_size(channel, "xterm-256color", ws.ws_col, ws.ws_row);
+    if (rc != SSH_OK && requesttty_mode == REQUESTTTY_FORCE) {
+        /* disconnect and exit with error */
+    }
+    if (interactive) {
+        cfmakeraw(&raw);
+        tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
+    }
+}
+</code></pre>
+<h3>SIGWINCH: What Happens When You Resize the Window</h3>
+<p>If you are in an SSH session and you resize your terminal window (by dragging the corner of GNOME Terminal, for example), the local terminal changes its dimensions. The remote programs (your shell, vim, etc.) need to know the new dimensions so they can redraw their output correctly. A vim that thinks it has 80 columns but actually has 120 will draw its UI in the wrong positions.</p>
+<p>When a terminal is resized, the operating system sends a signal called SIGWINCH (Signal WINdow CHange) to the process that has the terminal as its controlling terminal. In our case, that is the SSH client.</p>
+<p>A signal is an asynchronous notification delivered by the OS to a process. It interrupts whatever the process is currently doing. You handle signals by registering a signal handler function -- a function that the OS calls when the signal arrives.</p>
+<p>Signal handlers have a severe restriction: they can only call "async-signal-safe" functions. This is a small subset of all C library functions. The reason: your program might be in the middle of a non-reentrant function (a function that uses shared state and cannot safely be called again before the first call returns) when the signal arrives. If your signal handler calls the same non-reentrant function, the state gets corrupted. Most of the important libssh functions are not async-signal-safe, so you cannot call them from the signal handler.</p>
+<p>The solution is the self-pipe trick. The name says it all: a pipe to yourself.</p>
+<p>A pipe in Unix is a unidirectional channel between two file descriptors. You call <code>pipe(fds)</code>, where <code>fds</code> is an array of two integers. After the call, <code>fds[0]</code> is the read end and <code>fds[1]</code> is the write end. Writing bytes to <code>fds[1]</code> makes them available to read from <code>fds[0]</code>.</p>
+<p>The self-pipe trick:</p>
+<p>Before starting the event loop, create a pipe. Add the read end (<code>fds[0]</code>) to the event loop with <code>POLLIN</code>.</p>
+<p>The signal handler for SIGWINCH:</p>
+<pre><code class="language-c">static int sigwinch_pipe[2]; /* fds[0] = read end, fds[1] = write end */
+
+void sigwinch_handler(int signum) {
+    char byte = 1;
+    write(sigwinch_pipe[1], &byte, 1);
+    /* write() is async-signal-safe: safe to call from a signal handler */
+}
+</code></pre>
+<p>The signal handler just writes one byte to the pipe. That is all. No libssh calls, no complex logic.</p>
+<p>In the event loop callback for when the read end of the pipe becomes readable:</p>
+<pre><code class="language-c">void sigwinch_pipe_callback(/* ... */) {
+    char byte;
+    read(sigwinch_pipe[0], &byte, 1); /* consume the byte */
+
+    struct winsize ws;
+    ioctl(STDIN_FILENO, TIOCGWINSZ, &ws); /* get new terminal size */
+
+    ssh_channel_change_pty_size(channel, ws.ws_col, ws.ws_row);
+    /* This sends SSH_MSG_CHANNEL_REQUEST of type "window-change" to the server */
+    /* The server updates the PTY size and delivers SIGWINCH to the remote shell */
+}
+</code></pre>
+<p><code>ssh_channel_change_pty_size()</code> sends:</p>
+<pre><code>SSH_MSG_CHANNEL_REQUEST
+uint32  recipient channel
+string  "window-change"
+boolean FALSE (no reply)
+uint32  terminal width in columns
+uint32  terminal height in rows
+uint32  terminal width in pixels (often 0)
+uint32  terminal height in pixels (often 0)
+</code></pre>
+<p>The server calls <code>ioctl(pty_master_fd, TIOCSWINSZ, &ws)</code> to update the PTY's idea of its size. The OS then delivers SIGWINCH to the shell (and all other processes in the foreground process group). Vim, for example, catches SIGWINCH and calls <code>ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws)</code> to learn the new size and redraws its display.</p>
+<hr>
+<h2>Part Eight: Escape Sequences</h2>
+<h3>What the Escape Character Is For</h3>
+<p>When you are in an interactive SSH session in raw mode, every key you press is forwarded to the remote server. There is no local processing. This creates a problem: how do you send commands to your SSH client itself? What if the SSH connection freezes and you want to forcibly disconnect? You cannot use Ctrl+C (that goes to the remote shell). You cannot close the terminal application (that would kill the terminal, not just the SSH session).</p>
+<p>The escape character solves this. It is a special character (the tilde <code>~</code> by default) that the SSH client watches for at the beginning of a line. If the client sees the escape character right after a newline, it does not forward it to the server immediately. Instead it waits for the next character to determine what escape command you want to execute.</p>
+<p>"At the beginning of a line" means the previous character sent was a newline (<code>\n</code>, byte value 10) or carriage return (<code>\r</code>, byte value 13). The very start of the session is treated as the beginning of a line.</p>
+<p>The escape sequences are:</p>
+<p><code>~.</code> -- disconnect. The SSH client closes the connection and exits. This works even when the session is completely frozen, as long as the local terminal and SSH client are still responding to input.</p>
+<p><code>~^Z</code> -- suspend. <code>^Z</code> means Ctrl+Z, which is the byte 0x1A. The SSH client sends itself SIGTSTP, pausing its execution and returning you to your local shell. Type <code>fg</code> to resume.</p>
+<p><code>~~</code> -- literal tilde. If you actually want to type a tilde character at the beginning of a line and send it to the server (maybe you are using Vim and typed <code>dd</code> to delete a line and are now at the beginning of the next line and want to use <code>~</code> to change case), you type <code>~~</code> and only one <code>~</code> is forwarded.</p>
+<p><code>~#</code> -- list forwarded connections. Prints a list of all currently active forwarded port connections.</p>
+<p><code>~?</code> -- help. Prints the list of supported escape sequences.</p>
+<h3>The State Machine</h3>
+<p>A state machine is a clean way to implement this. The idea: the processing of input has a "state" at all times, and each incoming character causes a transition from one state to another.</p>
+<p>There are three states:</p>
+<p><code>ESCAPE_NONE</code>: normal state. Characters are forwarded directly to the server. If a newline is encountered, transition to <code>ESCAPE_PENDING</code>.</p>
+<p><code>ESCAPE_PENDING</code>: the previous character was a newline (or we are at the very start). If the next character is the escape character (<code>~</code>), transition to <code>ESCAPE_ACTIVE</code> and do not forward the <code>~</code> yet. Otherwise, forward the character and if it was not a newline, go back to <code>ESCAPE_NONE</code>.</p>
+<p><code>ESCAPE_ACTIVE</code>: an escape character was just seen. The next character determines the action. After taking the action, go back to <code>ESCAPE_NONE</code>.</p>
+<pre><code class="language-c">enum escape_state { ESCAPE_NONE, ESCAPE_PENDING, ESCAPE_ACTIVE };
+
+/*
+ * Returns 0 normally, -1 if the user requested disconnect (~.)
+ * Input: the new bytes from the keyboard
+ * Side effect: calls ssh_channel_write() with the bytes to forward
+ */
+int process_keyboard_input(ssh_channel channel,
+                            const uint8_t *input, size_t input_len,
+                            enum escape_state *state,
+                            char escape_char) {
+
+    /* output buffer: worst case, we forward every byte unchanged */
+    uint8_t output[input_len];
+    size_t  output_len = 0;
+
+    for (size_t i = 0; i < input_len; i++) {
+        uint8_t c = input[i];
+
+        if (*state == ESCAPE_NONE) {
+            if (c == '\n' || c == '\r') {
+                *state = ESCAPE_PENDING;
+            }
+            output[output_len++] = c;
+
+        } else if (*state == ESCAPE_PENDING) {
+            if (c == (uint8_t)escape_char) {
+                /* possible escape sequence: do not forward the escape char yet */
+                *state = ESCAPE_ACTIVE;
+            } else {
+                /* not an escape sequence */
+                if (c == '\n' || c == '\r') {
+                    /* stay in ESCAPE_PENDING: the new newline is still a line start */
+                } else {
+                    *state = ESCAPE_NONE;
+                }
+                output[output_len++] = c;
+            }
+
+        } else { /* ESCAPE_ACTIVE */
+            *state = ESCAPE_NONE;
+
+            if (c == '.') {
+                /* disconnect: flush what we have, signal caller to disconnect */
+                if (output_len > 0) {
+                    ssh_channel_write(channel, output, output_len);
+                    output_len = 0;
+                }
+                return -1;
+
+            } else if (c == 0x1a) { /* Ctrl+Z */
+                /* suspend: restore terminal first */
+                if (output_len > 0) {
+                    ssh_channel_write(channel, output, output_len);
+                    output_len = 0;
+                }
+                restore_terminal();       /* put terminal back to cooked mode */
+                kill(getpid(), SIGTSTP);  /* send stop signal to ourselves */
+                /* execution continues here after user types 'fg' */
+                set_raw_terminal();       /* put terminal back in raw mode */
+                send_window_size(channel); /* resend size in case window was resized */
+
+            } else if (c == (uint8_t)escape_char) {
+                /* literal escape char: forward one copy */
+                output[output_len++] = escape_char;
+
+            } else if (c == '#') {
+                /* print forwarded connections */
+                if (output_len > 0) {
+                    ssh_channel_write(channel, output, output_len);
+                    output_len = 0;
+                }
+                print_forwarded_connections();
+
+            } else {
+                /* unrecognized: forward both the escape char and this char */
+                output[output_len++] = escape_char;
+                output[output_len++] = c;
+            }
+        }
+    }
+
+    if (output_len > 0) {
+        ssh_channel_write(channel, output, output_len);
+    }
+    return 0;
+}
+</code></pre>
+<p>The initial state is <code>ESCAPE_PENDING</code> because the start of the session is logically "after a newline."</p>
+<p><code>getpid()</code> returns the process ID of the current process. <code>kill(pid, signal)</code> sends a signal to a process. <code>kill(getpid(), SIGTSTP)</code> sends SIGTSTP to ourselves -- the suspend signal. The OS then suspends the SSH client and returns the user to the shell that launched it.</p>
+<p>After the user types <code>fg</code> to resume, <code>kill()</code> returns (execution continues from where it paused). At this point we need to put the terminal back in raw mode (because restoring before suspend put it in cooked mode) and send a window-change message (in case the terminal was resized while we were suspended).</p>
+<hr>
+<h2>Part Nine: Keepalive</h2>
+<h3>Why Connections Die Silently</h3>
+<p>TCP connections can die without either endpoint knowing. The most common cause is NAT (Network Address Translation). A NAT device is a router that maps multiple private IP addresses to one public IP address. When your laptop (with private IP 192.168.1.100) connects to a server on the internet, your home router rewrites the source IP to its public IP (say, 1.2.3.4) and keeps a table entry mapping the private address back so it can deliver the server's responses to the right machine.</p>
+<p>This NAT table entry has a timeout. If you do not send any data on the connection for several minutes, the router discards the entry to save memory. Now if the server sends data to your laptop, the router sees it, looks in its table, finds no entry for this connection, and drops the packet. Your laptop never receives it. But your laptop does not know the router dropped the entry -- from the TCP stack's perspective on your laptop, the connection is still ESTABLISHED.</p>
+<p>Your SSH session appears to hang. The shell prompt is there but nothing you type has any effect. The TCP connection is technically alive on your laptop but effectively dead because the NAT entry is gone and the server cannot reach you.</p>
+<h3>Two Layers of Keepalive</h3>
+<p>There are two places where keepalive can be implemented: at the TCP level and at the SSH application level.</p>
+<p>TCP keepalive is a feature of the TCP protocol itself. If you set the <code>SO_KEEPALIVE</code> socket option:</p>
+<pre><code class="language-c">int keepalive = 1;
+setsockopt(sock_fd, SOL_SOCKET, SO_KEEPALIVE, &keepalive, sizeof(keepalive));
+</code></pre>
+<p>The OS's TCP implementation will periodically send TCP keepalive probes (tiny packets that say "are you still there?") when the connection has been idle. The remote TCP stack must acknowledge them. If several probes go unacknowledged, the OS closes the connection and delivers an error to the application.</p>
+<p>You can configure the interval and count with additional socket options on Linux (<code>TCP_KEEPIDLE</code>, <code>TCP_KEEPINTVL</code>, <code>TCP_KEEPCNT</code>). These require <code>SOL_TCP</code> (or <code>IPPROTO_TCP</code>) as the level argument to <code>setsockopt()</code>.</p>
+<p>The problem with TCP keepalive alone: it only tests whether the network path between the two machines is alive. Some infrastructure (load balancers, application firewalls) passes TCP keepalives through even when the SSH application is not working correctly. You might get TCP keepalive acknowledgements but the SSH protocol layer is broken.</p>
+<p>SSH-level keepalive (<code>ServerAliveInterval</code>) tests the SSH application layer. The client sends an SSH_MSG_GLOBAL_REQUEST of type "<a href="mailto:keepalive@openssh.com">keepalive@openssh.com</a>":</p>
+<pre><code>SSH_MSG_GLOBAL_REQUEST
+string  "keepalive@openssh.com"
+boolean TRUE (want-reply)
+</code></pre>
+<p>The server must respond with SSH_MSG_REQUEST_SUCCESS. If this message gets through and the response comes back, the SSH session is demonstrably alive at the application level, not just the TCP level.</p>
+<h3>Implementing the Timer</h3>
+<p>The timer can be implemented using the timeout parameter of <code>poll()</code>. Recall that <code>poll(fds, n, timeout_ms)</code> waits for up to <code>timeout_ms</code> milliseconds before returning. If it returns because the timeout expired (return value 0), no data arrived in that interval.</p>
+<pre><code class="language-c">int alive_count = 0;
+int timeout_ms  = server_alive_interval * 1000; /* convert seconds to milliseconds */
+
+while (running) {
+    int ready = poll(watched_fds, n_watched, timeout_ms);
+
+    if (ready == 0) {
+        /* Timeout: no data received in server_alive_interval seconds */
+        alive_count++;
+
+        if (alive_count > server_alive_count_max) {
+            fprintf(stderr, "ssh: connect to host timed out\n");
+            break; /* exit the event loop */
+        }
+
+        /* Send a keepalive */
+        ssh_global_request(session, "keepalive@openssh.com", NULL, 1);
+        /* The last argument 1 means "want reply" */
+
+    } else if (ready > 0) {
+        /* Some file descriptor has data: reset the alive count */
+        alive_count = 0;
+
+        /* Handle the ready file descriptors... */
+    }
+}
+</code></pre>
+<p>The value <code>server_alive_count_max</code> defaults to 3. So with <code>ServerAliveInterval 30</code> and <code>ServerAliveCountMax 3</code>:</p>
+<ul>
+<li>After 30 seconds of silence: <code>alive_count</code> becomes 1, send keepalive 1</li>
+<li>If no response after 30 more seconds: <code>alive_count</code> becomes 2, send keepalive 2</li>
+<li>If no response after 30 more seconds: <code>alive_count</code> becomes 3, send keepalive 3</li>
+<li>If no response after 30 more seconds: <code>alive_count</code> becomes 4, which is greater than 3, so we disconnect</li>
+</ul>
+<p>Total time to detect a dead connection: 4 intervals * 30 seconds = 120 seconds.</p>
+<p>The <code>poll()</code> timeout approach has a subtle inaccuracy: the timeout counts from when <code>poll()</code> is called, not from the last data received. If the event loop spends a long time processing a large data transfer, the next <code>poll()</code> call starts fresh with the full timeout, potentially delaying keepalive beyond the configured interval. A more accurate implementation tracks the last time data was received and computes the remaining time:</p>
+<pre><code class="language-c">time_t last_data_received = time(NULL); /* time() returns current Unix timestamp (seconds since Jan 1, 1970) */
+
+while (running) {
+    time_t now = time(NULL);
+    int elapsed_seconds = (int)(now - last_data_received);
+    int remaining_ms = (server_alive_interval - elapsed_seconds) * 1000;
+
+    if (remaining_ms <= 0) {
+        /* interval already elapsed: send keepalive immediately */
+        remaining_ms = 0;
+    }
+
+    int ready = poll(watched_fds, n_watched, remaining_ms);
+
+    if (ready == 0 || remaining_ms == 0) {
+        /* timeout */
+        alive_count++;
+        if (alive_count > server_alive_count_max) break;
+        ssh_global_request(session, "keepalive@openssh.com", NULL, 1);
+    } else if (ready > 0) {
+        alive_count = 0;
+        last_data_received = time(NULL);
+        /* handle ready fds */
+    }
+}
+</code></pre>
+<hr>
+<h2>Part Ten: SendEnv</h2>
+<h3>What Environment Variables Are</h3>
+<p>Every process (running program) on a Unix system has a set of environment variables: named string values that the process can read. They are set by the shell before starting a program, and programs can also set new ones or modify existing ones for processes they launch.</p>
+<p>Some important environment variables: <code>HOME</code> is the path to your home directory. <code>PATH</code> is a colon-separated list of directories where the shell looks for programs. <code>LANG</code> controls language and locale (for example, <code>LANG=en_US.UTF-8</code> means English language, US conventions, UTF-8 text encoding). <code>TERM</code> tells programs what kind of terminal they are connected to. <code>TZ</code> controls the timezone.</p>
+<p>When you SSH to a remote server, the remote shell starts with a minimal environment set by the server's system configuration. It does not inherit your local environment variables. This is both a security feature (you should not be able to inject arbitrary variables into the server's environment) and a practical inconvenience (your locale settings, timezone, and other preferences are lost).</p>
+<h3>What SendEnv Does</h3>
+<p><code>SendEnv</code> is the controlled mechanism for passing specific local environment variables to the remote server. You configure it in <code>~/.ssh/config</code>:</p>
+<pre><code>SendEnv LANG LC_*
+</code></pre>
+<p>This says: send the <code>LANG</code> variable and any variable whose name starts with <code>LC_</code>. Variables starting with <code>LC_</code> are locale-related: <code>LC_MESSAGES</code> (language for messages), <code>LC_TIME</code> (date and time formatting), <code>LC_NUMERIC</code> (number formatting), <code>LC_MONETARY</code> (currency formatting), and so on.</p>
+<p>The server's SSH daemon must accept these variables. In the server's <code>sshd_config</code> file, the <code>AcceptEnv</code> directive lists which variable names the server will accept. If the server does not have <code>AcceptEnv LANG LC_*</code>, it will silently ignore the variables the client tries to send. The client sends them; the server decides whether to apply them.</p>
+<h3>How It Is Implemented</h3>
+<p>Environment variables are sent as SSH channel requests of type "env". These must be sent after the channel is open but before the shell or command is started.</p>
+<p>In libssh:</p>
+<pre><code class="language-c">ssh_channel_request_env(channel, "LANG", "en_US.UTF-8");
+</code></pre>
+<p>This sends:</p>
+<pre><code>SSH_MSG_CHANNEL_REQUEST
+uint32  recipient channel
+string  "env"
+boolean FALSE (no reply needed)
+string  "LANG"       (variable name)
+string  "en_US.UTF-8" (variable value)
+</code></pre>
+<p>You can call this multiple times, once for each variable to send.</p>
+<p>To implement the pattern matching for <code>SendEnv LANG LC_*</code>, the code must iterate over all local environment variables and check each against the configured patterns.</p>
+<p>In C, the global variable <code>environ</code> is an array of strings (a <code>char**</code>, pointer to pointer to char). Each string is in the format <code>"NAME=value"</code>. Iterating over it:</p>
+<pre><code class="language-c">extern char **environ; /* declared in unistd.h */
+
+for (char **ep = environ; *ep != NULL; ep++) {
+    /* *ep is a string like "LANG=en_US.UTF-8" */
+    char *equals = strchr(*ep, '='); /* find the '=' character */
+    if (equals == NULL) continue;
+
+    /* extract the name */
+    size_t name_len = equals - *ep; /* pointer arithmetic: distance from start to '=' */
+    char name[256];
+    if (name_len >= sizeof(name)) continue;
+    memcpy(name, *ep, name_len);
+    name[name_len] = '\0'; /* null-terminate the string */
+
+    const char *value = equals + 1; /* value starts after the '=' */
+
+    /* check if name matches any SendEnv pattern */
+    for (int i = 0; i < n_patterns; i++) {
+        if (fnmatch(sendenv_patterns[i], name, 0) == 0) {
+            /* match: send this variable */
+            ssh_channel_request_env(channel, name, value);
+            break; /* no need to check other patterns for this variable */
+        }
+    }
+}
+</code></pre>
+<p><code>strchr()</code> finds the first occurrence of a character in a string and returns a pointer to it. <code>memcpy()</code> copies bytes from one location to another. The null terminator <code>'\0'</code> is the byte value 0 that ends a C string. <code>fnmatch()</code> is the POSIX function for glob pattern matching: <code>fnmatch("LC_*", "LC_TIME", 0)</code> returns 0 (match) because <code>LC_TIME</code> matches the pattern <code>LC_*</code> (where <code>*</code> matches any sequence of characters).</p>
+<hr>
+<h2>Part Eleven: How the Whole CLI Fits Together</h2>
+<h3>The Order of Operations</h3>
+<p>When you type <code>ssh user@server.com</code>, here is the sequence of everything the CLI does:</p>
+<ol>
+<li><p>Parse command-line arguments and the config file. Build a config struct holding everything: hostname, port, username, list of local forwards, list of remote forwards, RequestTTY mode, SendEnv patterns, ServerAliveInterval, and so on.</p>
+</li>
+<li><p>Create the SSH session with <code>ssh_new()</code>.</p>
+</li>
+<li><p>Set options on the session with <code>ssh_options_set()</code>.</p>
+</li>
+<li><p>Connect to the server with <code>ssh_connect()</code>. This performs the TCP connection, the key exchange, and the host key verification. If the host key is unknown (new server), prompt the user to accept it. If it changed from last time, warn loudly.</p>
+</li>
+<li><p>Authenticate. Try each method in the PreferredAuthentications order:</p>
+<ul>
+<li>publickey: try each identity file in order, ask the agent for signatures</li>
+<li>keyboard-interactive: receive challenge prompts from the server, display to user</li>
+<li>password: prompt for password (respecting BatchMode and NumberOfPasswordPrompts)</li>
+</ul>
+<p>Stop when one method succeeds.</p>
+</li>
+<li><p>Set up port forwarding. For each LocalForward spec: create a listening socket, bind it, listen on it, add it to the event loop. For each RemoteForward spec: call <code>ssh_channel_listen_forward()</code> and register the <code>forwarded_tcpip</code> callback. If ExitOnForwardFailure is set and any of these fail, disconnect and exit.</p>
+</li>
+<li><p>Open the main session channel with <code>ssh_channel_new()</code> and <code>ssh_channel_open_session()</code>.</p>
+</li>
+<li><p>If RequestTTY mode requires a PTY (based on the mode and <code>isatty()</code>): save terminal settings, call <code>ssh_channel_request_pty_size()</code> with the current terminal dimensions, put the local terminal into raw mode.</p>
+</li>
+<li><p>Send environment variables with <code>ssh_channel_request_env()</code> for each variable matching SendEnv patterns.</p>
+</li>
+<li><p>Request agent forwarding with <code>ssh_channel_request_auth_agent()</code> if <code>-A</code> or <code>ForwardAgent yes</code>.</p>
+</li>
+<li><p>Start the remote shell with <code>ssh_channel_request_shell()</code>, or execute a specific command with <code>ssh_channel_request_exec(command)</code>. For <code>-N</code> mode (no remote command), skip this step.</p>
+</li>
+<li><p>Set up the event loop with all file descriptors: the SSH session (which internally uses the TCP socket), stdin, the self-pipe for SIGWINCH, all listening forward sockets, and any already-active forwarded connection sockets.</p>
+</li>
+<li><p>Run the event loop.</p>
+</li>
+<li><p>When the main session channel closes (the remote shell exits, or the remote command finishes), read the exit status from the "exit-status" channel request. Restore terminal settings.</p>
+</li>
+<li><p>Close the channel, disconnect the session, free resources, exit with the remote command's exit status.</p>
+</li>
+</ol>
+<h3>What the Running Event Loop Does</h3>
+<p>The event loop is not a complicated concept. It is a while loop:</p>
+<pre><code class="language-c">while (session_alive) {
+    /* poll() waits for any registered fd to be ready, or for the keepalive timeout */
+    int n_ready = ssh_event_dopoll(event, timeout_ms);
+
+    if (n_ready > 0) {
+        /* ssh_event_dopoll() called our registered callbacks for each ready fd */
+        /* nothing more to do here; the callbacks handled it */
+    }
+
+    /* check keepalive */
+    if (should_send_keepalive()) {
+        ssh_global_request(session, "keepalive@openssh.com", NULL, 1);
+    }
+
+    /* check if main channel closed */
+    if (ssh_channel_is_closed(main_channel)) {
+        session_alive = 0;
+    }
+}
+</code></pre>
+<p>The callbacks registered in the event loop are:</p>
+<p>For stdin: read input bytes, run them through the escape sequence state machine, send non-escape bytes to the main channel with <code>ssh_channel_write()</code>.</p>
+<p>For local forward listening sockets: accept new connections, open forward channels, set up connectors.</p>
+<p>For the self-pipe: read and discard the byte, get new terminal size, send window-change request.</p>
+<p>For the SSH session itself: libssh handles incoming packets internally. When an SSH_MSG_CHANNEL_DATA packet arrives, libssh delivers the data to the channel's data callback, which writes it to stdout. When a <code>forwarded-tcpip</code> channel open arrives, libssh calls the registered callback. When a <code>keepalive@openssh.com</code> response arrives, libssh handles it internally and resets the alive counter.</p>
+<h3>Channel Lifecycle: Opening, Data, EOF, and Close</h3>
+<p>A channel goes through distinct phases. Understanding these is important because mishandling the lifecycle causes subtle bugs (data loss, hangs, or resource leaks).</p>
+<p>Open: one side sends SSH_MSG_CHANNEL_OPEN, the other responds with SSH_MSG_CHANNEL_OPEN_CONFIRMATION. Both sides now have a connected channel.</p>
+<p>Data flow: both sides send SSH_MSG_CHANNEL_DATA packets with their channel numbers. Both sides also manage window sizes: when your receive buffer is filling up, you send SSH_MSG_CHANNEL_WINDOW_ADJUST to tell the other side it can send more. This prevents the sender from overwhelming the receiver.</p>
+<p>EOF: when one side has no more data to send (for example, the user closed the connection to a forwarded port), it sends SSH_MSG_CHANNEL_EOF. This means "I will not send any more data." The other side can still send data, though. EOF is one-directional.</p>
+<p>Close: when a side wants to close the channel completely, it sends SSH_MSG_CHANNEL_CLOSE. The other side sends SSH_MSG_CHANNEL_CLOSE back. After both sides have sent and received CLOSE, the channel is fully closed. You can then free the ssh_channel object.</p>
+<p>For port forwarding, when the local TCP connection closes (the browser tab closes), your SSH client should:</p>
+<ol>
+<li>Call <code>ssh_channel_send_eof(channel)</code> to tell the server you will not send more data</li>
+<li>Call <code>ssh_channel_close(channel)</code> to initiate channel closure</li>
+<li>The server's TCP connection to the remote destination will be closed by the server</li>
+</ol>
+<p>If the remote destination closes its TCP connection first, the SSH server sends EOF and then CLOSE to your client. Your client should respond with CLOSE and then close the local TCP connection.</p>
+<h3>Exit Status</h3>
+<p>When the remote shell or command exits, the server sends a special channel request:</p>
+<pre><code>SSH_MSG_CHANNEL_REQUEST
+uint32  recipient channel
+string  "exit-status"
+boolean FALSE
+uint32  exit status code
+</code></pre>
+<p>An exit status of 0 conventionally means success. Non-zero values indicate failure; the specific values mean different things to different programs. For example, <code>grep</code> exits with 0 if it found matches, 1 if it found no matches, and 2 if there was an error. <code>ssh server "command"</code> should exit with the same status code as <code>command</code> on the server. This matters for scripts: <code>if ssh server "check_something"; then</code> works correctly only if SSH propagates the exit status.</p>
+<p>In the CLI, after the main channel closes, the exit status is captured and used as the process's exit code:</p>
+<pre><code class="language-c">int exit_status = ssh_channel_get_exit_status(main_channel);
+/* ... cleanup ... */
+exit(exit_status);
+</code></pre>
+<hr>
+<h2>Conclusion</h2>
+<p>Let us trace what actually happens when you run something like this:</p>
+<pre><code>ssh -L 9090:db.internal:5432 -A user@jumpbox.company.com
+</code></pre>
+<ol>
+<li>The CLI parses <code>-L 9090:db.internal:5432</code> into a LocalForward spec and <code>-A</code> into agent forwarding enabled.</li>
+<li>A TCP connection is made to <code>jumpbox.company.com:22</code>. The SSH handshake runs: key exchange, host key verification.</li>
+<li>Authentication: the CLI asks your local agent for your key's signature on the challenge. The agent responds. The server accepts.</li>
+<li>The CLI creates a listening socket on <code>127.0.0.1:9090</code>.</li>
+<li>The CLI requests agent forwarding from the server.</li>
+<li>The CLI opens a shell channel, requests a PTY (because <code>isatty(stdin)</code> is true and RequestTTY is auto), and starts the shell.</li>
+<li>The local terminal enters raw mode.</li>
+<li>The event loop starts watching: the SSH session, stdin, the SIGWINCH self-pipe, and the <code>127.0.0.1:9090</code> listening socket.</li>
+</ol>
+<p>Now you use your database tool to connect to <code>localhost:9090</code>:</p>
+<ol start="9">
+<li>The event loop detects a new connection on port 9090.</li>
+<li><code>accept()</code> returns a new socket for this connection.</li>
+<li><code>ssh_channel_open_forward()</code> sends a <code>direct-tcpip</code> channel open to the server.</li>
+<li>The server connects to <code>db.internal:5432</code> and confirms.</li>
+<li>Connectors are set up: database-tool-socket to channel, channel to database-tool-socket.</li>
+<li>Data flows: your SQL queries go through the channel (encrypted) to the server, to the database; the results come back the same way.</li>
+</ol>
+<p>Meanwhile you run another SSH command from the shell on jumpbox:</p>
+<ol start="15">
+<li>The shell on jumpbox sees <code>SSH_AUTH_SOCK</code> pointing to the agent socket.</li>
+<li>The SSH client on jumpbox connects to that socket.</li>
+<li>The SSH server on jumpbox opens an <code>auth-agent@openssh.com</code> channel back to your laptop's SSH client.</li>
+<li>Your laptop's <code>agent_channel_callback</code> fires, connects to your local agent socket.</li>
+<li>The agent protocol flows: sign request goes from jumpbox's SSH client through the channel to your laptop's SSH client to your local agent; the signature comes back.</li>
+<li>The SSH client on jumpbox authenticates to appserver using your key, which never left your laptop.</li>
+</ol>
+<p>This is the full picture. All of these features -- local forwarding, remote forwarding, dynamic forwarding, agent forwarding, PTY, escape sequences, keepalive, SendEnv -- are subsystems that share one event loop, one SSH session object, and one underlying TCP connection. Each one handles a specific need. Together they make SSH into the universal, flexible, secure remote access tool that it is.</p>
+<hr>
+<p><em>This blog covers local port forwarding, remote port forwarding, dynamic forwarding with SOCKS5, agent forwarding, PTY allocation and raw mode, RequestTTY, SIGWINCH and window resize, escape sequences, ServerAliveInterval and ServerAliveCountMax keepalive, and SendEnv. All concepts are explained from first principles including TCP, ports, sockets, file descriptors, signals, environment variables, Unix domain sockets, and the event loop.</em></p>
+
+                </div>
+                <a href="blog.html" class="back-link">
+                    <i class="fas fa-arrow-left"></i> Back to Blog
+                </a>
+            </article>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 Sudharshan Hegde  ·  <a href="index.html">Portfolio</a>  ·  <a href="blog.html">Blog</a></p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-cpp.min.js"></script>
+</body>
+</html>
